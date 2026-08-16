@@ -1,0 +1,262 @@
+package com.mangaverse.app.core.jsonsource
+
+import com.mangaverse.app.core.model.isNsfw
+import com.mangaverse.app.parsers.model.ContentType
+
+import com.mangaverse.app.parsers.model.ContentSource
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.serialization.json.Json
+import com.mangaverse.app.core.model.getContentType
+import com.mangaverse.app.core.model.jsonsource.LegadoBookSource
+
+/**
+ * Manages source grouping and categorization.
+ * 
+ * This class provides methods to:
+ * - Determine content type groups (manga, novel, video)
+ * - Determine origin type groups (native, JSON Legado, JSON TVBox)
+ * - Query sources by group
+ * - Get statistics about source groups
+ */
+@Singleton
+class SourceGroupManager @Inject constructor(
+	private val sourceTypeIdentifier: SourceTypeIdentifier,
+	private val jsonSourceManager: JsonSourceManager,
+	private val json: Json,
+) {
+	
+	/**
+	 * Gets the content group for a source based on its content type.
+	 * 
+	 * @param source The manga source
+	 * @return The ContentGroup enum value
+	 */
+	fun getContentGroup(source: ContentSource): ContentGroup {
+		val isNsfw = source.isNsfw()
+		
+		// Priority 1: Check native and plugin ContentSource content type
+		val type = sourceTypeIdentifier.getSourceType(source.name)
+		if (type == SourceType.NATIVE || source is com.mangaverse.app.core.extensions.PluginContentSource || source is com.mangaverse.app.core.parser.kotatsu.KotatsuParserSource) {
+			return when (source.getContentType()) {
+				ContentType.NOVEL, ContentType.HENTAI_NOVEL -> if (isNsfw) ContentGroup.HENTAI_NOVEL else ContentGroup.NOVEL
+				ContentType.VIDEO, ContentType.HENTAI_VIDEO -> if (isNsfw) ContentGroup.HENTAI_VIDEO else ContentGroup.VIDEO
+				else -> if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+			}
+		}
+		
+		// Priority 2: Check for known source wrappers
+		if (source is com.mangaverse.app.mihon.model.MihonMangaSource) {
+			return if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+		}
+		
+		if (source is com.mangaverse.app.core.jsonsource.JsonContentSource) {
+			return try {
+				when (source.entity.type) {
+					com.mangaverse.app.core.db.entity.JsonSourceType.LEGADO -> {
+						val legacyConfig = runCatching { 
+							json.decodeFromString<LegadoBookSource>(source.entity.config)
+						}.getOrNull()
+						
+						if (legacyConfig?.bookSourceType == 2) {
+							if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+						} else {
+							if (isNsfw) ContentGroup.HENTAI_NOVEL else ContentGroup.NOVEL
+						}
+					}
+					com.mangaverse.app.core.db.entity.JsonSourceType.JS -> {
+						if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+					}
+				}
+			} catch (e: Exception) {
+				android.util.Log.e("SourceGroupManager", "Failed to parse JSON source config for ${source.name}", e)
+				if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+			}
+		}
+
+		// Priority 3: Prefix-based fallback for anonymous sources
+		val name = source.name
+		return when {
+			name.startsWith("JSON_LEGADO_M_") -> if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+			name.startsWith("JSON_LEGADO_") -> if (isNsfw) ContentGroup.HENTAI_NOVEL else ContentGroup.NOVEL
+			else -> if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+		}
+	}
+	
+	/**
+	 * Gets the content group for a source by name string only (no ContentSource instance).
+	 * Uses prefix-based classification. Suitable for DB entities where only the source name is available.
+	 */
+	fun getContentGroupByName(sourceName: String, isNsfw: Boolean = false): ContentGroup {
+		val type = sourceTypeIdentifier.getSourceType(sourceName)
+		val source = com.mangaverse.app.core.model.ContentSource(sourceName)
+		
+		if (type == SourceType.NATIVE || source is com.mangaverse.app.core.extensions.PluginContentSource || source is com.mangaverse.app.core.parser.kotatsu.KotatsuParserSource || type == SourceType.EXTERNAL) {
+			return when (source.getContentType()) {
+				ContentType.NOVEL, ContentType.HENTAI_NOVEL -> if (isNsfw) ContentGroup.HENTAI_NOVEL else ContentGroup.NOVEL
+				ContentType.VIDEO, ContentType.HENTAI_VIDEO -> if (isNsfw) ContentGroup.HENTAI_VIDEO else ContentGroup.VIDEO
+				else -> if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+			}
+		}
+
+		return when {
+			sourceName.startsWith("JSON_LEGADO_M_") -> if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+			sourceName.startsWith("JSON_LEGADO_") -> if (isNsfw) ContentGroup.HENTAI_NOVEL else ContentGroup.NOVEL
+			else -> if (isNsfw) ContentGroup.HENTAI_MANGA else ContentGroup.MANGA
+		}
+	}
+
+	/**
+	 * Gets the origin group for a source by name string only.
+	 */
+	fun getOriginGroupByName(sourceName: String): OriginGroup {
+		val sourceType = sourceTypeIdentifier.getSourceType(sourceName)
+		return when (sourceType) {
+			SourceType.NATIVE -> OriginGroup.NATIVE
+			SourceType.JSON_LEGADO -> OriginGroup.LEGADO_JSON
+			SourceType.JSON_JS -> OriginGroup.JS_JSON
+			SourceType.EXTERNAL -> OriginGroup.EXTERNAL
+			SourceType.MIHON -> OriginGroup.MIHON
+		}
+	}
+
+	/**
+	 * Gets the origin group for a source based on its identifier.
+	 * 
+	 * @param source The manga source
+	 * @return The OriginGroup enum value
+	 */
+	fun getOriginGroup(source: ContentSource): OriginGroup {
+		val sourceType = sourceTypeIdentifier.getSourceType(source.name)
+		return when (sourceType) {
+			SourceType.NATIVE -> OriginGroup.NATIVE
+			SourceType.JSON_LEGADO -> OriginGroup.LEGADO_JSON
+			SourceType.JSON_JS -> OriginGroup.JS_JSON
+			SourceType.EXTERNAL -> OriginGroup.EXTERNAL
+			SourceType.MIHON -> OriginGroup.MIHON
+		}
+	}
+	
+	/**
+	 * Gets sources filtered by a specific group.
+	 * 
+	 * @param sources The list of all sources to filter
+	 * @param group The group to filter by
+	 * @return List of sources in the specified group
+	 */
+	fun getSourcesByGroup(sources: List<ContentSource>, group: SourceGroup): List<ContentSource> {
+		return when (group) {
+			is SourceGroup.Content -> sources.filter { getContentGroup(it) == group.type }
+			is SourceGroup.Origin -> sources.filter { getOriginGroup(it) == group.type }
+		}
+	}
+	
+	/**
+	 * Gets counts of sources in each group.
+	 * 
+	 * @param sources The list of all sources to count
+	 * @return Map of SourceGroup to count
+	 */
+	fun getGroupCounts(sources: List<ContentSource>): Map<SourceGroup, Int> {
+		val counts = mutableMapOf<SourceGroup, Int>()
+		
+		// Count by content groups
+		for (contentGroup in ContentGroup.entries) {
+			val group = SourceGroup.Content(contentGroup)
+			counts[group] = sources.count { getContentGroup(it) == contentGroup }
+		}
+		
+		// Count by origin groups
+		for (originGroup in OriginGroup.entries) {
+			val group = SourceGroup.Origin(originGroup)
+			counts[group] = sources.count { getOriginGroup(it) == originGroup }
+		}
+		
+		return counts
+	}
+}
+
+/**
+ * Enum representing content type groups for sources.
+ */
+enum class ContentGroup {
+	/**
+	 * Content, manhwa, manhua, comics, and related visual content
+	 */
+	MANGA,
+	
+	/**
+	 * Novel and text-based content
+	 */
+	NOVEL,
+	
+	/**
+	 * Video content
+	 */
+	VIDEO,
+
+	/**
+	 * Hentai manga
+	 */
+	HENTAI_MANGA,
+
+	/**
+	 * Hentai novel
+	 */
+	HENTAI_NOVEL,
+
+	/**
+	 * Hentai video
+	 */
+	HENTAI_VIDEO,
+	
+	/**
+	 * Other or unclassified content
+	 */
+	OTHER
+}
+
+/**
+ * Enum representing origin type groups for sources.
+ */
+enum class OriginGroup {
+	/**
+	 * Native Kotlin sources compiled into the application
+	 */
+	NATIVE,
+	
+	/**
+	 * JSON sources using Legado format
+	 */
+	LEGADO_JSON,
+	
+	/**
+	 * JavaScript sources (Venera style)
+	 */
+	JS_JSON,
+	
+	/**
+	 * External sources
+	 */
+	EXTERNAL,
+	
+	/**
+	 * Mihon extension sources
+	 */
+	MIHON,
+}
+
+/**
+ * Sealed class representing different types of source groups.
+ */
+sealed class SourceGroup {
+	/**
+	 * Group by content type (manga, novel, video)
+	 */
+	data class Content(val type: ContentGroup) : SourceGroup()
+	
+	/**
+	 * Group by origin type (native, JSON Legado, JSON TVBox)
+	 */
+	data class Origin(val type: OriginGroup) : SourceGroup()
+}

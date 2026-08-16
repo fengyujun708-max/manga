@@ -1,0 +1,48 @@
+package com.mangaverse.app.settings.support
+
+import android.content.Context
+import com.mangaverse.app.R
+import com.mangaverse.app.core.prefs.ReaderTranslationMode
+import com.mangaverse.app.reader.translate.domain.TranslationApiProviderCatalog
+
+object AISettingsSummarySupport {
+
+	fun getTranslationModeLabel(context: Context, mode: ReaderTranslationMode): String = context.getString(
+		when (mode) {
+			ReaderTranslationMode.LOCAL_ONLY -> R.string.reader_translation_mode_local_only
+			ReaderTranslationMode.LOCAL_FIRST -> R.string.reader_translation_mode_local_first
+			ReaderTranslationMode.API_ONLY -> R.string.reader_translation_mode_api_only
+		},
+	)
+
+	fun getApiProviderLabel(context: Context, preset: String): String {
+		return TranslationApiProviderCatalog.find(preset)?.name
+			?: context.getString(R.string.ai_api_provider_custom)
+	}
+
+	fun getSourceLanguageLabel(context: Context, code: String): String {
+		val labels = context.resources.getStringArray(R.array.reader_translation_source_languages)
+		val values = context.resources.getStringArray(R.array.values_reader_translation_source_languages)
+		return values.indexOf(code).takeIf { it >= 0 }?.let(labels::get)
+			?: code.ifBlank { context.getString(R.string.unknown) }
+	}
+
+	fun getTargetLanguageLabel(context: Context, code: String): String {
+		val labels = context.resources.getStringArray(R.array.reader_translation_target_languages)
+		val values = context.resources.getStringArray(R.array.values_reader_translation_target_languages)
+		return values.indexOf(code).takeIf { it >= 0 }?.let(labels::get)
+			?: code.ifBlank { context.getString(R.string.unknown) }
+	}
+
+	fun getReaderSuperResolutionEngineLabel(engine: String, model: String): String {
+		return if (engine == "ANIME4K" || model.startsWith("ANIME4K_")) {
+			"Anime4K"
+		} else {
+			if (model.contains("realesrgan", ignoreCase = true)) {
+				"RealESRGAN"
+			} else {
+				"RealCUGAN"
+			}
+		}
+	}
+}

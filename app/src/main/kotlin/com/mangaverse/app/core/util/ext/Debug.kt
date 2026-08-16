@@ -1,0 +1,10 @@
+package com.mangaverse.app.core.util.ext
+
+import android.os.Looper
+
+
+fun assertNotInMainThread() {
+	check(Looper.myLooper() != Looper.getMainLooper()) {
+		"Calling this from the main thread is prohibited"
+	}
+}

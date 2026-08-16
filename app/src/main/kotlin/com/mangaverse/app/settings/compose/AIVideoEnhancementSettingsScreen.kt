@@ -1,0 +1,97 @@
+package com.mangaverse.app.settings.compose
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.mangaverse.app.R
+import com.mangaverse.app.core.prefs.Anime4KPreset
+import com.mangaverse.app.core.prefs.AppSettings
+import com.mangaverse.app.core.prefs.VideoEnhancementAlgorithm
+import com.mangaverse.app.core.prefs.observeAsState
+
+@Composable
+fun AIVideoEnhancementSettingsScreen(settings: AppSettings) {
+	val algorithm by settings.observeAsState(AppSettings.KEY_VIDEO_ENHANCEMENT_ALGORITHM) {
+		videoEnhancementAlgorithm
+	}
+	val preset by settings.observeAsState(AppSettings.KEY_VIDEO_ANIME4K_PRESET) { videoAnime4KPreset }
+	val sharpness by settings.observeAsState(AppSettings.KEY_VIDEO_FSR_SHARPNESS) { videoFsrSharpness }
+	val remember by settings.observeAsState(AppSettings.KEY_VIDEO_ENHANCEMENT_REMEMBER) {
+		videoEnhancementRememberAcrossVideos
+	}
+	Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.verticalScroll(rememberScrollState())
+				.padding(horizontal = SettingsContentHorizontalPadding, vertical = 20.dp),
+		) {
+			SettingsPreferenceSection(
+				title = stringResource(R.string.ai_video_enhancement_settings),
+				modifier = Modifier.fillMaxWidth(),
+			) {
+				SettingsChoicePreference(
+					title = stringResource(R.string.video_enhancement_algorithm),
+					value = algorithm.name,
+					options = listOf(
+						SettingsChoiceOption(
+							VideoEnhancementAlgorithm.ANIME4K.name,
+							stringResource(R.string.video_enhancement_algorithm_anime4k),
+						),
+						SettingsChoiceOption(
+							VideoEnhancementAlgorithm.FSR_1_0.name,
+							stringResource(R.string.video_enhancement_algorithm_fsr),
+						),
+					),
+					onValueChange = { settings.videoEnhancementAlgorithm = VideoEnhancementAlgorithm.valueOf(it) },
+				)
+				if (algorithm == VideoEnhancementAlgorithm.ANIME4K) {
+					SettingsChoicePreference(
+						title = stringResource(R.string.video_enhancement_anime4k_preset),
+						value = preset.name,
+						options = listOf(
+							SettingsChoiceOption(
+								Anime4KPreset.FAST.name,
+								stringResource(R.string.video_enhancement_anime4k_fast),
+							),
+							SettingsChoiceOption(
+								Anime4KPreset.QUALITY.name,
+								stringResource(R.string.video_enhancement_anime4k_quality),
+							),
+						),
+						onValueChange = { settings.videoAnime4KPreset = Anime4KPreset.valueOf(it) },
+					)
+				} else {
+					SettingsSliderPreference(
+						title = stringResource(R.string.video_enhancement_fsr_sharpness_search),
+						summary = "${(sharpness * 100).toInt()}%",
+						value = (sharpness * 100).toInt(),
+						valueRange = 0..100,
+						step = 10,
+						valueText = { "$it%" },
+						onValueChange = { settings.videoFsrSharpness = it / 100f },
+					)
+				}
+				SettingsSwitchPreference(
+					title = stringResource(R.string.video_enhancement_remember),
+					summary = stringResource(R.string.video_enhancement_power_warning),
+					checked = remember,
+					onCheckedChange = { enabled ->
+						settings.videoEnhancementRememberAcrossVideos = enabled
+						if (!enabled) settings.videoEnhancementRememberedEnabled = false
+					},
+				)
+			}
+		}
+	}
+}

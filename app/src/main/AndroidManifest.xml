@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools">
+
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+	<uses-permission
+		android:name="android.permission.FOREGROUND_SERVICE"
+		tools:ignore="ForegroundServicesPolicy" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+	<uses-permission
+		android:name="android.permission.REQUEST_INSTALL_PACKAGES"
+		tools:ignore="RequestInstallPackagesPolicy" />
+	<uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+	<uses-permission
+		android:name="android.permission.QUERY_ALL_PACKAGES"
+		tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
+	<uses-permission
+		android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+		android:maxSdkVersion="29" />
+	<uses-permission
+		android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+		tools:ignore="AllFilesAccessPolicy,ScopedStorage" />
+
+	<!-- 百益/TB 广告 SDK（可选权限，增强广告定向与填充） -->
+	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+	<uses-permission
+		android:name="android.permission.READ_EXTERNAL_STORAGE"
+		android:maxSdkVersion="32" />
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+	<queries>
+		<intent>
+			<action android:name="android.intent.action.PROCESS_TEXT" />
+			<data android:mimeType="text/plain" />
+		</intent>
+		<intent>
+			<action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+		</intent>
+        <!-- For Mihon extensions -->
+        <intent>
+            <action android:name="tachiyomi.intent.action.PICK_EXTENSION" />
+        </intent>
+        <intent>
+            <action android:name="eu.kanade.tachiyomi.PICK_EXTENSION" />
+        </intent>
+        <intent>
+            <action android:name="eu.kanade.tachiyomi.UPDATE_EXTENSION" />
+        </intent>
+        <intent>
+            <action android:name="tachiyomi.extension" />
+        </intent>
+	</queries>
+
+	<application
+		android:name="${appClassName}"
+		android:allowBackup="true"
+		android:dataExtractionRules="@xml/backup_rules"
+		android:enableOnBackInvokedCallback="@bool/is_predictive_back_enabled"
+		android:fullBackupContent="@xml/backup_content"
+		android:fullBackupOnly="true"
+		android:hasFragileUserData="true"
+		android:restoreAnyVersion="true"
+		android:icon="@mipmap/ic_launcher"
+		android:label="@string/app_name"
+		android:largeHeap="true"
+		android:localeConfig="@xml/locales_config"
+		android:networkSecurityConfig="@xml/network_security_config"
+		android:requestLegacyExternalStorage="true"
+		android:roundIcon="@mipmap/ic_launcher_round"
+		android:supportsRtl="true"
+		android:theme="@style/Theme.MangaVerse"
+		tools:ignore="UnusedAttribute"
+		tools:replace="android:allowBackup,android:networkSecurityConfig">
+
+		<activity
+			android:name="com.mangaverse.app.main.ui.MainActivity"
+			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+			android:exported="true"
+			android:windowLayoutInDisplayCutoutMode="shortEdges">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+			<meta-data
+				android:name="android.app.default_searchable"
+				android:value="com.mangaverse.app.search.ui.multi.MultiSearchActivity" />
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.details.ui.DetailsActivity"
+			android:exported="true"
+			android:windowLayoutInDisplayCutoutMode="always">
+			<intent-filter>
+				<action android:name="${applicationId}.action.VIEW_MANGA" />
+			</intent-filter>
+			<intent-filter android:autoVerify="true">
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="http" />
+				<data android:scheme="https" />
+				<data android:host="mangaverse.app" />
+				<data android:path="/manga" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="mangaverse" />
+				<data android:host="manga" />
+				<data android:host="mangaverse.app" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.reader.ui.ReaderActivity"
+			android:exported="true">
+			<intent-filter>
+				<action android:name="${applicationId}.action.READ_MANGA" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="com.samsung.android.support.REMOTE_ACTION" />
+			</intent-filter>
+
+			<meta-data
+				android:name="com.samsung.android.support.REMOTE_ACTION"
+				android:resource="@xml/remote_action" />
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.reader.ui.PageCropActivity"
+			android:exported="false"
+			android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+		<activity
+			android:name="com.yalantis.ucrop.UCropActivity"
+			android:exported="false"
+			android:screenOrientation="portrait"
+			android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+		<activity
+			android:name="com.mangaverse.app.settings.sources.jsonsource.edit.JsonSourceEditActivity"
+			android:exported="false"
+			android:label="@string/edit_source" />
+		<activity
+			android:name="com.mangaverse.app.search.ui.ContentListActivity"
+			android:exported="true"
+			android:label="@string/manga_list">
+			<intent-filter>
+				<action android:name="${applicationId}.action.EXPLORE_MANGA" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.favourites.ui.FavouritesActivity"
+			android:label="@string/favourites" />
+		
+		<activity
+			android:name="com.mangaverse.app.settings.sources.blacklist.GlobalTagBlacklistActivity"
+			android:exported="false"
+			android:label="@string/blacklisted_tags" />
+		<activity
+			android:name="com.mangaverse.app.settings.sources.unified.UnifiedSourcesActivity"
+			android:exported="true"
+			android:label="@string/extension_management">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="mangaverse" />
+				<data android:scheme="tachiyomi" />
+				<data android:host="add-repo" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.settings.reader.ReaderTapGridConfigActivity"
+			android:label="@string/reader_actions" />
+		<activity
+			android:name="com.mangaverse.app.settings.storage.directories.ContentDirectoriesActivity"
+			android:label="@string/local_manga_directories" />
+		<activity
+			android:name="com.mangaverse.app.browser.BrowserActivity"
+			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+			android:windowSoftInputMode="adjustResize" />
+		<activity
+			android:name="com.mangaverse.app.browser.OpenUrlConfirmActivity"
+			android:exported="false"
+			android:theme="@style/Theme.MangaVerse" />
+		<activity
+			android:name="com.mangaverse.app.browser.cloudflare.CloudFlareActivity"
+			android:autoRemoveFromRecents="true"
+			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+			android:windowSoftInputMode="adjustResize" />
+		<activity
+			android:name="com.mangaverse.app.settings.sources.auth.SourceAuthActivity"
+			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+			android:windowSoftInputMode="adjustResize" />
+		<activity
+			android:name="com.mangaverse.app.favourites.ui.categories.FavouriteCategoriesActivity"
+			android:label="@string/manage_categories" />
+		<activity
+			android:name="com.mangaverse.app.search.ui.multi.SearchActivity"
+			android:label="@string/search" />
+		<activity
+			android:name="com.mangaverse.app.main.ui.protect.ProtectActivity"
+			android:noHistory="true"
+			android:windowSoftInputMode="adjustResize" />
+		<activity
+			android:name="com.mangaverse.app.settings.protect.ProtectSetupActivity"
+			android:windowSoftInputMode="adjustResize" />
+		<activity
+			android:name="com.mangaverse.app.download.ui.list.DownloadsActivity"
+			android:label="@string/downloads"
+			android:launchMode="singleTop" />
+		<activity android:name="com.mangaverse.app.image.ui.ImageActivity" />
+		<activity
+			android:name="com.mangaverse.app.explore.ui.preset.SourcePresetListActivity"
+			android:label="@string/source_presets" />
+		<activity
+			android:name="com.mangaverse.app.explore.ui.preset.SourcePresetEditActivity"
+			android:label="@string/edit_preset"
+			android:windowSoftInputMode="adjustResize" />
+		<activity android:name="com.mangaverse.app.favourites.ui.categories.edit.FavouritesCategoryEditActivity" />
+		<activity
+			android:name="com.mangaverse.app.settings.override.OverrideConfigActivity"
+			android:label="@string/edit" />
+		<activity
+			android:name="com.mangaverse.app.reader.ui.colorfilter.ColorFilterConfigActivity"
+			android:label="@string/color_correction" />
+		<activity
+			android:name="com.mangaverse.app.scrobbling.common.ui.config.ScrobblerConfigActivity"
+			android:exported="true"
+			android:label="@string/settings"
+			android:launchMode="singleTop">
+
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="mangaverse" />
+				<data android:host="shikimori-auth" />
+				<data android:host="anilist-auth" />
+				<data android:host="mal-auth" />
+				<data android:host="kitsu-auth" />
+				<data android:host="bangumi-auth" />
+				<data android:host="mangaupdates-auth" />
+				<data android:host="simkl-auth" />
+			</intent-filter>
+
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.settings.sources.catalog.SourcesCatalogActivity"
+			android:label="@string/sources_catalog" />
+
+		<activity
+			android:name="com.mangaverse.app.scrobbling.kitsu.ui.KitsuAuthActivity"
+			android:exported="false"
+			android:label="@string/kitsu"
+			tools:ignore="AppLinkUrlError">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:scheme="mangaverse+kitsu" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.scrobbling.mangaupdates.ui.MangaUpdatesAuthActivity"
+			android:exported="false"
+			android:label="@string/mangaupdates"
+			tools:ignore="AppLinkUrlError">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:scheme="mangaverse+mangaupdates" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name="com.mangaverse.app.settings.about.crashlog.CrashLogActivity"
+			android:exported="false"
+			android:label="@string/crash_logs" />
+		<activity
+			android:name="com.mangaverse.app.settings.about.crashlog.CrashLogDetailActivity"
+			android:exported="false"
+			android:label="@string/crash_log_detail" />
+		<activity
+			android:name="com.mangaverse.app.tracker.ui.debug.TrackerDebugActivity"
+			android:label="@string/tracker_debug_info" />
+		
+		<activity
+			android:name="com.mangaverse.app.scrobbling.discord.ui.DiscordAuthActivity"
+			android:exported="true"
+			android:launchMode="singleTask"
+			android:label="@string/discord">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data
+					android:host="discord-auth"
+					android:scheme="mangaverse" />
+			</intent-filter>
+		</activity>
+
+		<service
+			android:name="androidx.work.impl.foreground.SystemForegroundService"
+			android:foregroundServiceType="dataSync"
+			tools:node="merge" />
+        <service
+            android:name="com.mangaverse.app.local.ui.LocalChaptersRemoveService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/local_manga_processing" />
+								<service
+			android:name="com.mangaverse.app.local.ui.LocalIndexUpdateService"
+			android:label="@string/local_manga_processing" />
+												<service
+			android:name="com.mangaverse.app.local.ui.ImportService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/importing_manga" />
+		<service
+			android:name="com.mangaverse.app.details.service.ContentPrefetchService"
+			android:exported="false"
+			android:label="@string/prefetch_content" />
+		<service
+			android:name="com.mangaverse.app.browser.AdListUpdateService"
+			android:exported="false" />
+		<provider
+			android:name="com.mangaverse.app.search.ui.ContentSuggestionsProvider"
+			android:authorities="${applicationId}.ContentSuggestionsProvider"
+			android:exported="false" />
+		<provider
+			android:name="androidx.core.content.FileProvider"
+			android:authorities="${applicationId}.files"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/filepaths" />
+		</provider>
+		<provider
+			android:name="androidx.startup.InitializationProvider"
+			android:authorities="${applicationId}.androidx-startup"
+			android:exported="false"
+			tools:node="merge">
+			<meta-data
+				android:name="androidx.work.WorkManagerInitializer"
+				android:value="androidx.startup"
+				tools:node="remove" />
+
+		</provider>
+
+		<receiver
+			android:name="com.mangaverse.app.core.exceptions.resolve.CaptchaHandler$DiscardReceiver"
+			android:exported="false">
+			<intent-filter>
+				<action android:name="com.mangaverse.app.CAPTCHA_DISCARD" />
+			</intent-filter>
+		</receiver>
+		<receiver
+			android:name="com.mangaverse.app.core.ErrorReporterReceiver"
+			android:exported="false">
+			<intent-filter>
+				<action android:name="${applicationId}.action.REPORT_ERROR" />
+			</intent-filter>
+		</receiver>
+
+		<meta-data
+			android:name="android.webkit.WebView.EnableSafeBrowsing"
+			android:value="false" />
+		<meta-data
+			android:name="android.webkit.WebView.MetricsOptOut"
+			android:value="true" />
+		<meta-data
+			android:name="com.samsung.android.icon_container.has_icon_container"
+			android:value="@bool/com_samsung_android_icon_container_has_icon_container" />
+
+		<!-- ===== 百益/TB 广告 SDK 配置 ===== -->
+		<uses-library
+			android:name="org.apache.http.legacy"
+			android:required="false" />
+
+		<provider
+			android:name="com.bytedance.sdk.openadsdk.multipro.TTMultiProvider"
+			android:authorities="${applicationId}.TTMultiProvider"
+			android:exported="false" />
+		<provider
+			android:name="com.bytedance.sdk.openadsdk.TTFileProvider"
+			android:authorities="${applicationId}.TTFileProvider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/anythink_bk_tt_file_path" />
+		</provider>
+		<provider
+			android:name="com.qq.e.comm.GDTFileProvider"
+			android:authorities="${applicationId}.gdt.fileprovider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/anythink_bk_gdt_file_path" />
+		</provider>
+		<provider
+			android:name="cn.haorui.sdk.core.service.HRFileProvider"
+			android:authorities="${applicationId}.HRFileProvider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/hr_file_path" />
+		</provider>
+		<provider
+			android:name="com.wj.richmob.helper.RichMobFileProvider"
+			android:authorities="${applicationId}.fileprovider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/rich_file_path" />
+		</provider>
+
+		<activity
+			android:name="com.adgain.sdk.base.activity.AdActivity"
+			android:exported="false"
+			tools:ignore="Instantiatable" />
+		<activity
+			android:name="com.adgain.sdk.base.activity.FeedBackAct"
+			android:exported="false" />
+
+		<!-- ===== /百益/TB 广告 SDK 配置 ===== -->
+
+	</application>
+
+</manifest>

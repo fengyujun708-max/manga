@@ -1,0 +1,152 @@
+package com.mangaverse.app.work.domain
+
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import com.mangaverse.app.history.data.WorkHistoryEntity
+import com.mangaverse.app.list.domain.ListFilterOption
+import com.mangaverse.app.parsers.model.Content
+import com.mangaverse.app.parsers.model.ContentSource
+import com.mangaverse.app.parsers.model.ContentState
+import com.mangaverse.app.parsers.model.ContentType
+import com.mangaverse.app.parsers.model.RATING_UNKNOWN
+import com.mangaverse.app.scrobbling.common.domain.model.ScrobblingStatus
+
+class WorkAggregateFavouriteFilterTest {
+
+	@Test
+	fun `completed filter requires completed history`() {
+		assertTrue(aggregate(percent = 1f).matchesFavouriteMacroFilter(ListFilterOption.Macro.COMPLETED))
+		assertFalse(aggregate(percent = 0.5f).matchesFavouriteMacroFilter(ListFilterOption.Macro.COMPLETED))
+		assertFalse(aggregate().matchesFavouriteMacroFilter(ListFilterOption.Macro.COMPLETED))
+	}
+
+	@Test
+	fun `new chapters filter requires positive tracked count`() {
+		assertTrue(aggregate(newChapters = 2).matchesFavouriteMacroFilter(ListFilterOption.Macro.NEW_CHAPTERS))
+		assertFalse(aggregate(newChapters = 0).matchesFavouriteMacroFilter(ListFilterOption.Macro.NEW_CHAPTERS))
+		assertFalse(aggregate().matchesFavouriteMacroFilter(ListFilterOption.Macro.NEW_CHAPTERS))
+	}
+
+	@Test
+	fun `broken filter matches when any associated projection source is unavailable`() {
+		val aggregate = aggregate(projectionSources = listOf("available", "missing"))
+
+		assertTrue(
+			aggregate.matchesFavouriteMacroFilter(
+				option = ListFilterOption.Macro.BROKEN_PROJECTION,
+				brokenProjectionSourceNames = setOf("missing"),
+			),
+		)
+		assertFalse(
+			aggregate.matchesFavouriteMacroFilter(
+				option = ListFilterOption.Macro.BROKEN_PROJECTION,
+				brokenProjectionSourceNames = emptySet(),
+			),
+		)
+	}
+
+	@Test
+	fun `publication state filters use OR within their group`() {
+		val content = content(2L, "available", ContentState.PAUSED)
+		val filters = setOf(
+			ListFilterOption.PublicationState(ContentState.ONGOING),
+			ListFilterOption.PublicationState(ContentState.PAUSED),
+		)
+
+		assertTrue(content.matchesPublicationStateFilters(filters))
+		assertFalse(
+			content(3L, "available", ContentState.FINISHED)
+				.matchesPublicationStateFilters(filters),
+		)
+		assertFalse(content(4L, "available", null).matchesPublicationStateFilters(filters))
+		assertTrue(content.matchesPublicationStateFilters(emptySet()))
+	}
+
+	@Test
+	fun `reading status falls back to history progress`() {
+		assertEquals(ScrobblingStatus.PLANNED, aggregate().resolveReadingStatus(null))
+		assertEquals(ScrobblingStatus.READING, aggregate(percent = 0.5f).resolveReadingStatus(null))
+		assertEquals(ScrobblingStatus.COMPLETED, aggregate(percent = 1f).resolveReadingStatus(null))
+		assertEquals(
+			ScrobblingStatus.ON_HOLD,
+			aggregate(percent = 0.5f).resolveReadingStatus(ScrobblingStatus.ON_HOLD),
+		)
+	}
+
+	@Test
+	fun `reading status filters use OR within their group`() {
+		val filters = setOf(
+			ListFilterOption.ReadingStatus(ScrobblingStatus.READING),
+			ListFilterOption.ReadingStatus(ScrobblingStatus.RE_READING),
+		)
+
+		assertTrue(ScrobblingStatus.READING.matchesReadingStatusFilters(filters))
+		assertTrue(ScrobblingStatus.RE_READING.matchesReadingStatusFilters(filters))
+		assertFalse(ScrobblingStatus.COMPLETED.matchesReadingStatusFilters(filters))
+		assertTrue(ScrobblingStatus.COMPLETED.matchesReadingStatusFilters(emptySet()))
+	}
+
+	private fun aggregate(
+		percent: Float? = null,
+		newChapters: Int? = null,
+		projectionSources: List<String> = emptyList(),
+	): WorkAggregate = WorkAggregate(
+		identity = WorkIdentity(
+			entityId = 1L,
+			requestedMangaId = 2L,
+			preferredMangaId = 2L,
+			localMangaIds = setOf(2L),
+			migrationState = WorkMigrationState.VALID,
+		),
+		displayProjection = projectionSources.firstOrNull()?.let { content(2L, it) },
+		projections = projectionSources.mapIndexed { index, source -> content(index + 2L, source) },
+		history = percent?.let {
+			WorkHistoryEntity(
+				entityId = 1L,
+				anchorMangaId = 2L,
+				createdAt = 0L,
+				updatedAt = 0L,
+				chapterId = 0L,
+				page = 0,
+				scroll = 0f,
+				percent = it,
+				deletedAt = 0L,
+				chaptersCount = 1,
+			)
+		},
+		tracking = newChapters?.let {
+			WorkTrackingSummary(
+				anchorMangaId = 2L,
+				lastChapterId = 0L,
+				newChapters = it,
+				lastCheckTime = 0L,
+				lastChapterDate = 0L,
+			)
+		},
+	)
+
+	private fun content(
+		id: Long,
+		sourceName: String,
+		state: ContentState? = null,
+	): Content = Content(
+		id = id,
+		title = "Work $id",
+		altTitles = emptySet(),
+		url = "/$id",
+		publicUrl = "https://example.org/$id",
+		rating = RATING_UNKNOWN,
+		contentRating = null,
+		coverUrl = null,
+		tags = emptySet(),
+		state = state,
+		authors = emptySet(),
+		source = object : ContentSource {
+			override val name = sourceName
+			override val locale = ""
+			override val contentType = ContentType.MANGA
+		},
+	)
+}

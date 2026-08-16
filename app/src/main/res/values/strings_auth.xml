@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="auth_page_title">漫界账号</string>
+    <string name="auth_tab_login">登录</string>
+    <string name="auth_tab_register">注册</string>
+    <string name="auth_username_hint">用户名</string>
+    <string name="auth_password_hint">密码</string>
+    <string name="auth_login_button">登录</string>
+    <string name="auth_register_button">注册并登录</string>
+    <string name="auth_logged_in_as">当前登录：%1$s</string>
+    <string name="auth_logout_button">退出登录</string>
+    <string name="auth_error_empty">请输入用户名和密码</string>
+    <string name="auth_error_short_password">密码至少需要 4 个字符</string>
+    <string name="auth_error_short_username">用户名至少需要 2 个字符</string>
+    <string name="auth_error_exists">用户名已存在</string>
+    <string name="auth_error_invalid">用户名或密码错误</string>
+    <string name="auth_welcome">欢迎来到 MangaVerse</string>
+    <string name="auth_subtitle">登录后同步书架、收藏与阅读进度</string>
+</resources>

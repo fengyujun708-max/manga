@@ -1,0 +1,37 @@
+package com.mangaverse.app.main.ui
+
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.core.view.MenuProvider
+import com.mangaverse.app.R
+import com.mangaverse.app.core.nav.AppRouter
+
+class MainMenuProvider(
+	private val router: AppRouter,
+	private val viewModel: MainViewModel,
+) : MenuProvider {
+
+	override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+		menuInflater.inflate(R.menu.opt_main, menu)
+	}
+
+	override fun onPrepareMenu(menu: Menu) {
+		menu.findItem(R.id.action_incognito)?.isChecked =
+			viewModel.isIncognitoModeEnabled.value
+	}
+
+	override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
+		R.id.action_settings -> {
+			router.openSettings()
+			true
+		}
+
+		R.id.action_incognito -> {
+			viewModel.setIncognitoMode(!menuItem.isChecked)
+			true
+		}
+
+		else -> false
+	}
+}

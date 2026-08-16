@@ -1,0 +1,14 @@
+# Minis auto-generated
+.claude/
+.codex/
+.clinerules*
+/var/minis/
+/root/
+/tmp/
+
+# Android
+.gradle/
+build/
+local.properties
+*.iml
+.idea/

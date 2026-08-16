@@ -1,0 +1,490 @@
+import java.time.LocalDateTime
+import java.util.Locale
+import java.util.zip.ZipFile
+
+plugins {
+	id 'com.android.application'
+	id 'kotlin-android'
+	id 'com.google.devtools.ksp'
+	id 'kotlin-parcelize'
+	id 'com.google.dagger.hilt.android'
+	id 'androidx.room'
+	id 'org.jetbrains.kotlin.plugin.serialization'
+	id 'org.jetbrains.kotlin.plugin.compose'
+	// enable if needed
+	// id 'dev.reformator.stacktracedecoroutinator'
+}
+
+room {
+	schemaDirectory("$projectDir/schemas")
+}
+
+def allAbiFilters = ['arm64-v8a']
+def requestedTaskNames = gradle.startParameter.taskNames.collect { it.toLowerCase(Locale.ROOT) }
+def debugOnlyAbiBuild = !requestedTaskNames.isEmpty() &&
+	requestedTaskNames.any { it.contains('debug') } &&
+	requestedTaskNames.every { !it.contains('release') && !it.contains('nightly') }
+def activeAbiFilters = ['arm64-v8a']
+
+android {
+	compileSdk = 36
+	buildToolsVersion = '35.0.0'
+	ndkVersion = '27.2.12479018'
+	namespace = 'com.mangaverse.app'
+
+	signingConfigs {
+		release {
+			// Only configure signing if properties are provided
+			if (project.hasProperty('RELEASE_STORE_FILE')) {
+				storeFile file(RELEASE_STORE_FILE)
+				storePassword RELEASE_STORE_PASSWORD
+				keyAlias RELEASE_KEY_ALIAS
+				keyPassword RELEASE_KEY_PASSWORD
+			}
+		}
+	}
+
+	defaultConfig {
+		applicationId 'com.mangaverse.app'
+		minSdk = 26
+		targetSdk = 36
+		versionCode = 2000
+		versionName = '2.0.0'
+		manifestPlaceholders = [
+			appClassName: 'com.mangaverse.app.MangaVerseApp'
+		]
+		resValue 'string', 'MV_API_BASE_URL', '"http://39.106.192.137"'
+		generatedDensities = []
+		testInstrumentationRunner 'com.mangaverse.app.HiltTestRunner'
+		ksp {
+			arg('room.generateKotlin', 'true')
+		}
+		androidResources {
+			// https://issuetracker.google.com/issues/408030127
+			generateLocaleConfig false
+		}
+		def localProperties = new Properties()
+		def localPropertiesFile = rootProject.file('local.properties')
+		if (localPropertiesFile.exists()) {
+			localProperties.load(new FileInputStream(localPropertiesFile))
+		}
+		resValue 'string', 'tg_backup_bot_token', localProperties.getProperty('tg_backup_bot_token', '')
+		def dandanAppId = (project.findProperty('dandanplay.appId')
+			?: localProperties.getProperty('dandanplay.appId')
+			?: 'demo_app_id').toString()
+		def dandanAppSecret = (project.findProperty('dandanplay.appSecret')
+			?: localProperties.getProperty('dandanplay.appSecret')
+			?: 'demo_app_secret').toString()
+		buildConfigField 'String', 'DANDANPLAY_APP_ID', "\"${dandanAppId}\""
+		buildConfigField 'String', 'DANDANPLAY_APP_SECRET', "\"${dandanAppSecret}\""
+		// MangaVerse 后端 API 基础地址
+		buildConfigField 'String', 'MANGAVERSE_API_BASE_URL', '"http://39.106.192.137"'
+		// 百益/TB 广告 SDK 配置（appId 与广告位 id 来自百益平台）
+		buildConfigField 'String', 'BAIYI_APP_ID', '"2086124285570605071-5"'
+		buildConfigField 'String', 'BAIYI_REWARD_VIDEO_ID', '"2086124285889372216"'
+		buildConfigField 'String', 'BAIYI_INTERSTITIAL_ID', '"2086124286409465882"'
+		buildConfigField 'String', 'BAIYI_SPLASH_ID', '"2088836380271599655"'
+		externalNativeBuild {
+			cmake {
+				cppFlags ""
+				abiFilters(*activeAbiFilters)
+			}
+		}
+	}
+	externalNativeBuild {
+		cmake {
+			path "src/main/cpp/CMakeLists.txt"
+			version "3.22.1"
+		}
+	}
+	buildTypes {
+		debug {
+			applicationIdSuffix = '.debug'
+		}
+		release {
+			minifyEnabled true
+			shrinkResources true
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+			// Only apply signing config if it's properly configured
+			if (project.hasProperty('RELEASE_STORE_FILE')) {
+				signingConfig signingConfigs.release
+			}
+		}
+		nightly {
+			initWith release
+			applicationIdSuffix = '.nightly'
+			matchingFallbacks = ['release', 'debug']
+		}
+	}
+	splits {
+		abi {
+			enable true
+			reset()
+			include(*activeAbiFilters)
+			universalApk !debugOnlyAbiBuild
+		}
+	}
+	buildFeatures {
+		viewBinding true
+		buildConfig true
+		compose true
+	}
+	packagingOptions {
+		resources {
+			excludes += [
+				"META-INF/androidx.versionedparcelable_versionedparcelable.version",
+				"META-INF/androidx.core_core.version",
+				"META-INF/*.version"
+			]
+		}
+		jniLibs {
+			useLegacyPackaging = true
+			pickFirsts += [
+				'lib/arm64-v8a/libquickjs.so',
+				'lib/armeabi-v7a/libquickjs.so',
+				'lib/x86/libquickjs.so',
+				'lib/x86_64/libquickjs.so',
+				'**/libc++_shared.so'
+			]
+		}
+		resources {
+			excludes += [
+				'META-INF/README.md',
+				'META-INF/NOTICE.md',
+				'META-INF/LICENSE.md',
+				'META-INF/LICENSE-notice.md',
+				'META-INF/versions/9/OSGI-INF/MANIFEST.MF',
+				'META-INF/AL2.0',
+				'META-INF/LGPL2.1',
+				// djl/tokenizers ships desktop binaries that are useless for Android APK.
+				'native/lib/osx-aarch64/**',
+				'native/lib/win-x86_64/**',
+				'native/lib/linux-x86_64/**'
+			]
+		}
+	}
+	sourceSets {
+		androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+		main.java.srcDirs += 'src/main/kotlin/'
+		test.java.srcDirs += 'src/test/kotlin/'
+		androidTest.java.srcDirs += 'src/androidTest/kotlin/'
+	}
+	compileOptions {
+		coreLibraryDesugaringEnabled true
+		sourceCompatibility JavaVersion.VERSION_11
+		targetCompatibility JavaVersion.VERSION_11
+	}
+	kotlinOptions {
+		jvmTarget = JavaVersion.VERSION_11.toString()
+		freeCompilerArgs += [
+			'-opt-in=kotlin.ExperimentalStdlibApi',
+			'-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi',
+			'-opt-in=kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi',
+			'-opt-in=kotlinx.coroutines.InternalForInheritanceCoroutinesApi',
+			'-opt-in=kotlinx.coroutines.FlowPreview',
+			'-opt-in=kotlin.contracts.ExperimentalContracts',
+			'-opt-in=coil3.annotation.ExperimentalCoilApi',
+			'-opt-in=coil3.annotation.InternalCoilApi',
+			'-opt-in=kotlinx.serialization.ExperimentalSerializationApi',
+			'-Xjspecify-annotations=strict',
+			'-Xannotation-default-target=first-only',
+			'-Xtype-enhancement-improvements-strict-mode'
+		]
+	}
+	lint {
+		abortOnError true
+		checkReleaseBuilds false
+		disable 'MissingTranslation', 'PrivateResource', 'SetJavaScriptEnabled', 'SimpleDateFormat'
+	}
+	testOptions {
+		unitTests.includeAndroidResources true
+		unitTests.returnDefaultValues true
+		unitTests.all {
+			useJUnitPlatform()
+		}
+		execution 'ANDROIDX_TEST_ORCHESTRATOR'
+		animationsDisabled = true
+		kotlinOptions {
+			freeCompilerArgs += ['-opt-in=com.mangaverse.app.parsers.InternalParsersApi']
+		}
+	}
+	applicationVariants.configureEach { variant ->
+		if (variant.name == 'nightly') {
+			variant.outputs.each { output ->
+				def now = LocalDateTime.now()
+				output.versionCodeOverride = now.format("yyMMdd").toInteger()
+				output.versionNameOverride = 'N' + now.format("yyyyMMdd")
+			}
+		}
+	}
+}
+
+
+hilt {
+    // Enable aggregating task for KSP/Hilt to avoid generic assisted factory validation issues in release
+    enableAggregatingTask = true
+}
+
+def tsukiRuntimeSource = configurations.create('tsukiRuntimeSource') {
+	canBeConsumed = false
+	canBeResolved = true
+	transitive = false
+}
+def tsukiSourceJar = tsukiRuntimeSource.elements.map { artifacts ->
+	if (artifacts.size() != 1) {
+		throw new GradleException("Expected one Tsuki runtime artifact, found ${artifacts.size()}")
+	}
+	artifacts.first().asFile
+}
+def tsukiSanitizedJarTask = tasks.register('prepareTsukiRuntimeJar', Jar) {
+	archiveBaseName.set('tsuki-runtime')
+	destinationDirectory.set(layout.buildDirectory.dir('generated/tsuki'))
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	preserveFileTimestamps = false
+	reproducibleFileOrder = true
+
+	from(zipTree(tsukiSourceJar)) {
+		// parser-api owns this shared ABI. Tsuki 1.0.5 accidentally bundles another copy.
+		exclude 'org/koitharu/kotatsu/core/parser/CSSBackground*.class'
+	}
+
+	doLast {
+		def outputJar = archiveFile.get().asFile
+		ZipFile zipFile = new ZipFile(outputJar)
+		try {
+			def duplicateClass = zipFile.entries().find { entry ->
+				entry.name.startsWith('org/koitharu/kotatsu/core/parser/CSSBackground') &&
+					entry.name.endsWith('.class')
+			}
+			if (duplicateClass != null) {
+				throw new GradleException("Sanitized Tsuki jar still contains ${duplicateClass.name}")
+			}
+			if (zipFile.getEntry('tsuki/MangaParser.class') == null) {
+				throw new GradleException('Sanitized Tsuki jar is missing tsuki/MangaParser.class')
+			}
+		} finally {
+			zipFile.close()
+		}
+	}
+}
+def tsukiRuntimeJar = files(tsukiSanitizedJarTask.flatMap { it.archiveFile })
+
+// 配置SNAPSHOT版本的缓存策略
+configurations.all {
+	exclude group: 'org.jetbrains.kotlin', module: 'kotlin-android-extensions-runtime'
+	resolutionStrategy {
+		force 'org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0'
+		// SNAPSHOT版本缓存1小时，开发时可以改为0秒
+		cacheChangingModulesFor 1, 'hours'
+		// 或者完全禁用缓存：cacheChangingModulesFor 0, 'seconds'
+	}
+}
+
+	dependencies {
+	// ===== 百益/TB 聚合广告 SDK（激励视频/插屏） =====
+	// 注意：AAR 已自带 fastjson/android-query 等依赖；
+	// gson/okhttp 复用项目已有依赖，避免引入老版本冲突。
+	implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+	// ===== /百益/TB 聚合广告 SDK =====
+
+	implementation project(':parser-api')
+	// UMA/Usagi plugins are compiled against Tsuki. The host must provide this API at runtime.
+	add(tsukiRuntimeSource.name, libs.tsuki)
+	implementation tsukiRuntimeJar
+
+	def composeBom = platform(libs.androidx.compose.bom)
+	implementation composeBom
+	implementation libs.androidx.compose.ui
+	implementation libs.androidx.compose.ui.text.google.fonts
+	implementation libs.androidx.compose.material3
+	implementation libs.androidx.compose.material.icons.extended
+	implementation libs.androidx.navigation.compose
+	implementation libs.androidx.navigation3.runtime
+	implementation libs.androidx.navigation3.ui
+	implementation libs.androidx.lifecycle.viewmodel.navigation3
+	implementation libs.androidx.hilt.navigation.compose
+	implementation libs.androidx.compose.ui.tooling.preview
+	debugImplementation libs.androidx.compose.ui.tooling
+	implementation libs.lifecycle.runtime.compose
+	implementation libs.backdrop
+
+	coreLibraryDesugaring libs.desugar.jdk.libs
+	implementation libs.kotlin.stdlib
+	implementation libs.kotlinx.coroutines.android
+	implementation libs.kotlinx.coroutines.guava
+
+	implementation libs.androidx.appcompat
+	implementation libs.androidx.core
+	implementation 'androidx.multidex:multidex:2.0.1'
+	implementation libs.androidx.activity
+	implementation libs.androidx.fragment
+	implementation libs.androidx.transition
+	implementation libs.androidx.collection
+	implementation libs.lifecycle.viewmodel
+	implementation libs.lifecycle.service
+	implementation libs.lifecycle.process
+	implementation libs.androidx.constraintlayout
+	implementation libs.androidx.documentfile
+	implementation libs.androidx.swiperefreshlayout
+	implementation libs.androidx.recyclerview
+	implementation libs.androidx.viewpager2
+	implementation libs.androidx.preference
+	implementation libs.androidx.biometric
+	implementation libs.material
+	implementation libs.androidx.lifecycle.common.java8
+	implementation libs.androidx.webkit
+
+	implementation libs.androidx.work.runtime
+	implementation libs.guava
+	implementation libs.gson
+	// TVBox spider settings commonly render login/cookie QR codes through the host ABI.
+	implementation libs.zxing.core
+
+	// TTS 播放器 (ExoPlayerController) 使用 media3
+	implementation libs.androidx.media3.exoplayer
+	implementation libs.androidx.media3.ui
+	implementation libs.androidx.media3.exoplayer.hls
+	implementation libs.androidx.media3.datasource.okhttp
+
+	// Foldable/Window layout
+	implementation libs.androidx.window
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2'
+
+	implementation libs.androidx.room.runtime
+	implementation libs.androidx.room.ktx
+	ksp libs.androidx.room.compiler
+
+	implementation libs.okhttp
+	implementation libs.okhttp.tls
+	implementation libs.okhttp.brotli
+	implementation libs.okhttp.zstd
+	implementation libs.okhttp.dnsoverhttps
+	implementation libs.okio
+	implementation(libs.nicehttp) {
+		exclude group: 'org.json', module: 'json'
+	}
+	implementation libs.jsoup
+	implementation libs.ktor.http
+	implementation libs.kotlinx.datetime
+	implementation libs.kotlinx.io.core
+	implementation libs.kotlinx.serialization.json
+	implementation libs.kotlinx.serialization.protobuf
+	implementation libs.kotlinx.serialization.json.okio
+	implementation libs.commons.compress
+	implementation libs.libarchive
+
+	// XPath and JSONPath support for rule engine
+	implementation libs.xsoup
+	implementation libs.jsonpath
+	
+	// Rhino JavaScript engine for Legado compatibility
+	implementation libs.rhino
+	// QuickJS library (Android packaged)
+	implementation libs.quickjsKt
+
+	implementation libs.adapterdelegates
+	implementation libs.adapterdelegates.viewbinding
+
+	implementation libs.hilt.android
+	ksp libs.hilt.compiler
+	implementation libs.androidx.hilt.work
+	ksp libs.androidx.hilt.compiler
+
+	implementation libs.coil.core
+	implementation libs.coil.compose
+	implementation libs.coil.network
+	implementation libs.coil.gif
+	implementation libs.coil.svg
+	implementation libs.avif.decoder
+	implementation(libs.mihon.image.decoder) {
+		exclude group: 'org.jetbrains.kotlin'
+	}
+	implementation libs.androidx.exifinterface
+	implementation libs.telephoto.subsampling
+	implementation libs.telephoto.zoomable.image.coil3
+	implementation libs.disk.lru.cache
+	implementation libs.markwon
+	implementation(libs.usagi.rpc) {
+		exclude group: 'org.json', module: 'json'
+	}
+	implementation libs.ucrop
+
+	// EPUB support for Novelia Wenku
+	implementation libs.epublib
+
+	implementation libs.mlkit.text.recognition
+	implementation libs.mlkit.text.recognition.japanese
+	implementation libs.mlkit.text.recognition.chinese
+	implementation libs.mlkit.translate
+	implementation libs.mlkit.language.id
+	implementation libs.onnxruntime.android
+	implementation libs.opencv.android
+	implementation libs.djl.tokenizers
+	implementation files('libs/tokenizer-native-0.33.0.aar')
+	implementation libs.cryptography.core
+	implementation libs.cryptography.provider.optimal
+	implementation libs.djl.sentencepiece
+	implementation 'com.github.akari39:RealCUGAN-ncnn-Android:1.1'
+
+	implementation libs.acra.http
+	implementation libs.acra.dialog
+
+	implementation libs.conscrypt.android
+	implementation libs.hidden.api.bypass
+	
+	// Mihon / Aniyomi extension compatibility
+	implementation libs.injekt.core
+	implementation libs.rxjava
+	implementation libs.rxjava2
+	implementation libs.rxjava3
+
+	// IReader extension compatibility
+	implementation libs.ireader.source.api
+
+	debugImplementation libs.leakcanary.android
+	nightlyImplementation libs.leakcanary.android
+	debugImplementation libs.workinspector
+
+	testImplementation libs.junit
+	testImplementation libs.json
+	testImplementation libs.kotlinx.coroutines.test
+	testImplementation libs.kotest.property
+	testImplementation libs.kotest.runner.junit5
+	testImplementation libs.kotest.assertions.core
+	testImplementation libs.mockk
+	testImplementation libs.okhttp.mockwebserver
+
+	androidTestImplementation libs.androidx.runner
+	androidTestImplementation libs.androidx.rules
+	androidTestImplementation libs.androidx.test.core
+	androidTestImplementation libs.androidx.junit
+
+	androidTestImplementation libs.kotlinx.coroutines.test
+
+	androidTestImplementation libs.androidx.room.testing
+	androidTestImplementation libs.moshi.kotlin
+
+	androidTestImplementation libs.hilt.android.testing
+	
+	androidTestImplementation libs.kotest.property
+	androidTestImplementation libs.kotest.runner.junit5
+	androidTestImplementation libs.kotest.assertions.core
+	
+	kspAndroidTest libs.hilt.android.compiler
+}
+
+// Tasks for CI/CD to get version info
+tasks.register('printVersionName') {
+	def versionName = android.defaultConfig.versionName
+	doLast {
+		println versionName
+	}
+}
+
+tasks.register('printVersionCode') {
+	def versionCode = android.defaultConfig.versionCode
+	doLast {
+		println versionCode
+	}
+}
