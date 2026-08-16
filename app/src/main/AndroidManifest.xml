@@ -65,6 +65,7 @@
 	<application
 		android:name="${appClassName}"
 		android:allowBackup="true"
+		android:backupAgent="com.mangaverse.app.backups.domain.AppBackupAgent"
 		android:dataExtractionRules="@xml/backup_rules"
 		android:enableOnBackInvokedCallback="@bool/is_predictive_back_enabled"
 		android:fullBackupContent="@xml/backup_content"
@@ -163,7 +164,27 @@
 		<activity
 			android:name="com.mangaverse.app.favourites.ui.FavouritesActivity"
 			android:label="@string/favourites" />
-		
+		<activity
+			android:name="com.mangaverse.app.details.ui.related.RelatedContentActivity"
+			android:label="@string/related_manga" />
+		<activity
+			android:name="com.mangaverse.app.core.ui.dialog.ErrorDetailsActivity"
+			android:excludeFromRecents="true"
+			android:label="@string/error_details" />
+		<activity
+			android:name="com.mangaverse.app.settings.SettingsActivity"
+			android:exported="true"
+			android:label="@string/settings">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="mangaverse" />
+				<data android:host="about" />
+			</intent-filter>
+		</activity>
 		<activity
 			android:name="com.mangaverse.app.settings.sources.blacklist.GlobalTagBlacklistActivity"
 			android:exported="false"
@@ -316,7 +337,6 @@
 				<data android:mimeType="image/*" />
 			</intent-filter>
 		</activity>
-		
 		<activity
 			android:name="com.mangaverse.app.scrobbling.discord.ui.DiscordAuthActivity"
 			android:exported="true"
@@ -343,13 +363,41 @@
 			android:foregroundServiceType="dataSync"
 			android:label="@string/local_manga_processing" />
 		<service
+			android:name="com.mangaverse.app.backups.ui.periodical.PeriodicalBackupService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/periodic_backups" />
+		<service
+			android:name="com.mangaverse.app.backups.ui.webdav.WebDavAutoRestoreService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/webdav_auto_restore" />
+		<service
 			android:name="com.mangaverse.app.alternatives.ui.AutoFixService"
 			android:foregroundServiceType="dataSync"
 			android:label="@string/fixing_manga" />
-								<service
+		<service
 			android:name="com.mangaverse.app.local.ui.LocalIndexUpdateService"
 			android:label="@string/local_manga_processing" />
-												<service
+		<service
+			android:name="com.mangaverse.app.backups.ui.backup.BackupService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/creating_backup" />
+		<service
+			android:name="com.mangaverse.app.backups.ui.backup.MihonBackupExportService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/export_mihon_backup" />
+		<service
+			android:name="com.mangaverse.app.backups.ui.backup.UsagiBackupExportService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/export_usagi_backup" />
+		<service
+			android:name="com.mangaverse.app.backups.ui.restore.RestoreService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/restoring_backup" />
+		<service
+			android:name="com.mangaverse.app.backups.ui.restore.ExternalBackupImportService"
+			android:foregroundServiceType="dataSync"
+			android:label="@string/import_backup_from_other_apps" />
+		<service
 			android:name="com.mangaverse.app.local.ui.ImportService"
 			android:foregroundServiceType="dataSync"
 			android:label="@string/importing_manga" />

@@ -236,7 +236,7 @@ class ExtensionRepoService @Inject constructor(
 		val processUrl = input.trim()
 
 		val url = processUrl.toHttpUrlOrNull() ?: return null
-		if (url.scheme != "https") {
+		if (url.scheme != "https" && url.scheme != "http") {
 			return null
 		}
 		if (type == ExternalExtensionType.JAR) {
