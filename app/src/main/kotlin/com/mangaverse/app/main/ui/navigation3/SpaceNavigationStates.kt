@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.mangaverse.app.space.domain.BuiltInSpaces
 import com.mangaverse.app.space.domain.SpaceId
 
 @Stable

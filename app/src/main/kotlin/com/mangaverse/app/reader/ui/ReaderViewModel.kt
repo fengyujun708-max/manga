@@ -55,6 +55,7 @@ import com.mangaverse.app.details.data.ContentDetails
 import com.mangaverse.app.details.domain.DetailsInteractor
 import com.mangaverse.app.details.domain.DetailsLoadUseCase
 import com.mangaverse.app.details.ui.pager.ChaptersPagesViewModel
+import com.mangaverse.app.space.domain.awaitCompletion
 import com.mangaverse.app.details.ui.pager.EmptyContentReason
 import com.mangaverse.app.download.ui.worker.DownloadWorker
 import com.mangaverse.app.history.data.HistoryRepository
@@ -86,10 +87,10 @@ import com.mangaverse.app.reader.translate.domain.normalizeReaderTranslationLang
 import com.mangaverse.app.reader.translate.domain.resolveReaderTranslationSourceLanguage
 import com.mangaverse.app.reader.ui.config.ReaderSettings
 import com.mangaverse.app.reader.ui.pager.ReaderUiState
+import com.mangaverse.app.stats.domain.StatsCollector
 import java.util.concurrent.atomic.AtomicBoolean
 import java.time.Instant
 import javax.inject.Inject
-import com.mangaverse.app.stats.domain.StatsCollector
 
 private const val BOUNDS_PAGE_OFFSET = 2
 private const val WEBTOON_CHAPTER_PRELOAD_OFFSET = 10

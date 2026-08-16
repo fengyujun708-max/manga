@@ -221,6 +221,8 @@ import com.mangaverse.app.parsers.model.Content
 import com.mangaverse.app.parsers.model.ContentSource
 import com.mangaverse.app.parsers.model.ContentTag
 import com.mangaverse.app.parsers.model.ContentType
+import com.mangaverse.app.space.domain.SpaceId
+import com.mangaverse.app.space.ui.SpaceSwitcherIcon
 import com.mangaverse.app.readingrecord.data.ReadingChapterAggregateEntity
 import com.mangaverse.app.readingrecord.data.ReadingJumpPointEntity
 import com.mangaverse.app.readingrecord.data.ReadingRecordEntity
@@ -232,6 +234,8 @@ import com.mangaverse.app.favourites.ui.categories.select.compose.FavoriteCatego
 import com.mangaverse.app.main.ui.compose.GlassDropdownMenu
 import com.mangaverse.app.main.ui.compose.CompactDropdownMenuItem
 import com.mangaverse.app.main.ui.compose.TopBarControlSurface
+import com.mangaverse.app.stats.ui.sheet.compose.ContentStatsSheetContent
+import com.mangaverse.app.stats.ui.sheet.ContentStatsViewModel
 import com.mangaverse.app.core.domain.model.ScrobblingStatus
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -243,8 +247,6 @@ import java.util.Locale
 import java.text.DateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import com.mangaverse.app.stats.ui.sheet.ContentStatsViewModel
-import com.mangaverse.app.space.domain.SpaceId
 
 private fun Color.withDetailsMinAlpha(minAlpha: Float): Color {
     return copy(alpha = alpha.coerceAtLeast(minAlpha))

@@ -52,6 +52,8 @@ import com.mangaverse.app.work.domain.WorkResolver
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.ui.SpaceBindableViewModel
+import com.mangaverse.app.space.ui.scopedToSpace
 
 private const val PAGE_SIZE = 32
 
@@ -69,8 +71,11 @@ class UpdatesViewModel @Inject constructor(
 	@LocalStorageChanges localStorageChanges: SharedFlow<LocalContent?>,
 	private val globalFavoritesState: com.mangaverse.app.favourites.domain.GlobalFavoritesState,
 	spaceBrowseScope: SpaceBrowseScope,
-) : ContentListViewModel(settings, dataRepository, localStorageChanges), QuickFilterListener by quickFilter {
-		@Volatile
+) : ContentListViewModel(settings, dataRepository, localStorageChanges), QuickFilterListener by quickFilter,
+	SpaceBindableViewModel {
+	private val spaceBinding = spaceBrowseScope.createBinding(viewModelScope + Dispatchers.Default)
+
+	@Volatile
 	private var groupedRemovalIds: Map<Long, Set<Long>> = emptyMap()
 
 	@Volatile
@@ -91,7 +96,9 @@ class UpdatesViewModel @Inject constructor(
 		spaceGroupTab = spaceBinding.groupTab,
 		coroutineScope = viewModelScope + Dispatchers.Default,
 	)
-		override fun setSelectedGroupTab(tab: com.mangaverse.app.explore.ui.model.BrowseGroupTab) {
+	override fun bindSpace(spaceId: com.mangaverse.app.space.domain.SpaceId?) = spaceBinding.bindSpace(spaceId)
+
+	override fun setSelectedGroupTab(tab: com.mangaverse.app.explore.ui.model.BrowseGroupTab) {
 		globalFavoritesState.setSelectedGroupTab(tab)
 	}
 

@@ -19,6 +19,8 @@ import com.mangaverse.app.list.ui.model.ContentListModel
 import com.mangaverse.app.details.ui.model.DetailsOrigin
 import com.mangaverse.app.main.ui.MainActivity
 import com.mangaverse.app.parsers.model.Content
+import com.mangaverse.app.space.ui.LocalBrowseSpaceId
+import com.mangaverse.app.space.ui.spaceViewModelKey
 
 private const val FAVORITES_LOAD_MORE_VISIBLE_THRESHOLD = 48
 

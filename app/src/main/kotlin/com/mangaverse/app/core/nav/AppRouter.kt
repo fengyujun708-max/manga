@@ -39,6 +39,9 @@ import kotlinx.coroutines.withContext
 import dagger.hilt.android.EntryPointAccessors
 import com.mangaverse.app.BuildConfig
 import com.mangaverse.app.R
+import com.mangaverse.app.alternatives.ui.compose.AlternativesSheetRoute
+import com.mangaverse.app.backups.ui.restore.RestoreDialogRoute
+import com.mangaverse.app.backups.domain.BackupRestoreFormat
 import com.mangaverse.app.browser.BrowserActivity
 import com.mangaverse.app.browser.cloudflare.CloudFlareActivity
 import com.mangaverse.app.core.exceptions.CloudFlareProtectedException
@@ -108,6 +111,8 @@ import com.mangaverse.app.parsers.model.SortOrder
 import com.mangaverse.app.parsers.util.ellipsize
 import com.mangaverse.app.parsers.util.isNullOrEmpty
 import com.mangaverse.app.parsers.util.mapToArray
+import com.mangaverse.app.space.ui.ImmersiveSpaceSwitcherTransition
+import com.mangaverse.app.space.ui.EXTRA_IMMERSIVE_SESSION_SPACE_ID
 import com.mangaverse.app.reader.ui.ReaderActivity
 import com.mangaverse.app.reader.ui.ReaderState
 import com.mangaverse.app.core.parser.ContentRepository
@@ -129,11 +134,10 @@ import com.mangaverse.app.settings.storage.ContentDirectorySelectRoute
 import com.mangaverse.app.settings.storage.ContentDirectorySelectViewModel
 import com.mangaverse.app.settings.storage.directories.ContentDirectoriesActivity
 import com.mangaverse.app.settings.tracker.categories.TrackerCategoriesConfigRoute
+import com.mangaverse.app.stats.ui.sheet.compose.ContentStatsRoute
 
 import java.io.File
 import androidx.appcompat.R as appcompatR
-import com.mangaverse.app.backups.domain.BackupRestoreFormat
-import com.mangaverse.app.space.ui.ImmersiveSpaceSwitcherTransition
 
 @Composable
 private fun AppRouterChoiceDialog(
@@ -197,13 +201,13 @@ class AppRouter private constructor(
         EntryPointAccessors.fromApplication<AppRouterEntryPoint>(checkNotNull(contextOrNull())).jsonSourceManager
     }
 
-    private val spaceFeatureFlagsRepository: /* DELETED */ by lazy {
+    private val spaceFeatureFlagsRepository: com.mangaverse.app.space.domain.SpaceFeatureFlagsRepository by lazy {
         EntryPointAccessors.fromApplication<AppRouterEntryPoint>(
             checkNotNull(contextOrNull()),
         ).spaceFeatureFlagsRepository
     }
 
-    private val spaceRepository: /* DELETED */ by lazy {
+    private val spaceRepository: com.mangaverse.app.space.domain.SpaceRepository by lazy {
         EntryPointAccessors.fromApplication<AppRouterEntryPoint>(
             checkNotNull(contextOrNull()),
         ).spaceRepository
@@ -429,6 +433,8 @@ class AppRouter private constructor(
         )
     }
 
+
+
     fun openSourcesCatalog() = startActivity(SourcesCatalogActivity::class.java)
 
     fun openDownloads() = startActivity(DownloadsActivity::class.java)
@@ -459,6 +465,7 @@ class AppRouter private constructor(
 
     fun openFavorites() = startActivity(FavouritesActivity::class.java)
 
+
     fun openFavorites(category: FavouriteCategory) {
         startActivity(
             Intent(contextOrNull() ?: return, FavouritesActivity::class.java)
@@ -477,6 +484,7 @@ class AppRouter private constructor(
     }
 
     fun openFavoriteCategoryCreate() = openFavoriteCategoryEdit(FavouritesCategoryEditActivity.NO_ID)
+
 
     fun openContentOverrideConfig(manga: Content) {
         val intent = overrideEditIntent(contextOrNull() ?: return, manga)
@@ -938,11 +946,10 @@ class AppRouter private constructor(
         composeActivity.dismissComposeModal(WELCOME_MODAL_KEY)
         composeActivity.showComposeModal(key = WELCOME_MODAL_KEY) {
             WelcomeRoute(
-                // 登录成功或用户跳过前置步骤后关闭向导。
-                // 注意：若用户仍未登录，MainActivity 的 session 监听会立即重新打开，
-                // 因此这里可以安全地允许关闭，强制登录由会话监听兜底。
-                onDismissRequest = { composeActivity.dismissComposeModal(WELCOME_MODAL_KEY) },
+                // 强制向导：不允许中途关闭
+                onDismissRequest = { },
                 onRestoreBackup = { uri ->
+                    // 强制向导：恢复备份不关闭向导
                     showBackupRestoreDialog(uri)
                 },
                 onOpenDocumentUnsupported = {
@@ -1169,6 +1176,7 @@ class AppRouter private constructor(
             .setData(Uri.parse(url))
             .putExtra(KEY_TITLE, title)
             .putExtra(KEY_SOURCE, source?.name)
+
 
         fun homeIntent(context: Context) = Intent(context, MainActivity::class.java)
 

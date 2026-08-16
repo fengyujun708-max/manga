@@ -63,6 +63,8 @@ import com.mangaverse.app.work.domain.WorkResolver
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.ui.SpaceBindableViewModel
+import com.mangaverse.app.space.ui.scopedToSpace
 
 private const val PAGE_SIZE = 20
 private const val UPDATED_CONTENT_LOOKAHEAD_SIZE = 2000
@@ -81,8 +83,10 @@ class FeedViewModel @Inject constructor(
 	private val dataRepository: ContentDataRepository,
 	private val workResolver: WorkResolver,
 	spaceBrowseScope: SpaceBrowseScope,
-) : BaseViewModel(), QuickFilterListener by quickFilter {
-		private data class HeaderParams(
+) : BaseViewModel(), QuickFilterListener by quickFilter, SpaceBindableViewModel {
+	private val spaceBinding = spaceBrowseScope.createBinding(viewModelScope + Dispatchers.Default)
+
+	private data class HeaderParams(
 		val hasHeader: Boolean,
 		val categoryId: Long,
 		val groupTab: BrowseGroupTab,
@@ -120,7 +124,8 @@ class FeedViewModel @Inject constructor(
 		spaceGroupTab = spaceBinding.groupTab,
 		coroutineScope = viewModelScope + Dispatchers.Default,
 	)
-		val currentSourceTags = globalFavoritesState.selectedSourceTags
+	override fun bindSpace(spaceId: com.mangaverse.app.space.domain.SpaceId?) = spaceBinding.bindSpace(spaceId)
+	val currentSourceTags = globalFavoritesState.selectedSourceTags
 
 	private val workerRunning = scheduler.observeIsRunning()
 		.stateIn(viewModelScope + Dispatchers.Default, SharingStarted.Lazily, false)

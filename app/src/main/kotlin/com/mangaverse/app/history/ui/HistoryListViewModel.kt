@@ -71,8 +71,10 @@ import com.mangaverse.app.list.ui.model.ContentGridModel
 import com.mangaverse.app.entitygraph.data.EntityGraphRepository
 import com.mangaverse.app.list.ui.model.QuickFilter
 import com.mangaverse.app.work.domain.WorkResolver
-import com.mangaverse.app.space.ui.SpaceBrowseScope
 import com.mangaverse.app.space.domain.SpaceId
+import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.ui.SpaceBindableViewModel
+import com.mangaverse.app.space.ui.scopedToSpace
 
 private const val PAGE_SIZE = 32
 
@@ -108,8 +110,10 @@ class HistoryListViewModel @Inject constructor(
 	private val historyPreviewCache: HistoryPreviewCache,
 	private val workResolver: WorkResolver,
 	spaceBrowseScope: SpaceBrowseScope,
-) : ContentListViewModel(settings, dataRepository, localStorageChanges), QuickFilterListener {
-		@Volatile
+) : ContentListViewModel(settings, dataRepository, localStorageChanges), QuickFilterListener, SpaceBindableViewModel {
+	private val spaceBinding = spaceBrowseScope.createBinding(viewModelScope + Dispatchers.Default)
+
+	@Volatile
 	private var groupedHistoryIds: Map<Long, Set<Long>> = emptyMap()
 
 	@Volatile
@@ -128,7 +132,8 @@ class HistoryListViewModel @Inject constructor(
 		spaceGroupTab = spaceBinding.groupTab,
 		coroutineScope = viewModelScope + Dispatchers.Default,
 	)
-		override val currentSourceTags = globalFavoritesState.selectedSourceTags
+	override fun bindSpace(spaceId: SpaceId?) = spaceBinding.bindSpace(spaceId)
+	override val currentSourceTags = globalFavoritesState.selectedSourceTags
 
 	override fun setSelectedGroupTab(tab: BrowseGroupTab) {
 		globalFavoritesState.setSelectedGroupTab(tab)

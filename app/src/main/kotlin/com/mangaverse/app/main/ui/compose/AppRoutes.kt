@@ -29,8 +29,6 @@ object AppRouteNames {
     const val EXPLORE = "explore"
     const val FEED = "feed"
     const val LOCAL = "local"
-    const val SUGGESTIONS = "suggestions"
-    const val BOOKMARKS = "bookmarks"
     const val UPDATED = "updated"
     const val SEARCH = "search"
     const val CONTENT_LIST = "content_list"
@@ -114,14 +112,6 @@ data object FeedRoute
 data object LocalRoute
 
 @Serializable
-@SerialName(AppRouteNames.SUGGESTIONS)
-data object SuggestionsRoute
-
-@Serializable
-@SerialName(AppRouteNames.BOOKMARKS)
-data object BookmarksRoute
-
-@Serializable
 @SerialName(AppRouteNames.UPDATED)
 data object UpdatedRoute
 
@@ -166,8 +156,6 @@ fun routeForBottomNavItem(@IdRes itemId: Int): Any = when (itemId) {
     R.id.nav_discover -> DiscoverRoute
     R.id.nav_feed -> FeedRoute
     R.id.nav_local -> LocalRoute
-    R.id.nav_suggestions -> SuggestionsRoute
-    R.id.nav_bookmarks -> BookmarksRoute
     R.id.nav_updated -> UpdatedRoute
     R.id.nav_energy -> EnergyRoute
     R.id.nav_profile -> ProfileRoute

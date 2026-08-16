@@ -44,8 +44,10 @@ import com.mangaverse.app.list.ui.model.ListModel
 import com.mangaverse.app.list.ui.model.LoadingState
 import com.mangaverse.app.parsers.model.Content
 import com.mangaverse.app.parsers.model.ContentSource
-import javax.inject.Inject
 import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.ui.SpaceBindableViewModel
+import com.mangaverse.app.space.ui.scopedToSpace
+import javax.inject.Inject
 
 private const val ExploreViewModelTraceTag = "ExploreViewModelTrace"
 
@@ -73,8 +75,10 @@ class ExploreViewModel @Inject constructor(
 	private val sourcePresetsRepository: com.mangaverse.app.explore.data.SourcePresetsRepository,
 	private val sourceAvailabilityRepository: SourceAvailabilityRepository,
 	private val spaceBrowseScope: SpaceBrowseScope,
-) : BaseViewModel() {
-		val isGrid = settings.observeAsStateFlow(
+) : BaseViewModel(), SpaceBindableViewModel {
+	private val spaceBinding = spaceBrowseScope.createBinding(viewModelScope + Dispatchers.Default)
+
+	val isGrid = settings.observeAsStateFlow(
 		key = AppSettings.KEY_SOURCES_GRID,
 		scope = viewModelScope + Dispatchers.IO,
 		valueProducer = { isSourcesGridMode },
@@ -149,7 +153,11 @@ class ExploreViewModel @Inject constructor(
 		globalFavoritesState.setSelectedGroupTab(tab)
 	}
 
-		/**
+	override fun bindSpace(spaceId: com.mangaverse.app.space.domain.SpaceId?) {
+		spaceBinding.bindSpace(spaceId)
+	}
+
+	/**
 	 * Set selected source tags (multi-select)
 	 */
 	fun setSelectedSourceTags(tags: Set<SourceTag>) {
@@ -172,6 +180,7 @@ class ExploreViewModel @Inject constructor(
 			}
 		}
 	}
+
 
 	fun disableSources(sources: Collection<ContentSource>) {
 		launchJob(Dispatchers.Default) {

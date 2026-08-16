@@ -24,6 +24,7 @@ import com.mangaverse.app.main.ui.MainActivity
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mangaverse.app.core.ui.BaseActivity
 import com.mangaverse.app.core.ui.BaseComposeActivity
+import com.mangaverse.app.alternatives.ui.AutoFixService
 import com.mangaverse.app.core.util.ShareHelper
 import com.mangaverse.app.core.model.isLocal
 import com.mangaverse.app.core.ui.compose.contentCoverSharedKey

@@ -42,8 +42,10 @@ data object FeedNavKey : TopLevelNavKey
 data object LocalNavKey : TopLevelNavKey
 
 @Serializable
+data object SuggestionsNavKey : TopLevelNavKey
 
 @Serializable
+data object BookmarksNavKey : TopLevelNavKey
 
 @Serializable
 data object UpdatedNavKey : TopLevelNavKey
@@ -62,6 +64,8 @@ val allTopLevelNavKeys: List<TopLevelNavKey> = listOf(
     DiscoverNavKey,
     FeedNavKey,
     LocalNavKey,
+    SuggestionsNavKey,
+    BookmarksNavKey,
     UpdatedNavKey,
     EnergyNavKey,
     ProfileNavKey,

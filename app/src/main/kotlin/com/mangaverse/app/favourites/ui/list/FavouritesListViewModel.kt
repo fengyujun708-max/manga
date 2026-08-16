@@ -61,11 +61,14 @@ import com.mangaverse.app.list.ui.model.toErrorState
 import com.mangaverse.app.local.data.LocalStorageChanges
 import com.mangaverse.app.local.domain.model.LocalContent
 import com.mangaverse.app.parsers.model.Content
+import com.mangaverse.app.space.domain.SpaceId
+import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.ui.SpaceBindableViewModel
+import com.mangaverse.app.space.ui.scopedToSpace
 import com.mangaverse.app.work.domain.WorkAggregate
 import com.mangaverse.app.work.domain.WorkAggregateRepository
 import com.mangaverse.app.work.domain.WorkResolver
 import java.util.concurrent.atomic.AtomicBoolean
-import com.mangaverse.app.space.ui.SpaceBrowseScope
 
 private const val PAGE_SIZE = 32
 
@@ -86,7 +89,8 @@ class FavouritesListViewModel @AssistedInject constructor(
     private val globalFavoritesState: com.mangaverse.app.favourites.domain.GlobalFavoritesState,
     @ApplicationContext private val appContext: Context,
     spaceBrowseScope: SpaceBrowseScope,
-) : ContentListViewModel(appSettings, dataRepository, localStorageChanges), QuickFilterListener {
+) : ContentListViewModel(appSettings, dataRepository, localStorageChanges), QuickFilterListener,
+    SpaceBindableViewModel {
 
     @AssistedFactory
     interface Factory {
@@ -97,7 +101,8 @@ class FavouritesListViewModel @AssistedInject constructor(
     private val refreshTrigger = MutableStateFlow(Any())
     private val limit = MutableStateFlow(if (categoryId == NO_ID) 1000 else 200)
     private val isPaginationReady = AtomicBoolean(false)
-        private val activeSpaceScope = spaceBinding.spaceId
+    private val spaceBinding = spaceBrowseScope.createBinding(viewModelScope + Dispatchers.Default)
+    private val activeSpaceScope = spaceBinding.spaceId
 
     @Volatile
     private var groupedFavoriteIds: Map<Long, Set<Long>> = emptyMap()
@@ -120,7 +125,9 @@ class FavouritesListViewModel @AssistedInject constructor(
         spaceGroupTab = spaceBinding.groupTab,
         coroutineScope = viewModelScope + Dispatchers.Default,
     )
-        override fun setSelectedGroupTab(tab: BrowseGroupTab) {
+    override fun bindSpace(spaceId: SpaceId?) = spaceBinding.bindSpace(spaceId)
+
+    override fun setSelectedGroupTab(tab: BrowseGroupTab) {
         globalFavoritesState.setSelectedGroupTab(tab)
     }
 

@@ -26,6 +26,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import com.mangaverse.app.BuildConfig
 import com.mangaverse.app.R
+import com.mangaverse.app.backups.data.BackupRepository
+import com.mangaverse.app.backups.domain.BackupPayloadGuard
+import com.mangaverse.app.backups.domain.BackupWebDavRestoreCoordinator
+import com.mangaverse.app.backups.domain.BackupWebDavUploadCoordinator
+import com.mangaverse.app.backups.domain.ExternalBackupStorage
+import com.mangaverse.app.backups.ui.periodical.RemoteNamespace
+import com.mangaverse.app.backups.ui.periodical.WebDavBackupUploader
 import com.mangaverse.app.core.jsonsource.OriginGroup
 import com.mangaverse.app.core.jsonsource.SourceGroup
 import com.mangaverse.app.core.model.GlobalTagBlacklist
@@ -56,20 +63,15 @@ import com.mangaverse.app.mangaupdate.domain.MangaUpdateRepository
 import com.mangaverse.app.parsers.model.Content
 import com.mangaverse.app.parsers.model.ContentType
 import com.mangaverse.app.search.domain.ContentSearchRepository
+import com.mangaverse.app.suggestions.domain.SuggestionRepository
 import com.mangaverse.app.tracker.domain.model.ContentTracking
 import com.mangaverse.app.work.domain.WorkAggregate
 import com.mangaverse.app.work.domain.WorkAggregateRepository
+import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.ui.SpaceBindableViewModel
+import com.mangaverse.app.space.ui.scopedToSpace
 import com.mangaverse.app.work.domain.WorkResolver
 import javax.inject.Inject
-import com.mangaverse.app.backups.data.BackupRepository
-import com.mangaverse.app.backups.domain.BackupPayloadGuard
-import com.mangaverse.app.backups.domain.BackupWebDavRestoreCoordinator
-import com.mangaverse.app.backups.domain.BackupWebDavUploadCoordinator
-import com.mangaverse.app.backups.domain.ExternalBackupStorage
-import com.mangaverse.app.backups.ui.periodical.WebDavBackupUploader
-import com.mangaverse.app.space.ui.SpaceBrowseScope
-import com.mangaverse.app.suggestions.domain.SuggestionRepository
-import com.mangaverse.app.backups.domain.RestoreSemanticState
 
 @Immutable
 data class HomeRecentItem(
@@ -190,7 +192,7 @@ class HomeViewModel @Inject constructor(
     private val historyPreviewCache: HistoryPreviewCache,
     private val historyQuickFilter: HistoryListQuickFilter,
     spaceBrowseScope: SpaceBrowseScope,
-) : BaseViewModel() {
+) : BaseViewModel(), SpaceBindableViewModel {
 
     private companion object {
         private const val TAG = "HomeViewModel"
@@ -206,7 +208,8 @@ class HomeViewModel @Inject constructor(
 
     val onActionDone = MutableEventFlow<ReversibleAction>()
 
-        private val selectedBrowseGroupTab = globalFavoritesState.selectedGroupTab.scopedToSpace(
+    private val spaceBinding = spaceBrowseScope.createBinding(viewModelScope + Dispatchers.Default)
+    private val selectedBrowseGroupTab = globalFavoritesState.selectedGroupTab.scopedToSpace(
         spaceGroupTab = spaceBinding.groupTab,
         coroutineScope = viewModelScope + Dispatchers.Default,
     )
@@ -669,7 +672,11 @@ class HomeViewModel @Inject constructor(
         globalFavoritesState.setSelectedGroupTab(groupTab)
     }
 
-        fun setSelectedSourceTags(tags: Set<com.mangaverse.app.explore.ui.model.SourceTag>) {
+    override fun bindSpace(spaceId: com.mangaverse.app.space.domain.SpaceId?) {
+        spaceBinding.bindSpace(spaceId)
+    }
+
+    fun setSelectedSourceTags(tags: Set<com.mangaverse.app.explore.ui.model.SourceTag>) {
         globalFavoritesState.setSelectedSourceTags(tags)
     }
 
@@ -727,7 +734,7 @@ class HomeViewModel @Inject constructor(
 
     fun uploadWebDavNow() {
         viewModelScope.launch(Dispatchers.Default) {
-            val output = /* DELETED */(appContext)
+            val output = com.mangaverse.app.backups.domain.BackupUtils.createTempFile(appContext)
             try {
                 val zip = java.util.zip.ZipOutputStream(output.outputStream())
                 try {
@@ -778,22 +785,22 @@ class HomeViewModel @Inject constructor(
                             "entries=${inspection.describe()}, starting restore from zip...",
                     )
                     val allSections = setOf(
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
-                        /* DELETED */,
+                        com.mangaverse.app.backups.domain.BackupSection.INDEX,
+                        com.mangaverse.app.backups.domain.BackupSection.HISTORY,
+                        com.mangaverse.app.backups.domain.BackupSection.CATEGORIES,
+                        com.mangaverse.app.backups.domain.BackupSection.FAVOURITES,
+                        com.mangaverse.app.backups.domain.BackupSection.BOOKMARKS,
+                        com.mangaverse.app.backups.domain.BackupSection.STATS,
+                        com.mangaverse.app.backups.domain.BackupSection.WORK_HISTORY,
+                        com.mangaverse.app.backups.domain.BackupSection.WORK_FAVOURITES,
+                        com.mangaverse.app.backups.domain.BackupSection.WORK_STATS,
+                        com.mangaverse.app.backups.domain.BackupSection.EXTENSION_REPOS,
+                        com.mangaverse.app.backups.domain.BackupSection.SETTINGS,
+                        com.mangaverse.app.backups.domain.BackupSection.SETTINGS_READER_GRID,
+                        com.mangaverse.app.backups.domain.BackupSection.ENTITY_GRAPH_ENTITIES,
+                        com.mangaverse.app.backups.domain.BackupSection.ENTITY_GRAPH_BINDINGS,
+                        com.mangaverse.app.backups.domain.BackupSection.ENTITY_GRAPH_RELATIONS,
+                        com.mangaverse.app.backups.domain.BackupSection.ENTITY_GRAPH_PREFS,
                     )
                     val restoreResult = java.util.zip.ZipInputStream(java.io.FileInputStream(tempFile)).use { zis ->
                         repository.restoreBackup(zis, allSections, null)

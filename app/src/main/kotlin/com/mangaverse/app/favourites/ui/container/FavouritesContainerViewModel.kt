@@ -44,8 +44,10 @@ import com.mangaverse.app.explore.ui.model.SourceTag
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import com.mangaverse.app.core.jsonsource.SourceGroupManager
-import com.mangaverse.app.parsers.util.levenshteinDistance
 import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.ui.SpaceBindableViewModel
+import com.mangaverse.app.space.ui.scopedToSpace
+import com.mangaverse.app.parsers.util.levenshteinDistance
 
 @HiltViewModel
 class FavouritesContainerViewModel @Inject constructor(
@@ -60,8 +62,9 @@ class FavouritesContainerViewModel @Inject constructor(
 	private val sourceGroupManager: SourceGroupManager,
 	spaceBrowseScope: SpaceBrowseScope,
 	private val db: com.mangaverse.app.core.db.MangaDatabase,
-) : BaseViewModel() {
-		init {
+) : BaseViewModel(), SpaceBindableViewModel {
+	private val spaceBinding = spaceBrowseScope.createBinding(viewModelScope + Dispatchers.Default)
+	init {
 		launchJob(Dispatchers.IO) {
 			sourcesRepository.getAllAvailableSourcesUnfiltered()
 		}
@@ -90,7 +93,8 @@ class FavouritesContainerViewModel @Inject constructor(
 		spaceGroupTab = spaceBinding.groupTab,
 		coroutineScope = viewModelScope + Dispatchers.Default,
 	)
-		val selectedSourceTags = globalFavoritesState.selectedSourceTags
+	override fun bindSpace(spaceId: com.mangaverse.app.space.domain.SpaceId?) = spaceBinding.bindSpace(spaceId)
+	val selectedSourceTags = globalFavoritesState.selectedSourceTags
 	val availableSourceTags = flowOf(SourceTag.quickFilterEntries.toSet())
 		.stateIn(viewModelScope + Dispatchers.Default, SharingStarted.Eagerly, SourceTag.quickFilterEntries.toSet())
 
