@@ -84,18 +84,6 @@ android {
 		buildConfigField 'String', 'BAIYI_REWARD_VIDEO_ID', '"2086124285889372216"'
 		buildConfigField 'String', 'BAIYI_INTERSTITIAL_ID', '"2086124286409465882"'
 		buildConfigField 'String', 'BAIYI_SPLASH_ID', '"2088836380271599655"'
-		externalNativeBuild {
-			cmake {
-				cppFlags ""
-				abiFilters(*activeAbiFilters)
-			}
-		}
-	}
-	externalNativeBuild {
-		cmake {
-			path "src/main/cpp/CMakeLists.txt"
-			version "3.22.1"
-		}
 	}
 	buildTypes {
 		debug {
@@ -348,8 +336,6 @@ configurations.all {
 
 	// Foldable/Window layout
 	implementation libs.androidx.window
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2'
 
 	implementation libs.androidx.room.runtime
 	implementation libs.androidx.room.ktx
@@ -421,11 +407,9 @@ configurations.all {
 	implementation libs.onnxruntime.android
 	implementation libs.opencv.android
 	implementation libs.djl.tokenizers
-	implementation files('libs/tokenizer-native-0.33.0.aar')
 	implementation libs.cryptography.core
 	implementation libs.cryptography.provider.optimal
 	implementation libs.djl.sentencepiece
-	implementation 'com.github.akari39:RealCUGAN-ncnn-Android:1.1'
 
 	implementation libs.acra.http
 	implementation libs.acra.dialog
