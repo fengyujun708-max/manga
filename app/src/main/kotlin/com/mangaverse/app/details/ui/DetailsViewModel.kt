@@ -3079,46 +3079,40 @@ class DetailsViewModel @Inject constructor(
 	}
 
 	private suspend fun translateViaMlKit(text: String, sourceLang: String, targetLang: String): String {
-		val resolvedSource = if (sourceLang.trim().lowercase() == "auto") {
-			detectLanguageViaMlKit(text) ?: "en"
-		} else {
-			sourceLang
-		}
-		val mlSource = resolveMlKitLang(resolvedSource) ?: return ""
-		val mlTarget = resolveMlKitLang(targetLang) ?: return ""
-
-		val options = com.google.mlkit.nl.translate.TranslatorOptions.Builder()
-			.setSourceLanguage(mlSource)
-			.setTargetLanguage(mlTarget)
-			.build()
-		val translator = com.google.mlkit.nl.translate.Translation.getClient(options)
+		// 改为调后端 /api/translate（模型在服务器，客户端零内置）
 		return try {
-			withTimeout(60_000) {
-				translator.downloadModelIfNeeded().awaitCancellable()
+			val from = if (sourceLang.trim().lowercase() == "auto") "en" else sourceLang
+			val payload = org.json.JSONObject()
+				.put("text", text)
+				.put("from_lang", from)
+				.put("to_lang", targetLang)
+				.toString()
+			val request = okhttp3.Request.Builder()
+				.url("${com.mangaverse.app.BuildConfig.MANGAVERSE_API_BASE_URL}/api/translate")
+				.post(payload.toRequestBody("application/json".toMediaType()))
+				.build()
+			withTimeout(30_000) {
+				appOkHttpClient.newCall(request).execute().use { resp ->
+					if (resp.isSuccessful) {
+						org.json.JSONObject(resp.body?.string().orEmpty()).optString("translated").ifBlank { text }
+					} else {
+						text
+					}
+				}
 			}
-			withTimeout(15_000) {
-				translator.translate(text).awaitCancellable()
-			}
-		} finally {
-			translator.close()
+		} catch (_: Exception) {
+			text
 		}
 	}
 
 	private suspend fun detectLanguageViaMlKit(text: String): String? {
-		return try {
-			val identifier = com.google.mlkit.nl.languageid.LanguageIdentification.getClient()
-			val lang = withTimeout(5_000) {
-				identifier.identifyLanguage(text).awaitCancellable()
-			}
-			if (lang == "und") null else lang
-		} catch (_: Exception) {
-			null
-		}
+		// 后端翻译会自动处理语言识别
+		return null
 	}
 
-	private fun resolveMlKitLang(lang: String): String? {
-		val normalized = lang.trim().lowercase().replace("-", "_")
-		return com.google.mlkit.nl.translate.TranslateLanguage.fromLanguageTag(normalized)
+private fun resolveMlKitLang(lang: String): String? {
+		// mlkit 已移除，直接返回语言标签（后端翻译会处理映射）
+		return lang.trim().lowercase().replace("-", "_").ifBlank { null }
 	}
 
 	private fun restorePersistedTranslation(details: ContentDetails) {

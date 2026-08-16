@@ -44,9 +44,6 @@ import com.mangaverse.app.reader.translate.data.OnnxModelCategory
 import com.mangaverse.app.reader.translate.data.OnnxOfficialModelCatalog
 import com.mangaverse.app.parsers.model.ContentPage
 import com.mangaverse.app.reader.translate.data.ReaderTranslationTextCache
-import com.google.mlkit.nl.translate.TranslateLanguage
-import com.google.mlkit.nl.translate.Translation
-import com.google.mlkit.nl.translate.TranslatorOptions
 import com.mangaverse.app.core.util.ext.awaitCancellable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

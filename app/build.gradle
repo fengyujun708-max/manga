@@ -399,13 +399,6 @@ configurations.all {
 	// EPUB support for Novelia Wenku
 	implementation libs.epublib
 
-	implementation libs.mlkit.text.recognition
-	implementation libs.mlkit.text.recognition.japanese
-	implementation libs.mlkit.text.recognition.chinese
-	implementation libs.mlkit.translate
-	implementation libs.mlkit.language.id
-	implementation libs.onnxruntime.android
-	implementation libs.opencv.android
 	implementation libs.cryptography.core
 	implementation libs.cryptography.provider.optimal
 
