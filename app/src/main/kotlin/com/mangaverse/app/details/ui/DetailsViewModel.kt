@@ -3087,12 +3087,18 @@ class DetailsViewModel @Inject constructor(
 				.put("from_lang", from)
 				.put("to_lang", targetLang)
 				.toString()
+			val mediaType = okhttp3.MediaType.parse("application/json")
+			val body = okhttp3.RequestBody.create(mediaType, payload)
 			val request = okhttp3.Request.Builder()
 				.url("${com.mangaverse.app.BuildConfig.MANGAVERSE_API_BASE_URL}/api/translate")
-				.post(payload.toRequestBody("application/json".toMediaType()))
+				.post(body)
+				.build()
+			val client = okhttp3.OkHttpClient.Builder()
+				.connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+				.readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
 				.build()
 			withTimeout(30_000) {
-				appOkHttpClient.newCall(request).execute().use { resp ->
+				client.newCall(request).execute().use { resp ->
 					if (resp.isSuccessful) {
 						org.json.JSONObject(resp.body?.string().orEmpty()).optString("translated").ifBlank { text }
 					} else {
