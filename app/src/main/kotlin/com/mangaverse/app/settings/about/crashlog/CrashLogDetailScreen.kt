@@ -41,7 +41,7 @@ fun CrashLogDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Crash Log Detail") }, // TODO: use stringResource
+                title = { Text(text = stringResource(R.string.crash_log_detail)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(

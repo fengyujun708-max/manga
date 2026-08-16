@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mangaverse.app.R
+import androidx.compose.ui.res.stringResource
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,7 +53,7 @@ fun CrashLogScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Crash Logs") }, // TODO: use stringResource when ResourceManager is wired
+                title = { Text(text = stringResource(R.string.crash_logs)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
@@ -89,7 +90,7 @@ fun CrashLogScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "No crash logs", // TODO: use stringResource(R.string.no_crash_logs)
+                    text = stringResource(R.string.no_crash_logs),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
