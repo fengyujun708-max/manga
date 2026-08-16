@@ -1620,8 +1620,6 @@ internal fun UpdatedTopLevelRouteContent(
 }
 
 @Composable
-
-
 @Composable
 internal fun HistoryTopLevelRouteContent(
     animatedVisibilityScope: androidx.compose.animation.AnimatedVisibilityScope,

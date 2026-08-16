@@ -70,8 +70,6 @@ internal fun encodeTopLevelNavKey(key: TopLevelNavKey): String = when (key) {
     DiscoverNavKey -> "discover"
     FeedNavKey -> "feed"
     LocalNavKey -> "local"
-    SuggestionsNavKey -> "suggestions"
-    BookmarksNavKey -> "bookmarks"
     UpdatedNavKey -> "updated"
     EnergyNavKey -> "energy"
     ProfileNavKey -> "profile"
@@ -85,8 +83,6 @@ internal fun decodeTopLevelNavKey(value: String): TopLevelNavKey? = when (value)
     "discover" -> DiscoverNavKey
     "feed" -> FeedNavKey
     "local" -> LocalNavKey
-    "suggestions" -> SuggestionsNavKey
-    "bookmarks" -> BookmarksNavKey
     "updated" -> UpdatedNavKey
     "energy" -> EnergyNavKey
     "profile" -> ProfileNavKey
@@ -112,8 +108,6 @@ fun rememberMainNavState(
     val discoverStack = rememberTopLevelNavBackStack(DiscoverNavKey)
     val feedStack = rememberTopLevelNavBackStack(FeedNavKey)
     val localStack = rememberTopLevelNavBackStack(LocalNavKey)
-    val suggestionsStack = rememberTopLevelNavBackStack(SuggestionsNavKey)
-    val bookmarksStack = rememberTopLevelNavBackStack(BookmarksNavKey)
     val updatedStack = rememberTopLevelNavBackStack(UpdatedNavKey)
     val energyStack = rememberTopLevelNavBackStack(EnergyNavKey)
     val profileStack = rememberTopLevelNavBackStack(ProfileNavKey)
@@ -126,8 +120,6 @@ fun rememberMainNavState(
         discoverStack,
         feedStack,
         localStack,
-        suggestionsStack,
-        bookmarksStack,
         updatedStack,
         energyStack,
         profileStack,
@@ -143,8 +135,6 @@ fun rememberMainNavState(
                 DiscoverNavKey to discoverStack,
                 FeedNavKey to feedStack,
                 LocalNavKey to localStack,
-                SuggestionsNavKey to suggestionsStack,
-                BookmarksNavKey to bookmarksStack,
                 UpdatedNavKey to updatedStack,
                 EnergyNavKey to energyStack,
                 ProfileNavKey to profileStack,
