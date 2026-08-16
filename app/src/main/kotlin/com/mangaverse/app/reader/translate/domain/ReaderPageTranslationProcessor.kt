@@ -83,7 +83,6 @@ class ReaderPageTranslationProcessor @Inject constructor(
 	private val bubbleReaderTextDetector: BubbleReaderTextDetector,
 	private val mangaOcrReaderTextRecognizer: MangaOcrReaderTextRecognizer,
 	private val baberuOcrReaderTextRecognizer: BaberuOcrReaderTextRecognizer,
-	private val onnxBubbleDetectorEngine: OnnxBubbleDetectorEngine,
 	private val onnxTranslationEngine: OnnxReaderTranslationEngine,
 	private val debugLogStore: ReaderTranslationDebugLogStore,
 ) {

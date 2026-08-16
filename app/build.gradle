@@ -406,10 +406,8 @@ configurations.all {
 	implementation libs.mlkit.language.id
 	implementation libs.onnxruntime.android
 	implementation libs.opencv.android
-	implementation libs.djl.tokenizers
 	implementation libs.cryptography.core
 	implementation libs.cryptography.provider.optimal
-	implementation libs.djl.sentencepiece
 
 	implementation libs.acra.http
 	implementation libs.acra.dialog
