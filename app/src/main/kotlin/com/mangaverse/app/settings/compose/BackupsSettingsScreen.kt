@@ -26,6 +26,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mangaverse.app.R
 import com.mangaverse.app.backups.external.ExternalBackupApp
+import com.mangaverse.app.backups.ui.periodical.BackupFileInfo
+import com.mangaverse.app.backups.ui.periodical.ManualWebDavRestoreMode
+import com.mangaverse.app.backups.ui.periodical.WebDavRemoteBackupRestoreStatus
 
 data class BackupsSettingsUiState(
     val backupOutputSummary: String,

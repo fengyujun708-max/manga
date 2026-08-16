@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import com.mangaverse.app.core.model.getLocale
 import com.mangaverse.app.explore.data.ContentSourcesRepository
 import com.mangaverse.app.space.domain.SpaceCatalogRepository
+import com.mangaverse.app.space.domain.SpaceContext
 
 data class SpaceDefinitionsUiState(
     val spaces: List<SpaceContext> = emptyList(),

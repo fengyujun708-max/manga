@@ -195,6 +195,7 @@ import com.mangaverse.app.parsers.model.ContentType
 import com.mangaverse.app.parsers.model.SortOrder
 import java.util.Locale
 import java.util.TreeSet
+import com.mangaverse.app.space.domain.SpaceId
 
 private val SearchPinnedChipHeight = 32.dp
 private val SearchPinnedRowVisualHeight = SearchPinnedChipHeight + 8.dp

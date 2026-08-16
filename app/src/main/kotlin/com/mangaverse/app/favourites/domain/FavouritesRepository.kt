@@ -49,6 +49,7 @@ import com.mangaverse.app.work.domain.matchesPublicationStateFilters
 import com.mangaverse.app.work.domain.WorkIdentityProvenance
 import com.mangaverse.app.work.domain.WorkResolver
 import javax.inject.Inject
+import com.mangaverse.app.space.domain.SpaceId
 
 private const val TAG = "FavouritesRepository"
 

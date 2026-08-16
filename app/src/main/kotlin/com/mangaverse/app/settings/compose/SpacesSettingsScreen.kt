@@ -42,6 +42,9 @@ import com.mangaverse.app.core.prefs.AppSettings
 import com.mangaverse.app.core.prefs.SpaceSwitcherPosition
 import com.mangaverse.app.core.prefs.observeAsState
 import com.mangaverse.app.parsers.model.ContentType
+import com.mangaverse.app.space.domain.SpaceContext
+import com.mangaverse.app.space.domain.SpaceId
+import com.mangaverse.app.space.domain.SpaceKind
 
 data class SpacesSettingsUiState(
     val spacesEnabled: Boolean,

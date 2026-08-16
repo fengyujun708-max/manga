@@ -8,6 +8,7 @@ import com.mangaverse.app.core.prefs.AppSettings
 import com.mangaverse.app.core.parser.ContentRepository
 import com.mangaverse.app.work.domain.WorkResolver
 import com.mangaverse.app.space.domain.SpaceRepository
+import com.mangaverse.app.space.domain.SpaceFeatureFlagsRepository
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)

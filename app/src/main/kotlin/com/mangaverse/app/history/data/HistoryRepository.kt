@@ -49,6 +49,7 @@ import com.mangaverse.app.work.domain.WorkResolver
 import javax.inject.Inject
 import javax.inject.Provider
 import com.mangaverse.app.space.domain.SpaceContentPolicy
+import com.mangaverse.app.space.domain.SpaceId
 
 private const val RESUME_HISTORY_FILTER_BATCH_SIZE = 32
 

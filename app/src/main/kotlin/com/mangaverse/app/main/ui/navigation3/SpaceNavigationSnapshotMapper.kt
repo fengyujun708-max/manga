@@ -1,5 +1,8 @@
 package com.mangaverse.app.main.ui.navigation3
 
+import com.mangaverse.app.space.domain.SpaceId
+import com.mangaverse.app.space.domain.SpaceRouteSnapshot
+import com.mangaverse.app.space.domain.SpaceSessionSnapshot
 
 fun MainNavState.toSpaceSessionSnapshot(
     spaceId: SpaceId,

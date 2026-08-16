@@ -112,6 +112,9 @@ import javax.inject.Inject
 import kotlin.math.roundToInt
 import com.mangaverse.app.space.domain.SpaceSwitchCoordinator
 import com.mangaverse.app.space.ui.SpaceSwitcherDelegate
+import com.mangaverse.app.space.domain.SpaceProgressFlusher
+import com.mangaverse.app.space.domain.SpaceSwitchAvailability
+import com.mangaverse.app.space.domain.SpaceSwitchOrigin
 
 @AndroidEntryPoint
 class ReaderActivity :

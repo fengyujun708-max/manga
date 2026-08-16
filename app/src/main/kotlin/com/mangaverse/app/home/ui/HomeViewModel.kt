@@ -69,6 +69,7 @@ import com.mangaverse.app.backups.domain.ExternalBackupStorage
 import com.mangaverse.app.backups.ui.periodical.WebDavBackupUploader
 import com.mangaverse.app.space.ui.SpaceBrowseScope
 import com.mangaverse.app.suggestions.domain.SuggestionRepository
+import com.mangaverse.app.backups.domain.RestoreSemanticState
 
 @Immutable
 data class HomeRecentItem(

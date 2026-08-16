@@ -67,11 +67,19 @@ import javax.inject.Inject
 import com.mangaverse.app.backups.domain.BackupStartupCoordinator
 import com.mangaverse.app.space.data.SpaceRoutePreferencesController
 import com.mangaverse.app.space.data.SpaceSourcePresetController
+import com.mangaverse.app.space.domain.SpaceFeatureFlagsRepository
 import com.mangaverse.app.space.domain.SpaceRepository
 import com.mangaverse.app.space.ui.ImmersiveSpaceSessionRegistry
 import com.mangaverse.app.space.ui.SpaceNavigationSessionViewModel
 import com.mangaverse.app.space.ui.SpaceResumeViewModel
 import com.mangaverse.app.space.ui.SpaceViewModel
+import com.mangaverse.app.space.domain.SpaceId
+import com.mangaverse.app.space.domain.SpaceSessionSnapshot
+import com.mangaverse.app.space.ui.SpaceAction
+import com.mangaverse.app.space.ui.SpaceNavigationSessionUiState
+import com.mangaverse.app.space.ui.SpaceResumeUiState
+import com.mangaverse.app.space.ui.SpaceTransitionCurtainController
+import com.mangaverse.app.space.ui.SpaceUiState
 
 @AndroidEntryPoint
 class MainActivity : BaseComposeActivity() {

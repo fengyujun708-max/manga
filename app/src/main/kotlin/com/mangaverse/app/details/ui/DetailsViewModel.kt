@@ -152,6 +152,7 @@ import java.io.File
 import java.util.Locale
 import com.mangaverse.app.space.domain.SpaceContentPolicy
 import com.mangaverse.app.stats.data.StatsRepository
+import com.mangaverse.app.space.domain.SpaceId
 
 private const val SYNTHETIC_ENTITY_GRAPH_SOURCE = "Entity Graph"
 private const val DETAILS_TRACE_TAG = "DetailsTrace"

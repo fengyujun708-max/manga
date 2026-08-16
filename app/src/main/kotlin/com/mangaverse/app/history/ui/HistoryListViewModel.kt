@@ -72,6 +72,7 @@ import com.mangaverse.app.entitygraph.data.EntityGraphRepository
 import com.mangaverse.app.list.ui.model.QuickFilter
 import com.mangaverse.app.work.domain.WorkResolver
 import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.space.domain.SpaceId
 
 private const val PAGE_SIZE = 32
 
