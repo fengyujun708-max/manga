@@ -474,7 +474,6 @@ fun AppNavGraph(
                 )
             }
         }
-        }
         composable<UpdatedRoute> {
             MainRouteScene(landscapeStartPadding = landscapeStartPadding) {
                 UpdatedTopLevelRouteContent(
@@ -978,7 +977,6 @@ private fun MainShellTopLevelEntryContent(
             onExploreSourceSelectionTopBarChanged = onExploreSourceSelectionTopBarChanged,
             onContextualMenuActionsChanged = onContextualMenuActionsChanged,
             navigateToDetailsWithContent = navigateToDetailsWithContent,
-        )
         )
         com.mangaverse.app.main.ui.navigation3.UpdatedNavKey -> UpdatedTopLevelRouteContent(
             animatedVisibilityScope = animatedVisibilityScope,
@@ -1556,70 +1554,6 @@ internal fun LocalTopLevelRouteContent(
 }
 
 @Composable
-    animatedVisibilityScope: androidx.compose.animation.AnimatedVisibilityScope,
-    activity: FragmentActivity,
-    appRouter: com.mangaverse.app.core.nav.AppRouter,
-    contentPadding: androidx.compose.foundation.layout.PaddingValues,
-    onExploreSourceSelectionTopBarChanged: (TopBarOverrideState?) -> Unit,
-    navigateToDetailsWithContent: (Content, String?) -> Unit,
-) {
-    val viewModel = spaceBoundHiltViewModel<com.mangaverse.app.tracker.ui.updates.UpdatesViewModel>("updated")
-    var updatedContextualTopBarOverride by remember { mutableStateOf<TopBarOverrideState?>(null) }
-
-    SideEffect {
-        onExploreSourceSelectionTopBarChanged(
-            RouteScopedTopBarOverrideState(
-                TOP_BAR_OWNER_UPDATED,
-                updatedContextualTopBarOverride,
-            ),
-        )
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            onExploreSourceSelectionTopBarChanged(RouteScopedTopBarOverrideState(TOP_BAR_OWNER_UPDATED, null))
-        }
-    }
-
-    CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides animatedVisibilityScope) {
-        com.mangaverse.app.list.ui.compose.AppContentListRoute(
-            viewModel = viewModel,
-            contentPadding = contentPadding,
-            appRouter = appRouter,
-            onTopBarOverrideChanged = { updatedContextualTopBarOverride = it },
-            showRemoveOption = true,
-            sharedElementInstanceKey = "main_updated",
-            isContentTypeFilterVisible = true,
-            isSourceTagFilterVisible = true,
-            onRemoveSelection = { ids -> viewModel.remove(ids) },
-            onNavigateToDetails = { _, content, sharedKey ->
-                navigateToDetailsWithContent(content, sharedKey)
-            },
-            onFilterRailOverrideChanged = {},
-            onAddMenuProvider = { _, _, _ ->
-                object : androidx.core.view.MenuProvider {
-                    override fun onCreateMenu(menu: android.view.Menu, menuInflater: android.view.MenuInflater) {
-                        menuInflater.inflate(com.mangaverse.app.R.menu.opt_list, menu)
-                    }
-
-                    override fun onMenuItemSelected(menuItem: android.view.MenuItem): Boolean = when (menuItem.itemId) {
-                        com.mangaverse.app.R.id.action_refresh -> {
-                            viewModel.onRefresh()
-                            true
-                        }
-                        com.mangaverse.app.R.id.action_list_mode -> {
-                            appRouter.showListConfigSheet(com.mangaverse.app.list.ui.config.ListConfigSection.Updated)
-                            true
-                        }
-                        else -> false
-                    }
-                }
-            },
-            showQuickFilterInline = true,
-        )
-    }
-}
-
 internal fun UpdatedTopLevelRouteContent(
     animatedVisibilityScope: androidx.compose.animation.AnimatedVisibilityScope,
     activity: FragmentActivity,
