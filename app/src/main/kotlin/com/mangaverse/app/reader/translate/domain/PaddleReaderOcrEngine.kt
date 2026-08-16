@@ -88,10 +88,6 @@ class PaddleReaderOcrEngine @Inject constructor(
 		}
 	}
 
-	override suspend fun recognize(bitmap: Bitmap, regions: List<TextRegion>, automaticLanguage: String?): List<OcrTextBlock> {
-		return recognizeServer(bitmap, null)
-	}
-
 	private suspend fun decode(uri: Uri): Bitmap? = runInterruptible(Dispatchers.IO) {
 		runCatching { BitmapDecoderCompat.decode(uri.toFile()) }.getOrNull()
 	}

@@ -79,6 +79,11 @@ fun resolveAutomaticReaderOcrLanguage(
 		.firstOrNull { it !in unknownContentLanguages }
 }
 
+internal fun resolveAutomaticPaddleRecognizerModelId(language: String?): String {
+	// 引擎已改调后端 /api/ocr，模型 ID 仅作占位标识
+	return "paddle_ocr_server"
+}
+
 internal fun resolveAutomaticReaderRecognizerModelId(language: String?): String {
 	return if (language.normalizeReaderTranslationLanguageTag() == "ja") {
 		MANGA_OCR_RECOGNIZER_MODEL_ID
