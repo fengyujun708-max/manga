@@ -14,6 +14,7 @@ import com.mangaverse.app.parsers.model.ContentSource
 import com.mangaverse.app.parsers.util.almostEquals
 import com.mangaverse.app.parsers.util.runCatchingCancellable
 import javax.inject.Inject
+import com.mangaverse.app.suggestions.domain.TagsBlacklist
 
 class ExploreRepository @Inject constructor(
 	private val settings: AppSettings,

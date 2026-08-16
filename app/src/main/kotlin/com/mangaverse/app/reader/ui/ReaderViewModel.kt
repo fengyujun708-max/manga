@@ -89,6 +89,7 @@ import com.mangaverse.app.reader.ui.pager.ReaderUiState
 import java.util.concurrent.atomic.AtomicBoolean
 import java.time.Instant
 import javax.inject.Inject
+import com.mangaverse.app.stats.domain.StatsCollector
 
 private const val BOUNDS_PAGE_OFFSET = 2
 private const val WEBTOON_CHAPTER_PRELOAD_OFFSET = 10

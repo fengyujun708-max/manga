@@ -65,6 +65,7 @@ import com.mangaverse.app.work.domain.WorkAggregate
 import com.mangaverse.app.work.domain.WorkAggregateRepository
 import com.mangaverse.app.work.domain.WorkResolver
 import java.util.concurrent.atomic.AtomicBoolean
+import com.mangaverse.app.space.ui.SpaceBrowseScope
 
 private const val PAGE_SIZE = 32
 

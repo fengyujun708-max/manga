@@ -7,6 +7,7 @@ import com.mangaverse.app.core.parser.ContentDataRepository
 import com.mangaverse.app.core.prefs.AppSettings
 import com.mangaverse.app.core.parser.ContentRepository
 import com.mangaverse.app.work.domain.WorkResolver
+import com.mangaverse.app.space.domain.SpaceRepository
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)

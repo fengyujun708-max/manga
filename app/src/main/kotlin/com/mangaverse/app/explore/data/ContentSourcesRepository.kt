@@ -64,6 +64,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import com.mangaverse.app.parsers.network.CloudFlareHelper
 import com.mangaverse.app.core.model.LocalMangaSource
+import com.mangaverse.app.space.data.ProjectionContentTypeBackfill
 
 private const val BrowseSourcesTraceTag = "BrowseSourcesTrace"
 

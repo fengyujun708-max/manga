@@ -34,6 +34,8 @@ import com.mangaverse.app.settings.compose.BackupsSettingsUiState
 import com.mangaverse.app.settings.compose.SettingsChoiceOption
 import com.mangaverse.app.settings.compose.WebDavRemoteBackupUiItem
 import javax.inject.Inject
+import com.mangaverse.app.backups.external.ExternalBackupApp
+import com.mangaverse.app.backups.ui.periodical.PeriodicalBackupSettingsViewModel
 
 @Composable
 fun BackupsSettingsRoute(

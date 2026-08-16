@@ -61,6 +61,14 @@ import com.mangaverse.app.work.domain.WorkAggregate
 import com.mangaverse.app.work.domain.WorkAggregateRepository
 import com.mangaverse.app.work.domain.WorkResolver
 import javax.inject.Inject
+import com.mangaverse.app.backups.data.BackupRepository
+import com.mangaverse.app.backups.domain.BackupPayloadGuard
+import com.mangaverse.app.backups.domain.BackupWebDavRestoreCoordinator
+import com.mangaverse.app.backups.domain.BackupWebDavUploadCoordinator
+import com.mangaverse.app.backups.domain.ExternalBackupStorage
+import com.mangaverse.app.backups.ui.periodical.WebDavBackupUploader
+import com.mangaverse.app.space.ui.SpaceBrowseScope
+import com.mangaverse.app.suggestions.domain.SuggestionRepository
 
 @Immutable
 data class HomeRecentItem(

@@ -28,6 +28,7 @@ import com.mangaverse.app.core.ui.theme.KototoroTheme
 import com.mangaverse.app.settings.compose.SuggestionSourceOption
 import com.mangaverse.app.settings.compose.SuggestionsSettingsScreen
 import javax.inject.Inject
+import com.mangaverse.app.suggestions.ui.SuggestionsWorker
 
 @Composable
 fun SuggestionsSettingsRoute(

@@ -243,6 +243,7 @@ import java.util.Locale
 import java.text.DateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import com.mangaverse.app.stats.ui.sheet.ContentStatsViewModel
 
 private fun Color.withDetailsMinAlpha(minAlpha: Float): Color {
     return copy(alpha = alpha.coerceAtLeast(minAlpha))

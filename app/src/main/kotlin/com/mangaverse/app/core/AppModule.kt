@@ -70,6 +70,7 @@ import com.mangaverse.app.parsers.ContentLoaderContext
 import com.mangaverse.app.search.ui.ContentSuggestionsProvider
 import javax.inject.Provider
 import javax.inject.Singleton
+import com.mangaverse.app.backups.domain.BackupObserver
 
 @Module
 @InstallIn(SingletonComponent::class)

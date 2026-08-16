@@ -51,6 +51,7 @@ import com.mangaverse.app.tracker.work.TrackWorker
 import com.mangaverse.app.work.domain.WorkResolver
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
+import com.mangaverse.app.space.ui.SpaceBrowseScope
 
 private const val PAGE_SIZE = 32
 

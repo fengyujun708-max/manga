@@ -64,6 +64,14 @@ import com.mangaverse.app.search.ui.suggestion.SearchSuggestionViewModel
 import com.mangaverse.app.tracker.work.TrackWorker
 import com.mangaverse.app.work.domain.WorkResolver
 import javax.inject.Inject
+import com.mangaverse.app.backups.domain.BackupStartupCoordinator
+import com.mangaverse.app.space.data.SpaceRoutePreferencesController
+import com.mangaverse.app.space.data.SpaceSourcePresetController
+import com.mangaverse.app.space.domain.SpaceRepository
+import com.mangaverse.app.space.ui.ImmersiveSpaceSessionRegistry
+import com.mangaverse.app.space.ui.SpaceNavigationSessionViewModel
+import com.mangaverse.app.space.ui.SpaceResumeViewModel
+import com.mangaverse.app.space.ui.SpaceViewModel
 
 @AndroidEntryPoint
 class MainActivity : BaseComposeActivity() {

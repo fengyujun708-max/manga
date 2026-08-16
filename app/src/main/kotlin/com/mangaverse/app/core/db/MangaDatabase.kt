@@ -128,6 +128,19 @@ import com.mangaverse.app.tracker.data.TrackLogEntity
 import com.mangaverse.app.tracker.data.TracksDao
 import com.mangaverse.app.work.data.WorkMigrationLedgerDao
 import com.mangaverse.app.work.data.WorkMigrationLedgerEntity
+import com.mangaverse.app.stats.data.StatsDao
+import com.mangaverse.app.stats.data.StatsEntity
+import com.mangaverse.app.stats.data.WorkStatsDao
+import com.mangaverse.app.stats.data.WorkStatsEntity
+import com.mangaverse.app.suggestions.data.SuggestionDao
+import com.mangaverse.app.suggestions.data.SuggestionEntity
+import com.mangaverse.app.space.data.SpaceNavigationEntryEntity
+import com.mangaverse.app.space.data.SpaceSessionDao
+import com.mangaverse.app.space.data.SpaceSessionEntity
+import com.mangaverse.app.space.data.SpaceRoutePreferencesDao
+import com.mangaverse.app.space.data.SpaceRoutePreferencesEntity
+import com.mangaverse.app.space.data.SpaceDefinitionDao
+import com.mangaverse.app.space.data.SpaceDefinitionEntity
 
 import com.mangaverse.app.explore.data.SourcePresetEntity
 import com.mangaverse.app.explore.data.SourcePresetsDao

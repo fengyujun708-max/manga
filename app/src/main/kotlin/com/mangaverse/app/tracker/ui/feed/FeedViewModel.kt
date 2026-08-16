@@ -62,6 +62,7 @@ import com.mangaverse.app.core.parser.ContentDataRepository
 import com.mangaverse.app.work.domain.WorkResolver
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import com.mangaverse.app.space.ui.SpaceBrowseScope
 
 private const val PAGE_SIZE = 20
 private const val UPDATED_CONTENT_LOOKAHEAD_SIZE = 2000

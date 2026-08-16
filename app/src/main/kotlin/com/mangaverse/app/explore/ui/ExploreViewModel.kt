@@ -45,6 +45,7 @@ import com.mangaverse.app.list.ui.model.LoadingState
 import com.mangaverse.app.parsers.model.Content
 import com.mangaverse.app.parsers.model.ContentSource
 import javax.inject.Inject
+import com.mangaverse.app.space.ui.SpaceBrowseScope
 
 private const val ExploreViewModelTraceTag = "ExploreViewModelTrace"
 

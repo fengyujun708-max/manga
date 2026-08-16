@@ -135,6 +135,15 @@ import com.mangaverse.app.core.parser.kotatsu.KotatsuParserRepository
 import com.mangaverse.app.core.parser.legado.LegadoRepository
 import com.mangaverse.app.parsers.model.ContentSource
 import kotlin.coroutines.cancellation.CancellationException
+import com.mangaverse.app.backups.domain.BackupRestoreFormat
+import com.mangaverse.app.backups.domain.BackupUtils
+import com.mangaverse.app.backups.external.ExternalBackupApp
+import com.mangaverse.app.backups.ui.backup.BackupService
+import com.mangaverse.app.backups.ui.backup.MihonBackupExportService
+import com.mangaverse.app.backups.ui.backup.UsagiBackupExportService
+import com.mangaverse.app.backups.ui.periodical.PeriodicalBackupSettingsViewModel
+import com.mangaverse.app.backups.ui.restore.ExternalBackupImportService
+import com.mangaverse.app.suggestions.ui.SuggestionsWorker
 
 @AndroidEntryPoint
 class SettingsActivity :

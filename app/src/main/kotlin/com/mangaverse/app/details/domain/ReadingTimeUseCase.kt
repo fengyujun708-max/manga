@@ -8,6 +8,7 @@ import com.mangaverse.app.parsers.util.findById
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import com.mangaverse.app.stats.data.StatsRepository
 
 class ReadingTimeUseCase @Inject constructor(
 	private val settings: AppSettings,

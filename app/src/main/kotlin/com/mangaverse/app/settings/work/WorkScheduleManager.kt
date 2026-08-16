@@ -8,6 +8,7 @@ import com.mangaverse.app.core.util.ext.processLifecycleScope
 import com.mangaverse.app.tracker.work.TrackWorker
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.mangaverse.app.suggestions.ui.SuggestionsWorker
 
 @Singleton
 class WorkScheduleManager @Inject constructor(

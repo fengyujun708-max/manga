@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import com.mangaverse.app.core.jsonsource.SourceGroupManager
 import com.mangaverse.app.parsers.util.levenshteinDistance
+import com.mangaverse.app.space.ui.SpaceBrowseScope
 
 @HiltViewModel
 class FavouritesContainerViewModel @Inject constructor(

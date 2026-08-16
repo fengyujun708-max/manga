@@ -26,6 +26,7 @@ import java.util.Date
 import java.io.File
 import java.io.FileInputStream
 import javax.inject.Inject
+import com.mangaverse.app.backups.domain.BackupSection
 
 data class WebDavRemoteBackupState(
 	val file: BackupFileInfo,

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mangaverse.app.R
+import com.mangaverse.app.backups.external.ExternalBackupApp
 
 data class BackupsSettingsUiState(
     val backupOutputSummary: String,

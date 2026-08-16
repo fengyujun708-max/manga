@@ -110,6 +110,8 @@ import com.mangaverse.app.reader.ui.pager.ReaderUiState
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import com.mangaverse.app.space.domain.SpaceSwitchCoordinator
+import com.mangaverse.app.space.ui.SpaceSwitcherDelegate
 
 @AndroidEntryPoint
 class ReaderActivity :
