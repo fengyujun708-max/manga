@@ -12,3 +12,12 @@ build/
 local.properties
 *.iml
 .idea/
+
+# AI agent tooling (non-project)
+.monkeycode/
+.pi/
+.esr/
+.clinerules/
+AGENTS.md
+CLAUDE.md
+.weblate

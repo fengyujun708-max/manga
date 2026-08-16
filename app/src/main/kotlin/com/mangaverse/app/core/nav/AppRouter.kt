@@ -936,10 +936,11 @@ class AppRouter private constructor(
         composeActivity.dismissComposeModal(WELCOME_MODAL_KEY)
         composeActivity.showComposeModal(key = WELCOME_MODAL_KEY) {
             WelcomeRoute(
-                // 强制向导：不允许中途关闭
-                onDismissRequest = { },
+                // 登录成功或用户跳过前置步骤后关闭向导。
+                // 注意：若用户仍未登录，MainActivity 的 session 监听会立即重新打开，
+                // 因此这里可以安全地允许关闭，强制登录由会话监听兜底。
+                onDismissRequest = { composeActivity.dismissComposeModal(WELCOME_MODAL_KEY) },
                 onRestoreBackup = { uri ->
-                    // 强制向导：恢复备份不关闭向导
                     showBackupRestoreDialog(uri)
                 },
                 onOpenDocumentUnsupported = {
