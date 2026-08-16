@@ -80,8 +80,6 @@ class ReaderPageTranslationProcessor @Inject constructor(
 	private val okHttpClient: OkHttpClient,
 	private val mlKitOcrEngine: MlKitReaderOcrEngine,
 	private val paddleOcrEngine: PaddleReaderOcrEngine,
-	private val comicTextDetectorOnnx: ComicTextDetectorOnnx,
-	private val defaultDbNetTextDetector: DefaultDbNetTextDetector,
 	private val bubbleReaderTextDetector: BubbleReaderTextDetector,
 	private val mangaOcrReaderTextRecognizer: MangaOcrReaderTextRecognizer,
 	private val baberuOcrReaderTextRecognizer: BaberuOcrReaderTextRecognizer,
@@ -168,9 +166,9 @@ class ReaderPageTranslationProcessor @Inject constructor(
 	private val paddleTextDetector: ReaderTextDetector
 		get() = paddleOcrEngine
 	private val ctdTextDetector: ReaderTextDetector
-		get() = comicTextDetectorOnnx
+		get() = paddleOcrEngine
 	private val dbNetTextDetector: ReaderTextDetector
-		get() = defaultDbNetTextDetector
+		get() = paddleOcrEngine
 	private val mangaTextRecognizer: ReaderTextRecognizer
 		get() = mangaOcrReaderTextRecognizer
 	private val baberuTextRecognizer: ReaderTextRecognizer

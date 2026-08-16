@@ -3,167 +3,120 @@ package com.mangaverse.app.reader.translate.domain
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.net.Uri
 import android.util.Log
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
-import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import androidx.core.net.toFile
+import com.mangaverse.app.BuildConfig
 import com.mangaverse.app.core.LocalizedAppContext
 import com.mangaverse.app.core.image.BitmapDecoderCompat
 import com.mangaverse.app.core.prefs.AppSettings
-import com.mangaverse.app.core.util.ext.awaitCancellable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
-import androidx.core.net.toFile
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import java.io.ByteArrayOutputStream
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+/**
+ * OCR 引擎 —— 改为调用后端 /api/ocr（RapidOCR onnx 在服务器，客户端零内置）。
+ * 保留 ReaderOcrService / ReaderTextRecognizer 接口。
+ */
 class MlKitReaderOcrEngine @Inject constructor(
 	@LocalizedAppContext private val context: Context,
 	private val settings: AppSettings,
 ) : ReaderOcrService, ReaderTextRecognizer {
 
-	override suspend fun recognize(request: OcrRequest): List<OcrTextBlock> {
-		val sourceUri = request.sourceUri
-		val sourceLang = request.sourceLang
-		log { "recognize start lang=$sourceLang uri=$sourceUri" }
-		val recognizer = when (sourceLang) {
-			"ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
-			"zh", "zh-cn", "zh-hans", "zh-tw", "zh-hant" -> {
-				TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-			}
+	private val LOG_TAG = "MlKitReaderOcrEngine"
 
-			else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-		}
+	private val httpClient: OkHttpClient by lazy {
+		OkHttpClient.Builder()
+			.connectTimeout(10, TimeUnit.SECONDS)
+			.readTimeout(60, TimeUnit.SECONDS)
+			.writeTimeout(60, TimeUnit.SECONDS)
+			.build()
+	}
+
+	override suspend fun recognize(request: OcrRequest): List<OcrTextBlock> {
+		val bitmap = decode(request.sourceUri) ?: return emptyList()
 		return try {
-			val offsetRect = request.roi
-			var decodedBitmap: Bitmap? = null
-			var cropBitmap: Bitmap? = null
-			try {
-				val image = if (offsetRect == null) {
-					InputImage.fromFilePath(context, sourceUri)
-				} else {
-					val pageBitmap = runInterruptible(Dispatchers.IO) {
-						BitmapDecoderCompat.decode(sourceUri.toFile())
-					}
-					decodedBitmap = pageBitmap
-					val crop = cropBitmap(pageBitmap, offsetRect)
-					cropBitmap = crop
-					InputImage.fromBitmap(crop, 0)
-				}
-				val blocks = recognizer.process(image).awaitCancellable().textBlocks.map {
-					val boundingBox = it.boundingBox?.let { box ->
-						if (offsetRect == null) {
-							box
-						} else {
-							Rect(
-								box.left + offsetRect.left,
-								box.top + offsetRect.top,
-								box.right + offsetRect.left,
-								box.bottom + offsetRect.top,
-							)
-						}
-					}
-					val symbolBox = it.lines.firstOrNull()?.elements?.firstOrNull()?.symbols?.firstOrNull()?.boundingBox
-					val correctedSymbolBox = symbolBox?.let { box ->
-						if (offsetRect == null) box else Rect(box.left + offsetRect.left, box.top + offsetRect.top, box.right + offsetRect.left, box.bottom + offsetRect.top)
-					}
-					OcrTextBlock(
-						text = it.text,
-						boundingBox = boundingBox,
-						firstSymbolBox = correctedSymbolBox,
-						directionHint = inferTextDirectionHint(boundingBox, it.text),
-						angleHintDegrees = inferTextAngleHintDegrees(boundingBox, it.text),
-						isAxisAligned = inferAxisAlignedHint(boundingBox),
-						quadPoints = boundingBox?.let(::rectToTextQuad),
-					)
-				}
-				log { "recognize done blocks=${blocks.size}" }
-				blocks
-			} finally {
-				cropBitmap?.recycle()
-				decodedBitmap?.takeIf { it !== cropBitmap }?.recycle()
-			}
+			recognizeServer(bitmap, request.roi)
 		} finally {
-			recognizer.close()
+			bitmap.recycle()
 		}
 	}
 
-	override suspend fun recognize(sourceUri: android.net.Uri, regions: List<TextRegion>): List<OcrTextBlock> {
-		if (regions.isEmpty()) return emptyList()
-		val bitmap = runInterruptible(Dispatchers.IO) {
-			BitmapDecoderCompat.decode(sourceUri.toFile())
-		}
+	override suspend fun recognize(sourceUri: Uri, regions: List<TextRegion>): List<OcrTextBlock> {
+		val bitmap = decode(sourceUri) ?: return emptyList()
 		return try {
-			recognize(bitmap, regions)
+			recognizeServer(bitmap, null)
 		} finally {
 			bitmap.recycle()
 		}
 	}
 
 	override suspend fun recognize(bitmap: Bitmap, regions: List<TextRegion>): List<OcrTextBlock> {
-		if (regions.isEmpty()) return emptyList()
-		val recognizer = when (settings.readerTranslationSourceLanguage) {
-			"ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
-			"zh", "zh-cn", "zh-hans", "zh-tw", "zh-hant" -> {
-				TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+		return recognizeServer(bitmap, null)
+	}
+
+	private suspend fun decode(uri: Uri): Bitmap? = runInterruptible(Dispatchers.IO) {
+		runCatching { BitmapDecoderCompat.decode(uri.toFile()) }.getOrNull()
+	}
+
+	private suspend fun recognizeServer(bitmap: Bitmap, roi: Rect?): List<OcrTextBlock> = withContext(Dispatchers.IO) {
+		try {
+			val pngBytes = ByteArrayOutputStream().use { bos ->
+				bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos)
+				bos.toByteArray()
 			}
-			else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-		}
-		return try {
-			buildList {
-				for (region in regions) {
-					val crop = cropBitmap(bitmap, region.rect)
-					try {
-						val result = recognizer.process(InputImage.fromBitmap(crop, 0)).awaitCancellable()
-						result.textBlocks.mapTo(this) { block ->
-							val localBox = block.boundingBox
-							val boundingBox = localBox?.let { box ->
-								Rect(
-									box.left + region.rect.left,
-									box.top + region.rect.top,
-									box.right + region.rect.left,
-									box.bottom + region.rect.top,
-								)
-							} ?: Rect(region.rect)
-							OcrTextBlock(
-								text = block.text,
-								boundingBox = boundingBox,
-								directionHint = region.directionHint,
-								angleHintDegrees = region.angleHintDegrees,
-								isAxisAligned = region.isAxisAligned,
-								quadPoints = if (localBox == null) region.quadPoints else rectToTextQuad(boundingBox),
-								detectorId = region.detectorId,
-							)
-						}
-					} finally {
-						crop.recycle()
-					}
+			val body = MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("image", "page.png", pngBytes.toRequestBody("image/png".toMediaType()))
+				.build()
+			val request = Request.Builder()
+				.url("${BuildConfig.MANGAVERSE_API_BASE_URL}/api/ocr")
+				.post(body)
+				.build()
+			httpClient.newCall(request).execute().use { resp ->
+				if (!resp.isSuccessful) {
+					Log.w(LOG_TAG, "ocr API HTTP ${resp.code}")
+					return@use emptyList()
 				}
+				val json = org.json.JSONObject(resp.body?.string().orEmpty())
+				val arr = json.optJSONArray("results") ?: JSONArray()
+				val out = ArrayList<OcrTextBlock>(arr.length())
+				for (i in 0 until arr.length()) {
+					val item = arr.optJSONObject(i) ?: continue
+					val bbox = item.optJSONArray("bbox")
+					if (bbox == null || bbox.length() < 4) continue
+					val rect = Rect(
+						bbox.optDouble(0).toInt(),
+						bbox.optDouble(1).toInt(),
+						bbox.optDouble(2).toInt(),
+						bbox.optDouble(3).toInt(),
+					)
+					if (roi != null && !Rect.intersects(rect, roi)) continue
+					val text = item.optString("text").trim()
+					if (text.isEmpty()) continue
+					out.add(
+						OcrTextBlock(
+							text = text,
+							boundingBox = rect,
+							confidence = item.optDouble("conf", 1.0).toFloat(),
+							detectorId = "server_rapidocr",
+						)
+					)
+				}
+				out
 			}
-		} finally {
-			recognizer.close()
+		} catch (e: Exception) {
+			Log.e(LOG_TAG, "server ocr failed", e)
+			emptyList()
 		}
-	}
-
-	private fun cropBitmap(source: Bitmap, box: Rect): Bitmap {
-		val left = box.left.coerceIn(0, source.width - 1)
-		val top = box.top.coerceIn(0, source.height - 1)
-		val right = box.right.coerceIn(left + 1, source.width)
-		val bottom = box.bottom.coerceIn(top + 1, source.height)
-		return Bitmap.createBitmap(source, left, top, right - left, bottom - top)
-	}
-
-	private inline fun log(message: () -> String) {
-		if (settings.isReaderTranslationDebugLogsEnabled) {
-			Log.d(LOG_TAG, message())
-		}
-	}
-
-	private companion object {
-
-		const val LOG_TAG = "ReaderOcrMlKit"
 	}
 }
