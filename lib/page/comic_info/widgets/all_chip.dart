@@ -6,7 +6,7 @@ import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/page/comic_info/json/normal/normal_comic_all_info.dart';
 import 'package:mangaverse/page/comic_info/models/comic_info_action.dart';
 import 'package:mangaverse/platform/desktop/window_logic.dart';
-import 'package:mangaverse/type/pipe.dart';
+import 'package:mangaverse/type/pipe.dart'
 import 'package:mangaverse/util/context/context_extensions.dart';
 import 'package:mangaverse/util/text/chinese_convert.dart';
 import 'package:mangaverse/widgets/toast.dart';
@@ -181,23 +181,6 @@ class _ClickableChipState extends State<_ClickableChip> {
                   : MangaVerseColors.foreground,
               fontWeight: FontWeight.w500,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-                ),
-                blurRadius: _hovering ? 10 : 6,
-                offset: Offset(0, _hovering ? 3 : 2),
-                spreadRadius: _hovering ? 0.5 : 0,
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Text(
-            widget.label,
-            style: TextStyle(fontSize: 12, color: primary),
           ),
         ),
       ),
