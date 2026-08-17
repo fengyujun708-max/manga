@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
 import 'package:mangaverse/widgets/picture_bloc/models/picture_info.dart';
 
@@ -41,15 +42,12 @@ class Cover extends StatelessWidget {
                 return DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: radius,
-                    color: context.theme.colorScheme.surfaceContainerHigh,
-                    border: Border.all(
-                      color: context.theme.colorScheme.outlineVariant
-                          .withValues(alpha: 0.35),
-                    ),
+                    color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.3),
+                    border: Border.all(color: MangaVerseColors.border),
                   ),
                   child: Center(
                     child: LoadingAnimationWidget.waveDots(
-                      color: context.theme.colorScheme.primary,
+                      color: MangaVerseColors.accent,
                       size: 40,
                     ),
                   ),
@@ -90,10 +88,12 @@ class Cover extends StatelessWidget {
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: radius,
-                        color:
-                            context.theme.colorScheme.surfaceContainerHighest,
+                        color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.3),
+                        border: Border.all(color: MangaVerseColors.border),
                       ),
-                      child: const Center(child: Icon(Icons.refresh)),
+                      child: const Center(
+                        child: Icon(Icons.refresh, color: MangaVerseColors.accent),
+                      ),
                     ),
                   );
                 }

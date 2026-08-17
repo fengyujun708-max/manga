@@ -933,8 +933,10 @@ class _SectionCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title!,
-                    style: context.theme.textTheme.titleLarge?.copyWith(
+                    style: const TextStyle(
+                      fontSize: 20,
                       fontWeight: FontWeight.w800,
+                      color: MangaVerseColors.foreground,
                     ),
                   ),
                 ),
@@ -971,28 +973,25 @@ class _EpisodeHeaderBadge extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: context.theme.colorScheme.surfaceContainerLow,
+            color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: context.theme.colorScheme.outlineVariant.withValues(
-                alpha: 0.3,
-              ),
-            ),
+            border: Border.all(color: MangaVerseColors.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 icon,
                 size: 18,
-                color: context.textColor.withValues(alpha: 0.75),
+                color: MangaVerseColors.mutedForeground,
               ),
               const SizedBox(width: 6),
               Text(
                 label,
-                style: context.theme.textTheme.labelLarge?.copyWith(
+                style: const TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: context.textColor.withValues(alpha: 0.82),
+                  fontSize: 14,
+                  color: MangaVerseColors.mutedForeground,
                 ),
               ),
             ],
@@ -1017,36 +1016,45 @@ class _DescriptionCardState extends State<_DescriptionCard> {
 
   @override
   Widget build(BuildContext context) {
-    final descriptionStyle = context.theme.textTheme.bodyMedium?.copyWith(
-      height: 1.65,
-      color: context.textColor.withValues(alpha: 0.9),
-    );
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            t.comicInfo.description,
-            style: context.theme.textTheme.titleMedium?.copyWith(
+          const Text(
+            '简介',
+            style: TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.w700,
+              color: MangaVerseColors.foreground,
             ),
           ),
           const SizedBox(height: 10),
           SelectableText(
             widget.description,
-            style: descriptionStyle,
+            style: const TextStyle(
+              fontSize: 14,
+              height: 1.65,
+              color: MangaVerseColors.mutedForeground,
+            ),
             maxLines: _expanded ? null : 5,
           ),
           if (widget.description.length > 90) ...[
             const SizedBox(height: 10),
             TextButton.icon(
               onPressed: () => setState(() => _expanded = !_expanded),
-              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+              icon: Icon(
+                _expanded ? Icons.expand_less : Icons.expand_more,
+                color: MangaVerseColors.accent,
+                size: 18,
+              ),
               label: Text(
                 _expanded ? t.comicInfo.collapse : t.comicInfo.expandFullText,
+                style: const TextStyle(
+                  color: MangaVerseColors.accent,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -1083,7 +1091,10 @@ class _EpisodeListSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 18),
         child: Text(
           t.comicInfo.noChapters,
-          style: context.theme.textTheme.bodyMedium,
+          style: const TextStyle(
+            fontSize: 14,
+            color: MangaVerseColors.mutedForeground,
+          ),
         ),
       );
     }
@@ -1181,12 +1192,15 @@ class _ReadActionButton extends StatelessWidget {
     return FloatingActionButton.extended(
       onPressed: onPressed,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      backgroundColor: MangaVerseColors.accent,
+      foregroundColor: Colors.white,
       icon: Icon(
         hasHistory ? Icons.history_rounded : Icons.menu_book_rounded,
         size: 18,
       ),
       label: Text(
         hasHistory ? t.comicInfo.continueRead : t.comicInfo.startRead,
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
   }

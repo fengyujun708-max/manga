@@ -1,6 +1,7 @@
 // 通用的标签/分类 Widget
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/page/comic_info/json/normal/normal_comic_all_info.dart';
 import 'package:mangaverse/page/comic_info/models/comic_info_action.dart';
@@ -101,16 +102,21 @@ class _LabelChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = context.textColor;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: context.backgroundColor,
+        color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: textColor),
+        border: Border.all(color: MangaVerseColors.border),
       ),
-      child: Text(label, style: TextStyle(fontSize: 12, color: textColor)),
+      child: const Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: MangaVerseColors.mutedForeground,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }
@@ -135,9 +141,6 @@ class _ClickableChipState extends State<_ClickableChip> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = context.theme.colorScheme.primary;
-    final background = context.backgroundColor;
-
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovering = true),
@@ -149,15 +152,41 @@ class _ClickableChipState extends State<_ClickableChip> {
           duration: const Duration(milliseconds: 140),
           curve: Curves.easeOut,
           decoration: BoxDecoration(
-            color: _hovering ? primary.withValues(alpha: 0.08) : background,
+            color: _hovering
+                ? MangaVerseColors.accent.withValues(alpha: 0.15)
+                : MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: primary.withValues(alpha: _hovering ? 0.9 : 0.55),
+              color: _hovering
+                  ? MangaVerseColors.accent
+                  : MangaVerseColors.border,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: context.textColor.withValues(
-                  alpha: _hovering ? 0.28 : 0.18,
+            boxShadow: _hovering
+                ? [
+                    BoxShadow(
+                      color: MangaVerseColors.accent.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : [],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Text(
+            widget.label,
+            style: TextStyle(
+              fontSize: 12,
+              color: _hovering
+                  ? MangaVerseColors.accent
+                  : MangaVerseColors.foreground,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
                 ),
                 blurRadius: _hovering ? 10 : 6,
                 offset: Offset(0, _hovering ? 3 : 2),

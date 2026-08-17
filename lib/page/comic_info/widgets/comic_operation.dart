@@ -351,15 +351,15 @@ class _OperationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = item.accentColor ?? context.theme.colorScheme.primary;
+    final accent = item.accentColor ?? MangaVerseColors.accent;
     final background = item.highlighted
-        ? accent.withValues(alpha: 0.14)
-        : context.theme.colorScheme.surfaceContainerLowest;
+        ? accent.withValues(alpha: 0.15)
+        : MangaVerseColors.surfaceVariant.withValues(alpha: 0.3);
     final foreground = !item.enabled
-        ? context.theme.colorScheme.onSurface.withValues(alpha: 0.38)
+        ? MangaVerseColors.mutedForeground
         : item.highlighted
         ? accent
-        : context.textColor;
+        : MangaVerseColors.foreground;
 
     return Material(
       color: Colors.transparent,
@@ -370,6 +370,9 @@ class _OperationCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: background,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: item.highlighted ? accent.withValues(alpha: 0.4) : MangaVerseColors.border,
+            ),
           ),
           padding: EdgeInsets.symmetric(
             horizontal: compact ? 8 : 10,
@@ -385,10 +388,10 @@ class _OperationCard extends StatelessWidget {
                   item.text,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.theme.textTheme.labelLarge?.copyWith(
+                  style: TextStyle(
                     color: foreground,
                     fontWeight: FontWeight.w700,
-                    fontSize: compact ? 13 : null,
+                    fontSize: compact ? 13 : 14,
                   ),
                 ),
               ),

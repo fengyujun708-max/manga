@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/string_select.dart';
 import 'package:mangaverse/page/comic_info/json/normal/normal_comic_all_info.dart';
 import 'package:mangaverse/page/comic_read/type/chapter_extern.dart';
@@ -75,16 +76,17 @@ class EpButtonWidget extends StatelessWidget {
         margin: EdgeInsets.zero,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: context.theme.colorScheme.surfaceContainerHigh,
+          color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
             Text(
               t.comicInfo.episodeLabel(index: displayNumber),
-              style: context.theme.textTheme.bodyMedium?.copyWith(
+              style: const TextStyle(
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: context.theme.colorScheme.primary,
+                color: MangaVerseColors.accent,
               ),
             ),
             const SizedBox(width: 12),
@@ -93,17 +95,17 @@ class EpButtonWidget extends StatelessWidget {
                 title.let(convertChineseForDisplay),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: const TextStyle(
                   fontSize: 15,
-                  color: context.textColor,
+                  fontWeight: FontWeight.w600,
+                  color: MangaVerseColors.foreground,
                 ),
               ),
             ),
-            Icon(
+            const Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: context.textColor.withValues(alpha: 0.5),
+              color: MangaVerseColors.mutedForeground,
             ),
           ],
         ),
