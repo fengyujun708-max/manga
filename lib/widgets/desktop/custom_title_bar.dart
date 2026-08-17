@@ -100,7 +100,7 @@ class _CustomTitleBarState extends State<CustomTitleBar> with WindowListener {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Breeze',
+                      'MangaVerse',
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
@@ -112,7 +112,7 @@ class _CustomTitleBarState extends State<CustomTitleBar> with WindowListener {
                   if (isMacOS) const Spacer(),
                   if (isMacOS)
                     Text(
-                      'Breeze',
+                      'MangaVerse',
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 13, // macOS 标题通常更小更精致

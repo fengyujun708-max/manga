@@ -7,7 +7,7 @@ List<String> mirrorBaseUrls = [
   "https://cdn.gh-proxy.org/",
 ];
 
-const breezeLatestReleaseApi = 'https://api.windy-78.site/breeze';
+const mangaverseLatestReleaseApi = 'https://api.windy-78.site/breeze';
 
 const _breezeLatestReleaseUrl =
     'https://api.github.com/repos/deretame/Breeze/releases/latest';
@@ -35,12 +35,12 @@ Future<Map<String, dynamic>> fetchReleaseData(String fullUrl) async {
   final List<String> urls;
   if (isGithubApiUrl(resolvedUrl)) {
     final repoPath = "/${resolvedUrl.split("api.github.com/")[1]}";
-    final isBreezeLatest =
+    final isMangaVerseLatest =
         resolvedUrl == _breezeLatestReleaseUrl ||
         repoPath == '/repos/deretame/Breeze/releases/latest';
 
     urls = [
-      if (isBreezeLatest) breezeLatestReleaseApi,
+      if (isMangaVerseLatest) mangaverseLatestReleaseApi,
       ...mirrorBaseUrls.map((base) => "${base}https://api.github.com$repoPath"),
       "https://api.github.com$repoPath",
     ];

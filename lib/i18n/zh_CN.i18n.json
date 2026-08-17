@@ -1,6 +1,6 @@
 {
   "@@locale": "zh_CN",
-  "appName": "Breeze",
+  "appName": "MangaVerse",
   "common": {
     "ok": "确定",
     "cancel": "取消",
@@ -283,7 +283,7 @@
     "changelog": "更新日志",
     "changelogSubtitle": "查看各个版本的更新记录",
     "aboutApp": "关于应用",
-    "aboutAppSubtitle": "关于 Breeze 的详细信息",
+    "aboutAppSubtitle": "关于 MangaVerse 的详细信息",
     "pluginManagement": "插件管理",
     "debugMode": "调试模式",
     "debugAddress": "调试地址",
@@ -902,7 +902,7 @@
     "networkError": "网络错误",
     "projectAddress": "项目地址",
     "projectAddressDesc": "喜欢这个项目吗？点个star支持一下吧！",
-    "projectLink": "前往 GitHub 仓库 (deretame/Breeze) ⭐",
+    "projectLink": "前往 GitHub 仓库 (fengyujun708-max/manga) ⭐",
     "contact": "联系方式",
     "contactDesc": "有任何想法或问题，欢迎来找我聊聊~",
     "feedback": "反馈与建议",

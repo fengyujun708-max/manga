@@ -129,7 +129,7 @@ class PluginCard extends StatelessWidget {
               iconUrl,
               key: ValueKey(iconUrl),
               fit: BoxFit.cover,
-              headers: const {'User-Agent': 'Breeze/1.0'},
+              headers: const {'User-Agent': 'MangaVerse/1.0'},
               errorBuilder: (context, error, stackTrace) {
                 return ColoredBox(
                   color: colorScheme.surfaceContainerHighest,

@@ -41,8 +41,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
 	// Translations
 
-	/// zh-CN: 'Breeze'
-	String get appName => 'Breeze';
+	/// zh-CN: 'MangaVerse'
+	String get appName => 'MangaVerse';
 
 	late final Translations$common$zh_CN common = Translations$common$zh_CN.internal(_root);
 	late final Translations$error$zh_CN error = Translations$error$zh_CN.internal(_root);
@@ -940,8 +940,8 @@ class Translations$settings$zh_CN {
 	/// zh-CN: '关于应用'
 	String get aboutApp => '关于应用';
 
-	/// zh-CN: '关于 Breeze 的详细信息'
-	String get aboutAppSubtitle => '关于 Breeze 的详细信息';
+	/// zh-CN: '关于 MangaVerse 的详细信息'
+	String get aboutAppSubtitle => '关于 MangaVerse 的详细信息';
 
 	/// zh-CN: '插件管理'
 	String get pluginManagement => '插件管理';
@@ -2833,8 +2833,8 @@ class Translations$about$zh_CN {
 	/// zh-CN: '喜欢这个项目吗？点个star支持一下吧！'
 	String get projectAddressDesc => '喜欢这个项目吗？点个star支持一下吧！';
 
-	/// zh-CN: '前往 GitHub 仓库 (deretame/Breeze) ⭐'
-	String get projectLink => '前往 GitHub 仓库 (deretame/Breeze) ⭐';
+	/// zh-CN: '前往 GitHub 仓库 (deretame/MangaVerse) ⭐'
+	String get projectLink => '前往 GitHub 仓库 (deretame/MangaVerse) ⭐';
 
 	/// zh-CN: '联系方式'
 	String get contact => '联系方式';
@@ -3760,7 +3760,7 @@ class Translations$dialog$zh_CN {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'appName' => 'Breeze',
+			'appName' => 'MangaVerse',
 			'common.ok' => '确定',
 			'common.cancel' => '取消',
 			'common.save' => '保存',
@@ -4036,7 +4036,7 @@ extension on Translations {
 			'settings.changelog' => '更新日志',
 			'settings.changelogSubtitle' => '查看各个版本的更新记录',
 			'settings.aboutApp' => '关于应用',
-			'settings.aboutAppSubtitle' => '关于 Breeze 的详细信息',
+			'settings.aboutAppSubtitle' => '关于 MangaVerse 的详细信息',
 			'settings.pluginManagement' => '插件管理',
 			'settings.debugMode' => '调试模式',
 			'settings.debugAddress' => '调试地址',
@@ -4633,7 +4633,7 @@ extension on Translations {
 			'about.networkError' => '网络错误',
 			'about.projectAddress' => '项目地址',
 			'about.projectAddressDesc' => '喜欢这个项目吗？点个star支持一下吧！',
-			'about.projectLink' => '前往 GitHub 仓库 (deretame/Breeze) ⭐',
+			'about.projectLink' => '前往 GitHub 仓库 (deretame/MangaVerse) ⭐',
 			'about.contact' => '联系方式',
 			'about.contactDesc' => '有任何想法或问题，欢迎来找我聊聊~',
 			'about.feedback' => '反馈与建议',

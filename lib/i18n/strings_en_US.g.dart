@@ -39,7 +39,7 @@ class TranslationsEnUs extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsEnUs $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsEnUs(meta: meta ?? this.$meta);
 
 	// Translations
-	@override String get appName => 'Breeze';
+	@override String get appName => "MangaVerse";
 	@override late final _Translations$common$en_US common = _Translations$common$en_US._(_root);
 	@override late final _Translations$error$en_US error = _Translations$error$en_US._(_root);
 	@override late final _Translations$navigation$en_US navigation = _Translations$navigation$en_US._(_root);
@@ -385,7 +385,7 @@ class _Translations$settings$en_US extends Translations$settings$zh_CN {
 	@override String get changelog => 'Changelog';
 	@override String get changelogSubtitle => 'View update records for each version';
 	@override String get aboutApp => 'About app';
-	@override String get aboutAppSubtitle => 'Detailed information about Breeze';
+	@override String get aboutAppSubtitle => 'Detailed information about MangaVerse';
 	@override String get pluginManagement => 'Plugin management';
 	@override String get debugMode => 'Debug mode';
 	@override String get debugAddress => 'Debug address';
@@ -1087,7 +1087,7 @@ class _Translations$about$en_US extends Translations$about$zh_CN {
 	@override String get networkError => 'Network error';
 	@override String get projectAddress => 'Project';
 	@override String get projectAddressDesc => 'Like this project? Give it a star on GitHub!';
-	@override String get projectLink => 'Go to GitHub repo (deretame/Breeze) ⭐';
+	@override String get projectLink => 'Go to GitHub repo (fengyujun708-max/manga) ⭐';
 	@override String get contact => 'Contact';
 	@override String get contactDesc => 'Have ideas or questions? Feel free to reach out~';
 	@override String get feedback => 'Feedback';
@@ -1511,7 +1511,7 @@ class _Translations$dialog$en_US extends Translations$dialog$zh_CN {
 extension on TranslationsEnUs {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'appName' => 'Breeze',
+			'appName' => 'MangaVerse',
 			'common.ok' => 'OK',
 			'common.cancel' => 'Cancel',
 			'common.save' => 'Save',
@@ -1787,7 +1787,7 @@ extension on TranslationsEnUs {
 			'settings.changelog' => 'Changelog',
 			'settings.changelogSubtitle' => 'View update records for each version',
 			'settings.aboutApp' => 'About app',
-			'settings.aboutAppSubtitle' => 'Detailed information about Breeze',
+			'settings.aboutAppSubtitle' => 'Detailed information about MangaVerse',
 			'settings.pluginManagement' => 'Plugin management',
 			'settings.debugMode' => 'Debug mode',
 			'settings.debugAddress' => 'Debug address',
@@ -2383,7 +2383,7 @@ extension on TranslationsEnUs {
 			'about.networkError' => 'Network error',
 			'about.projectAddress' => 'Project',
 			'about.projectAddressDesc' => 'Like this project? Give it a star on GitHub!',
-			'about.projectLink' => 'Go to GitHub repo (deretame/Breeze) ⭐',
+			'about.projectLink' => 'Go to GitHub repo (fengyujun708-max/manga) ⭐',
 			'about.contact' => 'Contact',
 			'about.contactDesc' => 'Have ideas or questions? Feel free to reach out~',
 			'about.feedback' => 'Feedback',

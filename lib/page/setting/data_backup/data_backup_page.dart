@@ -98,7 +98,7 @@ class _DataBackupPageState extends State<DataBackupPage> {
     }
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final fileName = 'Breeze-export-$timestamp.zip';
+    final fileName = 'MangaVerse-export-$timestamp.zip';
     late final String zipPath;
 
     // iOS 的 file_selector 未实现 getDirectoryPath，先写到缓存再走系统分享面板
@@ -124,7 +124,7 @@ class _DataBackupPageState extends State<DataBackupPage> {
     _showLoadingDialog(t.dataBackup.exporting);
 
     try {
-      await exportBreezeBackup(
+      await exportMangaVerseBackup(
         zipPath: zipPath,
         includeDownloads: _includeDownloads,
       );
@@ -215,7 +215,7 @@ class _DataBackupPageState extends State<DataBackupPage> {
     _showLoadingDialog(t.dataBackup.importing);
 
     try {
-      await applyBreezeBackupImport(config);
+      await applyMangaVerseBackupImport(config);
       if (!mounted) return;
       Navigator.of(context).pop();
       await _showRestartDialog();

@@ -21,7 +21,7 @@ import 'package:mangaverse/util/coreml_model_loader.dart';
 import 'package:mangaverse/util/get_path.dart';
 import 'package:mangaverse/widgets/toast.dart';
 
-/// Breeze 内置 RealSR / Real-CUGAN / CoreML 超分封装
+/// MangaVerse 内置 RealSR / Real-CUGAN / CoreML 超分封装
 ///
 /// - Android：调用 bundled 的 waifu2x-ncnn CLI
 /// - iOS / macOS：从 `deretame/breeze-binary` 下载 `MacOS-iOS.7z` 后，

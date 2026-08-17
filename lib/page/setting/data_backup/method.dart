@@ -40,7 +40,7 @@ class BackupConfig {
 /// 导出完整数据备份到 [zipPath]。
 ///
 /// 当 [includeDownloads] 为 true 时，会一并打包 `getDownloadPath()` 下的漫画文件。
-Future<String> exportBreezeBackup({
+Future<String> exportMangaVerseBackup({
   required String zipPath,
   required bool includeDownloads,
 }) async {
@@ -90,7 +90,7 @@ Future<String> exportBreezeBackup({
 ///
 /// 先把源 zip 复制到私有缓存，再读取 config.json，避免在确认导入前因权限
 /// 回收或源文件变动导致第二次读取失败。本函数不会解压整个 zip。
-/// 调用方在确认导入后应使用 [applyBreezeBackupImport]；若取消导入，
+/// 调用方在确认导入后应使用 [applyMangaVerseBackupImport]；若取消导入，
 /// 请自行删除 [BackupConfig.cacheDir]。
 ///
 /// 当 [skipCopy] 为 true 时，[sourceZipPath] 应已是私有缓存中的路径，
@@ -176,7 +176,7 @@ Future<String?> pickBackupZipAndroid() async {
 ///
 /// [config] 应来自 [readBackupConfig] 的返回值。执行完成后会删除
 /// [BackupConfig.cacheDir] 下的缓存副本与解压目录。
-Future<void> applyBreezeBackupImport(BackupConfig config) async {
+Future<void> applyMangaVerseBackupImport(BackupConfig config) async {
   final cacheDirectory = Directory(config.cacheDir);
   try {
     // 1. 解压完整备份包

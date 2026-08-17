@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangaverse/config/global/global_setting.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/plugin_registry_cubit.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/page/bookshelf/bookshelf.dart' hide SearchEnter;
@@ -109,9 +110,24 @@ class _BookshelfPageContentState extends State<_BookshelfPageContent>
         _triggerRefreshAll();
       },
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
+          toolbarHeight: 80,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           titleSpacing: isDesktop ? 16 : 8,
           title: isDesktop ? _buildDesktopHeader() : _buildMobileHeader(),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(4),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: MangaVerseColors.border,
+                borderRadius: BorderRadius.circular(1),
+              ),
+              height: 1,
+            ),
+          ),
         ),
         body: TabBarView(
           controller: _tabController,
@@ -200,9 +216,7 @@ class _BookshelfPageContentState extends State<_BookshelfPageContent>
   Widget _buildSleekTabs() {
     return Container(
       decoration: BoxDecoration(
-        color: context.theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.5,
-        ),
+        color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.all(4),
@@ -218,15 +232,15 @@ class _BookshelfPageContentState extends State<_BookshelfPageContent>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? context.theme.colorScheme.surface
+                    ? MangaVerseColors.accent
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+                          color: MangaVerseColors.accent.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
                       ]
                     : [],
@@ -234,11 +248,11 @@ class _BookshelfPageContentState extends State<_BookshelfPageContent>
               child: Text(
                 _labels[index],
                 style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  fontSize: 14,
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
-                      ? context.textColor
-                      : context.textColor.withValues(alpha: 0.6),
+                      ? Colors.white
+                      : MangaVerseColors.mutedForeground,
                 ),
               ),
             ),
@@ -252,16 +266,14 @@ class _BookshelfPageContentState extends State<_BookshelfPageContent>
     return Container(
       height: 38,
       decoration: BoxDecoration(
-        color: context.theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.4,
-        ),
+        color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
       ),
       child: TextField(
         controller: _searchController,
         textInputAction: TextInputAction.search,
         textAlignVertical: TextAlignVertical.center,
-        style: const TextStyle(fontSize: 14),
+        style: const TextStyle(fontSize: 14, color: MangaVerseColors.foreground),
         decoration: InputDecoration(
           hintText: t.bookshelf.searchList,
           hintStyle: TextStyle(color: context.textColor.withValues(alpha: 0.5)),
