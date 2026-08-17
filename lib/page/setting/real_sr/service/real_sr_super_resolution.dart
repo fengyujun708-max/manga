@@ -24,9 +24,9 @@ import 'package:mangaverse/widgets/toast.dart';
 /// MangaVerse 内置 RealSR / Real-CUGAN / CoreML 超分封装
 ///
 /// - Android：调用 bundled 的 waifu2x-ncnn CLI
-/// - iOS / macOS：从 `deretame/breeze-binary` 下载 `MacOS-iOS.7z` 后，
+/// - iOS / macOS：从 `fengyujun708-max/manga-binary` 下载 `MacOS-iOS.7z` 后，
 ///   调用 `CoreMLUpscale` 使用用户选择的 waifu2x / Real-CUGAN 模型
-/// - Windows / Linux：从 `deretame/breeze-binary` 下载模型后，
+/// - Windows / Linux：从 `fengyujun708-max/manga-binary` 下载模型后，
 ///   调用 `getFilePath()/super_resolution/` 下的 waifu2x-ncnn-vulkan
 ///   或 realcugan-ncnn-vulkan
 class RealSrSuperResolution {
@@ -38,7 +38,7 @@ class RealSrSuperResolution {
 
   /// GitHub 上存放桌面端模型压缩包的仓库。
   static const String _binaryRepoBaseUrl =
-      'https://github.com/deretame/breeze-binary/raw/main';
+      'https://github.com/fengyujun708-max/manga-binary/raw/main';
 
   /// 最大并发超分任务数。
   ///

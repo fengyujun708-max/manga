@@ -6,7 +6,7 @@ import 'package:mangaverse/i18n/strings.g.dart';
 
 /// iOS / macOS CoreML 超分模型配置。
 ///
-/// 模型文件来自 GitHub `deretame/breeze-binary` 的 `MacOS-iOS.7z`，
+/// 模型文件来自 GitHub `fengyujun708-max/manga-binary` 的 `MacOS-iOS.7z`，
 /// 目前压缩包里实际只有以下两个变体：
 /// - waifu2x_photo_noise0_scale2x.mlmodel
 /// - RealCUGAN_2x_no-denoise_block156.mlpackage
@@ -59,7 +59,7 @@ abstract class CoreMLModelConfig {
   static const String archiveName = 'MacOS-iOS.7z';
   static const String archiveSubDir = 'MacOS-iOS';
   static const String binaryRepoBaseUrl =
-      'https://github.com/deretame/breeze-binary/raw/main';
+      'https://github.com/fengyujun708-max/manga-binary/raw/main';
 
   static final List<CoreMLModelFamily> families = <CoreMLModelFamily>[
     CoreMLModelFamily(

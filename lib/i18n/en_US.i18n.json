@@ -893,49 +893,6 @@
     "coremlGeneralOption": "General option (scale)",
     "coremlTileInfo": "Tile info"
   },
-  "about": {
-    "title": "About app",
-    "version": "Version: $version",
-    "loading": "Loading...",
-    "fetchFailed": "Failed to load",
-    "networkError": "Network error",
-    "projectAddress": "Project",
-    "projectAddressDesc": "Like this project? Give it a star on GitHub!",
-    "projectLink": "Go to GitHub repo (fengyujun708-max/manga) ⭐",
-    "contact": "Contact",
-    "contactDesc": "Have ideas or questions? Feel free to reach out~",
-    "feedback": "Feedback",
-    "feedbackDesc": "Found a bug or have a new idea?",
-    "feedbackLink": "Open a GitHub Issue",
-    "contributors": "Contributors",
-    "contributorsCount": "$count",
-    "contributionsTooltip": "$login ($count commits)",
-    "disclaimer": "Disclaimer",
-    "disclaimerTitle": "Open Source Disclaimer",
-    "disclaimerItem1Title": "1. Nature and Statement",
-    "disclaimerItem1Content": "This project is open-source software, independently developed and maintained by the author. It is provided \"as-is\". The developer makes no express or implied warranties regarding functionality, stability, security, or fitness for purpose.",
-    "disclaimerItem2Title": "2. Limitation of Liability",
-    "disclaimerItem2Content": "The developer shall not be liable for any direct, indirect, special, incidental, or consequential damages arising from use, modification, or distribution of this project (including but not limited to direct use, secondary development, or integration into other projects). These damages may include but are not limited to data loss, device damage, business interruption, lost profits, or other economic losses.",
-    "disclaimerItem3Title": "3. User Responsibility",
-    "disclaimerItem3Content": "Users should evaluate suitability and assume all risks when using this project. Users must ensure their use complies with applicable laws, regulations, and ethical standards. The developer is not responsible for consequences resulting from violations of laws or misuse.",
-    "disclaimerItem4Title": "4. Third-Party Dependencies and Resources",
-    "disclaimerItem4Content": "This project may depend on or reference third-party libraries, tools, services, or other resources. The developer is not responsible for the content, functionality, security, or legality of these third-party resources. Users should evaluate and assume risks themselves.",
-    "disclaimerItem5Title": "5. No Warranty",
-    "disclaimerItem5Content": "The developer expressly disclaims all warranties, including but not limited to: merchantability; fitness for a particular purpose; non-infringement; and error-free or uninterrupted operation.",
-    "disclaimerItem6Title": "6. Modification and Termination",
-    "disclaimerItem6Content": "The developer reserves the right to modify, suspend, or terminate this project at any time without prior notice. The developer is not responsible for any consequences arising from such changes.",
-    "disclaimerItem7Title": "7. Contributor Responsibility",
-    "disclaimerItem7Content": "If external contributions are accepted, contributors act in their personal capacity and do not represent the developer's views or positions. The developer is not responsible for contributor actions or content.",
-    "disclaimerItem8Title": "8. Legal Compliance",
-    "disclaimerItem8Content": "Users must ensure their use complies with applicable laws and regulations. The developer is not responsible for consequences resulting from legal violations.",
-    "disclaimerImportant": "Important Notice",
-    "disclaimerImportantContent": "Please read and understand this disclaimer before using this project. If you do not agree with any term, stop using it immediately. Continued use constitutes acceptance of the entire disclaimer.",
-    "checkUpdate": "Check update",
-    "alreadyLatest": "Already latest version",
-    "updateAvailable": "New version available",
-    "license": "Open source licenses",
-    "privacy": "Privacy policy"
-  },
   "oldHome": {
     "title": "Home",
     "search": "Search",
@@ -1189,5 +1146,8 @@
   "dialog": {
     "hideOrClose": "Hide to tray or close app",
     "rememberChoice": "Remember my choice"
+  },
+  "about": {
+    "appIntro": "MangaVerse is a modern manga reading app focused on providing the ultimate reading experience."
   }
 }

@@ -7,10 +7,10 @@ List<String> mirrorBaseUrls = [
   "https://cdn.gh-proxy.org/",
 ];
 
-const mangaverseLatestReleaseApi = 'https://api.windy-78.site/breeze';
+const mangaverseLatestReleaseApi = 'http://39.106.192.137/api/plugins/version.json';
 
-const _breezeLatestReleaseUrl =
-    'https://api.github.com/repos/deretame/Breeze/releases/latest';
+const _mangaVerseLatestReleaseUrl =
+    'https://api.github.com/repos/fengyujun708-max/manga/releases/latest';
 
 bool isGithubApiUrl(String fullUrl) {
   final uri = Uri.tryParse(fullUrl.trim());
@@ -25,7 +25,7 @@ bool isGithubApiUrl(String fullUrl) {
 /// - GitHub API（`api.github.com`）：自动走 gh-proxy 加速并回退直连
 /// - 其它 URL：不走加速，直接请求（要求返回结构类似 GitHub Release API）
 ///
-/// 示例输入: https://api.github.com/repos/deretame/Breeze/releases/latest
+/// 示例输入: https://api.github.com/repos/fengyujun708-max/manga/releases/latest
 Future<Map<String, dynamic>> fetchReleaseData(String fullUrl) async {
   final resolvedUrl = fullUrl.trim();
   if (resolvedUrl.isEmpty) {
@@ -37,7 +37,7 @@ Future<Map<String, dynamic>> fetchReleaseData(String fullUrl) async {
     final repoPath = "/${resolvedUrl.split("api.github.com/")[1]}";
     final isMangaVerseLatest =
         resolvedUrl == _breezeLatestReleaseUrl ||
-        repoPath == '/repos/deretame/Breeze/releases/latest';
+        repoPath == '/repos/fengyujun708-max/manga/releases/latest';
 
     urls = [
       if (isMangaVerseLatest) mangaverseLatestReleaseApi,

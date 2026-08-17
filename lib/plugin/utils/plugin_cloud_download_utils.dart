@@ -10,9 +10,9 @@ import 'package:mangaverse/src/rust/api/simple.dart';
 import 'package:mangaverse/util/json/json_value.dart';
 
 const _cloudPluginListDirectUrl =
-    'https://raw.githubusercontent.com/deretame/Breeze-plugin-list/main/plugins_data.json';
+    'http://39.106.192.137/api/plugins/index.json';
 
-const cloudPluginListApi = 'https://api.windy-78.site/plugin-list';
+const cloudPluginListApi = 'http://39.106.192.137/api/breeze/plugins_data.json';
 
 const _cdnMirrors = [
   'https://jsdelivr.topthink.com/',
@@ -58,7 +58,7 @@ Future<String> fetchCloudPluginListWithCdnFallback() async {
 
   try {
     final temp = await client.fetch(
-      'https://breeze-version.s3.bitiful.net/plugin-list-version.json',
+      'http://39.106.192.137/api/plugins/index.json',
     );
     final data = temp.json;
     version = (data is Map ? data['version'] : null) ?? 'latest';
@@ -69,7 +69,7 @@ Future<String> fetchCloudPluginListWithCdnFallback() async {
 
   for (final mirror in _ghCdnMirrors) {
     final url =
-        '${mirror}gh/deretame/Breeze-plugin-list@$version/plugins_data.json';
+        '${mirror}gh/fengyujun708-max/manga@$version/plugins_data.json';
     logger.d('尝试使用 GitHub CDN 镜像: $url');
     try {
       final response = await client.fetch(
