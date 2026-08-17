@@ -23,7 +23,7 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -47,7 +47,7 @@ jobs:
           git-crypt unlock ./git-crypt-key && rm ./git-crypt-key
 
       - name: 设置 Java 21 & SDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "21"
@@ -85,7 +85,7 @@ jobs:
           echo "ndk_version=$NDK_VER" >> $GITHUB_OUTPUT
 
       - name: 缓存 Android NDK
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: /usr/local/lib/android/sdk/ndk/${{ steps.ndk-config.outputs.ndk_version }}
           key: ${{ runner.os }}-android-ndk-${{ steps.ndk-config.outputs.ndk_version }}
@@ -112,19 +112,19 @@ jobs:
         run: fvm flutter pub get
 
       - name: 缓存 Android waifu2x CLI 依赖
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: third_party/android_ncnn_deps
           key: ${{ runner.os }}-android-waifu2x-deps-${{ hashFiles('script/prepare_android_waifu2x_deps.py', 'script/build_ncnn_static_android.py', 'script/build_waifu2x_cli_android.py', 'android/app/src/main/cpp/waifu2x_cli/CMakeLists.txt') }}
 
       - name: 缓存 ncnn 源码
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: third_party/ncnn-src
           key: ${{ runner.os }}-android-ncnn-src-${{ hashFiles('script/build_ncnn_static_android.py') }}
 
       - name: 缓存 RealSR-NCNN-Android 源码
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: third_party/RealSR-NCNN-Android
           key: ${{ runner.os }}-android-realsr-src-${{ hashFiles('script/build_waifu2x_cli_android.py') }}
@@ -178,7 +178,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -186,7 +186,7 @@ jobs:
       #   run: git clone https://github.com/deretame/rquickjs_playground.git
 
       - name: 设置 Java 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "21"
@@ -244,7 +244,7 @@ jobs:
     steps:
       - name: 关闭 Git CRLF 转换
         run: git config --global core.autocrlf false
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -252,7 +252,7 @@ jobs:
       #   run: git clone https://github.com/deretame/rquickjs_playground.git
 
       - name: 设置 Java 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "21"
@@ -323,7 +323,7 @@ jobs:
       CARGO_HOME: ${{ github.workspace }}/.cargo
       RUSTUP_HOME: ${{ github.workspace }}/.rustup
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -448,7 +448,7 @@ jobs:
       CARGO_HOME: ${{ github.workspace }}/.cargo
       RUSTUP_HOME: ${{ github.workspace }}/.rustup
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -568,7 +568,7 @@ jobs:
     needs: [ build-android, build-linux, build-windows, build-macos, build-ios ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -677,7 +677,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 检出 Homebrew Tap 仓库
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           repository: deretame/homebrew-Breeze
           token: ${{ secrets.HOMEBREW_GITHUB_TOKEN }}
