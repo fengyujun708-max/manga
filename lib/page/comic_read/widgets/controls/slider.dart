@@ -240,17 +240,17 @@ class _SliderWidgetState extends State<SliderWidget> {
                       vertical: 24.0,
                     ),
                     decoration: BoxDecoration(
-                      color: context.theme.colorScheme.surfaceBright.withValues(
-                        alpha: 0.5,
-                      ),
+                      color: MangaVerseColors.background.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: MangaVerseColors.border),
                     ),
                     child: RichText(
                       text: TextSpan(
                         text: message,
                         style: TextStyle(
                           fontSize: fontSize,
-                          color: context.textColor.withValues(alpha: 0.8),
+                          color: MangaVerseColors.foreground,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),

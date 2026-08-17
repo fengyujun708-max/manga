@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
 
 class SectionHeader extends StatelessWidget {
@@ -23,9 +24,7 @@ class SectionHeader extends StatelessWidget {
       padding: margin,
       child: Container(
         decoration: BoxDecoration(
-          color: context.theme.colorScheme.secondaryFixed.withValues(
-            alpha: 0.1,
-          ),
+          color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(8),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -36,10 +35,10 @@ class SectionHeader extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: context.theme.colorScheme.onSurface,
+                    color: MangaVerseColors.foreground,
                   ),
                 ),
               ),
@@ -48,19 +47,17 @@ class SectionHeader extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: Text(
                     subtitle,
-                    style: TextStyle(
-                      color: context.theme.colorScheme.onSurfaceVariant,
+                    style: const TextStyle(
+                      color: MangaVerseColors.mutedForeground,
                       fontSize: 12,
                     ),
                   ),
                 ),
               if (canNavigate)
-                Icon(
+                const Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: context.theme.colorScheme.onSurface.withValues(
-                    alpha: 0.5,
-                  ),
+                  color: MangaVerseColors.mutedForeground,
                 ),
 
               if (canNavigate) const SizedBox(width: 5),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/type/pipe.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
 import 'package:mangaverse/util/debouncer.dart';
@@ -154,15 +155,16 @@ class DiscoverSchemeRenderer {
           return GestureDetector(
             onTap: () => onAction(asJsonMap(item['action'])),
             child: Chip(
-              backgroundColor: context.backgroundColor,
+              backgroundColor: MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
               label: Text(
                 label.let(convertChineseForDisplay),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
-                  color: context.theme.colorScheme.primary,
+                  color: MangaVerseColors.accent,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -229,7 +231,10 @@ class DiscoverSchemeRenderer {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: context.textColor, fontSize: 14),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: MangaVerseColors.foreground,
+                ),
               ),
             ],
           ),

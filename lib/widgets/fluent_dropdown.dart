@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
 
 /// A single entry in a fluent popup menu.
@@ -388,10 +389,7 @@ class _FluentDropdownState<T> extends State<FluentDropdown<T>>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textColor = context.textColor;
-
-    final textStyle = Theme.of(context).textTheme.bodyMedium;
+    final colorScheme = MangaVerseColors.surfaceVariant;
 
     return CompositedTransformTarget(
       link: _layerLink,
@@ -401,11 +399,9 @@ class _FluentDropdownState<T> extends State<FluentDropdown<T>>
           constraints: const BoxConstraints(maxWidth: 180),
           padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
           decoration: BoxDecoration(
-            color: colorScheme.surface,
+            color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.35),
-            ),
+            border: Border.all(color: MangaVerseColors.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -415,8 +411,9 @@ class _FluentDropdownState<T> extends State<FluentDropdown<T>>
                   widget.displayValue,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: textStyle?.copyWith(
-                    color: textColor.withValues(alpha: 0.9),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: MangaVerseColors.foreground,
                   ),
                 ),
               ),
@@ -424,10 +421,10 @@ class _FluentDropdownState<T> extends State<FluentDropdown<T>>
               AnimatedRotation(
                 turns: _isOpen ? 0.5 : 0,
                 duration: const Duration(milliseconds: 200),
-                child: Icon(
+                child: const Icon(
                   Icons.keyboard_arrow_down,
                   size: 18,
-                  color: textColor.withValues(alpha: 0.5),
+                  color: MangaVerseColors.mutedForeground,
                 ),
               ),
             ],
@@ -508,7 +505,6 @@ class _HoverableMenuItemState extends State<_HoverableMenuItem> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return MouseRegion(
       onEnter: widget.enabled ? (_) => setState(() => _isHovered = true) : null,
       onExit: widget.enabled ? (_) => setState(() => _isHovered = false) : null,
@@ -518,9 +514,9 @@ class _HoverableMenuItemState extends State<_HoverableMenuItem> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: widget.isSelected
-                ? colorScheme.primaryContainer.withValues(alpha: 0.5)
+                ? MangaVerseColors.accent.withValues(alpha: 0.2)
                 : _isHovered
-                ? colorScheme.primaryContainer.withValues(alpha: 0.35)
+                ? MangaVerseColors.accent.withValues(alpha: 0.12)
                 : null,
             borderRadius: BorderRadius.circular(10),
           ),
@@ -544,8 +540,6 @@ class _MenuPanel<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Material(
       type: MaterialType.transparency,
       borderRadius: BorderRadius.circular(16),
@@ -553,14 +547,12 @@ class _MenuPanel<T> extends StatelessWidget {
         width: menuWidth,
         constraints: const BoxConstraints(maxHeight: 320),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: MangaVerseColors.background,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.outline.withValues(alpha: 0.25),
-          ),
+          border: Border.all(color: MangaVerseColors.border),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.15),
+              color: MangaVerseColors.accent.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
@@ -586,8 +578,8 @@ class _MenuPanel<T> extends StatelessWidget {
                       IconTheme(
                         data: IconTheme.of(context).copyWith(
                           color: entry.enabled
-                              ? colorScheme.onSurface
-                              : colorScheme.onSurface.withValues(alpha: 0.38),
+                              ? MangaVerseColors.foreground
+                              : MangaVerseColors.mutedForeground,
                         ),
                         child: entry.leading!,
                       )
@@ -601,11 +593,11 @@ class _MenuPanel<T> extends StatelessWidget {
                           );
                         },
                         child: showCheckmark
-                            ? Icon(
+                            ? const Icon(
                                 Icons.check,
-                                key: const ValueKey('check'),
+                                key: ValueKey('check'),
                                 size: 18,
-                                color: colorScheme.primary,
+                                color: MangaVerseColors.accent,
                               )
                             : const SizedBox(width: 18, key: ValueKey('empty')),
                       ),
@@ -614,8 +606,8 @@ class _MenuPanel<T> extends StatelessWidget {
                       child: DefaultTextStyle.merge(
                         style: TextStyle(
                           color: entry.enabled
-                              ? null
-                              : colorScheme.onSurface.withValues(alpha: 0.38),
+                              ? MangaVerseColors.foreground
+                              : MangaVerseColors.mutedForeground,
                         ),
                         child: entry.title,
                       ),
@@ -625,8 +617,8 @@ class _MenuPanel<T> extends StatelessWidget {
                       IconTheme(
                         data: IconTheme.of(context).copyWith(
                           color: entry.enabled
-                              ? colorScheme.onSurface
-                              : colorScheme.onSurface.withValues(alpha: 0.38),
+                              ? MangaVerseColors.foreground
+                              : MangaVerseColors.mutedForeground,
                         ),
                         child: entry.trailing!,
                       ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangaverse/config/global/global_setting.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/main.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
@@ -67,12 +68,10 @@ class _ReaderSettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return Material(
-      color: colorScheme.surface.withValues(alpha: 0.96),
+      color: MangaVerseColors.background.withValues(alpha: 0.98),
       elevation: 16,
-      shadowColor: Colors.black.withValues(alpha: 0.24),
+      shadowColor: MangaVerseColors.accent.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(24),
       clipBehavior: Clip.antiAlias,
       child: DefaultTabController(
@@ -103,8 +102,6 @@ class _ReaderSettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Column(
@@ -115,16 +112,24 @@ class _ReaderSettingsHeader extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
+                color: MangaVerseColors.border,
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
           ),
           TabBar(
             dividerColor: Colors.transparent,
-            labelStyle: context.theme.textTheme.titleSmall?.copyWith(
+            labelStyle: const TextStyle(
+              fontSize: 14,
               fontWeight: FontWeight.w700,
+              color: MangaVerseColors.foreground,
             ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: MangaVerseColors.mutedForeground,
+            ),
+            indicatorColor: MangaVerseColors.accent,
             tabs: [
               Tab(text: t.reader.settings),
               Tab(text: t.reader.gesture),
@@ -144,22 +149,19 @@ class _SettingsNoticeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
+        color: MangaVerseColors.accent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-        ),
+        border: Border.all(color: MangaVerseColors.accent.withValues(alpha: 0.3)),
       ),
       child: Text(
         text,
-        style: context.theme.textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSecondaryContainer,
+        style: const TextStyle(
+          fontSize: 12,
+          color: MangaVerseColors.mutedForeground,
         ),
       ),
     );
@@ -193,8 +195,10 @@ class _SettingsSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: context.theme.textTheme.titleSmall?.copyWith(
+          style: const TextStyle(
+            fontSize: 14,
             fontWeight: FontWeight.w700,
+            color: MangaVerseColors.foreground,
           ),
         ),
         const SizedBox(height: 10),
@@ -220,29 +224,26 @@ class _SettingsChoiceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return ChoiceChip(
       label: Text(title),
       selected: selected,
       showCheckmark: false,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
-      backgroundColor: colorScheme.surfaceContainerHighest.withValues(
-        alpha: 0.45,
-      ),
-      selectedColor: colorScheme.primaryContainer.withValues(alpha: 0.92),
+      backgroundColor: MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
+      selectedColor: MangaVerseColors.accent.withValues(alpha: 0.2),
       side: BorderSide(
         color: selected
-            ? colorScheme.primary
-            : colorScheme.outlineVariant.withValues(alpha: 0.7),
-        width: selected ? 1.4 : 1,
+            ? MangaVerseColors.accent
+            : MangaVerseColors.border,
+        width: selected ? 1.4 : 0.5,
       ),
-      labelStyle: context.theme.textTheme.bodyMedium?.copyWith(
+      labelStyle: TextStyle(
+        fontSize: 13,
         fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
         color: selected
-            ? colorScheme.onPrimaryContainer
-            : colorScheme.onSurface,
+            ? MangaVerseColors.accent
+            : MangaVerseColors.foreground,
       ),
       onSelected: (_) => onTap(),
     );
@@ -270,15 +271,11 @@ class _SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.7),
-        ),
+        border: Border.all(color: MangaVerseColors.border),
       ),
       child: ListTile(
         dense: true,
@@ -287,8 +284,9 @@ class _SettingsSwitchTile extends StatelessWidget {
         title: Text(title),
         subtitle: Text(
           subtitle,
-          style: context.theme.textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
+          style: const TextStyle(
+            fontSize: 12,
+            color: MangaVerseColors.mutedForeground,
           ),
         ),
         trailing: Switch.adaptive(
@@ -318,15 +316,11 @@ class _SettingsDropdownTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.7),
-        ),
+        border: Border.all(color: MangaVerseColors.border),
       ),
       child: ListTile(
         dense: true,
@@ -335,8 +329,9 @@ class _SettingsDropdownTile extends StatelessWidget {
         title: Text(title),
         subtitle: Text(
           subtitle,
-          style: context.theme.textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
+          style: const TextStyle(
+            fontSize: 12,
+            color: MangaVerseColors.mutedForeground,
           ),
         ),
         trailing: FluentDropdown<int>(
@@ -373,32 +368,32 @@ class _SettingsSliderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(
-          alpha: enabled ? 0.45 : 0.28,
+        color: MangaVerseColors.surfaceVariant.withValues(
+          alpha: enabled ? 0.4 : 0.25,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.7),
-        ),
+        border: Border.all(color: MangaVerseColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(title, style: context.theme.textTheme.bodyMedium),
+              Text(title, style: const TextStyle(
+                fontSize: 14,
+                color: MangaVerseColors.foreground,
+              )),
               const Spacer(),
               Text(
                 '$value $suffix',
-                style: context.theme.textTheme.bodyMedium?.copyWith(
+                style: TextStyle(
+                  fontSize: 14,
                   color: enabled
-                      ? colorScheme.onSurface
-                      : colorScheme.onSurfaceVariant,
+                      ? MangaVerseColors.foreground
+                      : MangaVerseColors.mutedForeground,
                 ),
               ),
             ],
@@ -408,6 +403,8 @@ class _SettingsSliderCard extends StatelessWidget {
             max: max.toDouble(),
             divisions: divisions,
             value: value.clamp(min, max).toDouble(),
+            activeColor: MangaVerseColors.accent,
+            inactiveColor: MangaVerseColors.accent.withValues(alpha: 0.2),
             label: '$value$suffix',
             onChanged: !enabled
                 ? null

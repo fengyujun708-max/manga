@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
 
 class Delimiter extends StatelessWidget {
@@ -9,9 +10,9 @@ class Delimiter extends StatelessWidget {
     return Align(
       alignment: Alignment.center,
       child: SizedBox(
-        width: context.screenWidth * (48 / 50), // 设置宽度
-        child: Divider(
-          color: context.theme.colorScheme.secondaryFixedDim,
+        width: context.screenWidth * (48 / 50),
+        child: const Divider(
+          color: MangaVerseColors.border,
           thickness: 1,
           height: 15,
         ),

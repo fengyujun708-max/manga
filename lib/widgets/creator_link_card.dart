@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
 import 'package:mangaverse/config/router/router.gr.dart';
 import 'package:mangaverse/widgets/picture_bloc/bloc/picture_bloc.dart';
@@ -38,7 +39,6 @@ class CreatorLinkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final materialColorScheme = context.theme.colorScheme;
     final pictureInfo = PictureInfo(
       from: from,
       url: avatarUrl,
@@ -73,7 +73,7 @@ class CreatorLinkCard extends StatelessWidget {
                   children: <Widget>[
                     Text(
                       creatorName,
-                      style: TextStyle(color: materialColorScheme.tertiary),
+                      style: const TextStyle(color: MangaVerseColors.mutedForeground),
                     ),
                     ...infoChildren,
                   ],
@@ -125,7 +125,7 @@ class _CreatorAvatarImage extends StatelessWidget {
                 case PictureLoadStatus.initial:
                   return Center(
                     child: LoadingAnimationWidget.waveDots(
-                      color: context.textColor,
+                      color: MangaVerseColors.accent,
                       size: 25,
                     ),
                   );
