@@ -36,7 +36,7 @@ class MorePage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Breeze',
+          'MangaVerse',
           style: Theme.of(
             context,
           ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),

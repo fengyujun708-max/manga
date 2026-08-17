@@ -9,6 +9,7 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:toastification/toastification.dart';
 import 'package:mangaverse/config/global/global_setting.dart';
 import 'package:mangaverse/config/router/router.gr.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/page/search/cubit/search_cubit.dart';
 import 'package:mangaverse/service/download/download_queue_manager.dart';
@@ -168,7 +169,7 @@ class _NavigationBarState extends State<NavigationBar> {
       controller: _controller,
       screens: pageList,
       items: navBarItems,
-      backgroundColor: context.backgroundColor,
+      backgroundColor: const Color(0xE6000000),
       // 由组件自身的 PopScope 接收返回事件。此前把 PopScope 包在组件外层，
       // 容易被每个 tab 的内部 Navigator 先消费，导致开关看起来没有效果。
       handleAndroidBackButtonPress: !backPressExitEnabled,
@@ -207,43 +208,61 @@ class _NavigationBarState extends State<NavigationBar> {
     required List<NavigationRailDestination> navRailDestinations,
   }) {
     return Scaffold(
-      backgroundColor: context.backgroundColor,
+      backgroundColor: MangaVerseColors.background,
       body: Row(
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: NavigationRail(
-                  selectedIndex: _selectedIndex,
-                  onDestinationSelected: (int index) {
-                    setState(() {
-                      _selectedIndex = index;
-                      _controller.index = index;
-                    });
-                  },
-                  labelType: NavigationRailLabelType.all,
-                  backgroundColor: context.backgroundColor,
-                  destinations: navRailDestinations,
-                ),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF0F0F23),
+                  Color(0xE6000000),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: IconButton(
-                  icon: Icon(Icons.search),
-                  tooltip: t.common.search,
-                  onPressed: () {
-                    context.pushRoute(
-                      SearchRoute(
-                        searchState: SearchStates.initial(),
-                        aggregateMode: true,
-                      ),
-                    );
-                  },
+            ),
+            child: Column(
+              children: [
+                Expanded(
+                  child: NavigationRail(
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: (int index) {
+                      setState(() {
+                        _selectedIndex = index;
+                        _controller.index = index;
+                      });
+                    },
+                    labelType: NavigationRailLabelType.all,
+                    backgroundColor: Colors.transparent,
+                    selectedIconTheme: const IconThemeData(
+                      color: MangaVerseColors.accent,
+                    ),
+                    unselectedIconTheme: const IconThemeData(
+                      color: MangaVerseColors.mutedForeground,
+                    ),
+                    destinations: navRailDestinations,
+                  ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: IconButton(
+                    icon: const Icon(Icons.search),
+                    tooltip: t.common.search,
+                    onPressed: () {
+                      context.pushRoute(
+                        SearchRoute(
+                          searchState: SearchStates.initial(),
+                          aggregateMode: true,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-          const VerticalDivider(thickness: 1, width: 1),
+          Container(width: 0.5, color: MangaVerseColors.border),
           Expanded(
             child: IndexedStack(index: _selectedIndex, children: pageList),
           ),
@@ -254,24 +273,24 @@ class _NavigationBarState extends State<NavigationBar> {
 
   // 底部导航栏的配置项
   List<PersistentBottomNavBarItem> _navBarItems(bool oldPageRollbackEnabled) {
-    final activeColor = context.theme.colorScheme.primary;
-    final inactiveColor = context.textColor;
+    final activeColor = MangaVerseColors.accent;
+    final inactiveColor = MangaVerseColors.mutedForeground;
 
     final items = <PersistentBottomNavBarItem>[
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.menu_book_sharp),
+        icon: const Icon(Icons.menu_book_sharp),
         title: t.navigation.bookshelf,
         activeColorPrimary: activeColor,
         inactiveColorPrimary: inactiveColor,
       ),
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.explore_outlined),
+        icon: const Icon(Icons.explore_outlined),
         title: t.navigation.discover,
         activeColorPrimary: activeColor,
         inactiveColorPrimary: inactiveColor,
       ),
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.apps_outlined),
+        icon: const Icon(Icons.apps_outlined),
         title: t.navigation.more,
         activeColorPrimary: activeColor,
         inactiveColorPrimary: inactiveColor,
@@ -311,18 +330,18 @@ class _NavigationBarState extends State<NavigationBar> {
   ) {
     final destinations = <NavigationRailDestination>[
       NavigationRailDestination(
-        icon: Icon(Icons.menu_book_outlined),
-        selectedIcon: Icon(Icons.menu_book_sharp),
+        icon: const Icon(Icons.menu_book_outlined),
+        selectedIcon: const Icon(Icons.menu_book_sharp),
         label: Text(t.navigation.bookshelf),
       ),
       NavigationRailDestination(
-        icon: Icon(Icons.explore_outlined),
-        selectedIcon: Icon(Icons.explore),
+        icon: const Icon(Icons.explore_outlined),
+        selectedIcon: const Icon(Icons.explore),
         label: Text(t.navigation.discover),
       ),
       NavigationRailDestination(
-        icon: Icon(Icons.apps_outlined),
-        selectedIcon: Icon(Icons.apps),
+        icon: const Icon(Icons.apps_outlined),
+        selectedIcon: const Icon(Icons.apps),
         label: Text(t.navigation.more),
       ),
     ];

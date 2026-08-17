@@ -24,6 +24,7 @@ import 'package:worker_manager/worker_manager.dart';
 import 'package:mangaverse/config/global/global.dart';
 import 'package:mangaverse/config/global/global_setting.dart';
 import 'package:mangaverse/config/router/router.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/plugin_registry_cubit.dart';
 import 'package:mangaverse/i18n/i18n_helper.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
@@ -726,13 +727,27 @@ class _MyAppState extends State<MyApp> with WindowListener, TrayListener {
               return MaterialApp.router(
                 routerConfig: appRouter.config(),
                 scrollBehavior: const AppScrollBehavior(),
+                debugShowCheckedModeBanner: false,
                 builder: (context, child) {
-                  Widget content = Actions(
+                  // MangaVerse 沉浸式渐变背景
+                  Widget content = Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFF0F0F23),
+                          Color(0xFF000000),
+                        ],
+                      ),
+                    ),
+                    child: child!,
+                  );
+
+                  content = Actions(
                     actions: <Type, Action<Intent>>{
                       EscapeIntent: CallbackAction<EscapeIntent>(
                         onInvoke: (intent) {
-                          // 先让当前焦点失焦，避免 pop 时 InputDecorator 才第一次变 dirty；
-                          // 再把 pop 推迟到下一帧，让失焦引发的重建在当前帧完成。
                           FocusManager.instance.primaryFocus?.unfocus();
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             appRouter.maybePop();
@@ -800,7 +815,9 @@ class _MyAppState extends State<MyApp> with WindowListener, TrayListener {
                     ThemeData.light().primaryTextTheme,
                   ),
                 ),
-                darkTheme: ThemeData.dark().copyWith(
+                darkTheme: buildMangaVerseDarkTheme(
+                  seedColor: globalSettingState.seedColor,
+                ).copyWith(
                   scaffoldBackgroundColor: globalSettingState.isAMOLED
                       ? Colors.black
                       : darkColorScheme.surface,
@@ -808,9 +825,11 @@ class _MyAppState extends State<MyApp> with WindowListener, TrayListener {
                     dividerColor: Colors.transparent,
                   ),
                   colorScheme: darkColorScheme,
-                  textTheme: withConfiguredFonts(ThemeData.dark().textTheme),
+                  textTheme: withConfiguredFonts(
+                    buildMangaVerseDarkTheme().textTheme,
+                  ),
                   primaryTextTheme: withConfiguredFonts(
-                    ThemeData.dark().primaryTextTheme,
+                    buildMangaVerseDarkTheme().primaryTextTheme,
                   ),
                 ),
               );
