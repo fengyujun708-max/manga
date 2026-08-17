@@ -135,13 +135,13 @@ class _ComicInfoState extends State<_ComicInfo>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
         actions: [
           const SizedBox(width: 50),
           IconButton(
-            icon: const Icon(Icons.home, color: Colors.white),
+            icon: Icon(Icons.home, color: Colors.white),
             onPressed: () => popToRoot(context),
           ),
           Expanded(child: Container()),
@@ -164,7 +164,7 @@ class _ComicInfoState extends State<_ComicInfo>
             },
           ),
           FluentPopupMenuButton<MenuOption>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
+            icon: Icon(Icons.more_vert, color: Colors.white),
             onSelected: (MenuOption item) {
               switch (item) {
                 case MenuOption.export:
@@ -205,7 +205,7 @@ class _ComicInfoState extends State<_ComicInfo>
                 menuItems.add(
                   FluentPopupMenuItem<MenuOption>(
                     value: MenuOption.export,
-                    leading: const Icon(Icons.save_alt),
+                    leading: Icon(Icons.save_alt),
                     title: Text(t.comicInfo.exportComic),
                   ),
                 );
@@ -980,7 +980,7 @@ class _EpisodeHeaderBadge extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 icon,
                 size: 18,
                 color: MangaVerseColors.mutedForeground,

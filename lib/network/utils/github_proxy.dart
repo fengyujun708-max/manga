@@ -36,7 +36,7 @@ Future<Map<String, dynamic>> fetchReleaseData(String fullUrl) async {
   if (isGithubApiUrl(resolvedUrl)) {
     final repoPath = "/${resolvedUrl.split("api.github.com/")[1]}";
     final isMangaVerseLatest =
-        resolvedUrl == _breezeLatestReleaseUrl ||
+        resolvedUrl == _mangaVerseLatestReleaseUrl ||
         repoPath == '/repos/fengyujun708-max/manga/releases/latest';
 
     urls = [

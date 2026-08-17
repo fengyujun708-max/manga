@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:mangaverse/i18n/i18n_helper.dart';
 import 'package:mangaverse/main.dart';
 import 'package:mangaverse/config/router/router.gr.dart' as app_router;
@@ -25,7 +27,7 @@ class _AboutPageState extends State<AboutPage> {
   String _buildNumber = '';
   bool _isLoading = true;
   bool _isLoggedIn = false;
-  Map<String, dynamic>? _userInfo;
+  UserSession? _userSession;
   String _updateStatus = '未检查';
   String? _latestVersion;
   String? _updateUrl;
@@ -54,16 +56,16 @@ class _AboutPageState extends State<AboutPage> {
 
   Future<void> _checkLoginStatus() async {
     final auth = AuthManager.instance;
-    final loggedIn = await auth.isLoggedIn();
+    final loggedIn = auth.isLoggedIn;
     if (loggedIn) {
-      final info = await auth.getUserInfo();
       setState(() {
         _isLoggedIn = true;
-        _userInfo = info;
+        _userSession = auth.session;
       });
     } else {
       setState(() {
         _isLoggedIn = false;
+        _userSession = null;
       });
     }
   }
@@ -73,14 +75,12 @@ class _AboutPageState extends State<AboutPage> {
       _updateStatus = '检查中...';
     });
     try {
-      final result = await checkUpdate();
+      final result = await checkUpdate(context);
       setState(() {
-        if (result.hasUpdate) {
+        if (result.contains('新版本') || result.contains('可用')) {
           _updateStatus = '发现新版本';
-          _latestVersion = result.latestVersion;
-          _updateUrl = result.downloadUrl;
         } else {
-          _updateStatus = '已是最新版本';
+          _updateStatus = result;
         }
       });
     } catch (e) {
@@ -95,16 +95,29 @@ class _AboutPageState extends State<AboutPage> {
       _updateStatus = '上传日志中...';
     });
     try {
-      await LogUploader.instance.uploadLogs();
+      final userId = AuthManager.instance.userId;
+      if (userId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('请先登录')),
+          );
+        }
+        return;
+      }
+      final result = await LogUploader.instance.upload(
+        'info',
+        '用户手动发送诊断日志',
+        extra: 'AboutPage manual upload',
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('日志上传成功')),
+          SnackBar(content: Text(result ? '日志上传成功' : '日志上传失败')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('日志上传失败: $e')),
+          SnackBar(content: Text('日志上传异常: $e')),
         );
       }
     }
@@ -117,7 +130,7 @@ class _AboutPageState extends State<AboutPage> {
     await AuthManager.instance.logout();
     setState(() {
       _isLoggedIn = false;
-      _userInfo = null;
+      _userSession = null;
     });
     if (mounted) {
       context.router.replace(const app_router.LoginRoute());
@@ -143,7 +156,7 @@ class _AboutPageState extends State<AboutPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 版本信息卡片
-                  MVCard(
+                  _buildSectionCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -175,7 +188,7 @@ class _AboutPageState extends State<AboutPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        if (_isLoggedIn && _userInfo != null) ...[
+                        if (_isLoggedIn && _userSession != null) ...[
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
@@ -194,8 +207,8 @@ class _AboutPageState extends State<AboutPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text('UID: ${_userInfo!['uid']}'),
-                                Text('手机号: ${_userInfo!['phone']}'),
+                                Text('UID: ${_userSession!.userId}'),
+                                Text('用户名: ${_userSession!.username}'),
                                 const SizedBox(height: 8),
                                 ElevatedButton(
                                   onPressed: _logout,
@@ -243,7 +256,7 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                   const SizedBox(height: 16),
                   // 检查更新卡片
-                  MVCard(
+                  _buildSectionCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -288,7 +301,7 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                   const SizedBox(height: 16),
                   // 诊断工具卡片
-                  MVCard(
+                  _buildSectionCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -323,6 +336,19 @@ class _AboutPageState extends State<AboutPage> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildSectionCard({required Widget child}) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: child,
     );
   }
 }

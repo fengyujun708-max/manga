@@ -6,6 +6,7 @@ import 'package:mangaverse/page/search/widget/history.dart';
 import 'package:mangaverse/page/search/widget/search_bar.dart';
 
 import 'package:mangaverse/page/search/view/search_scheme_json.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 
 class SearchSchemeRenderer {
   SearchSchemeRenderer({required this.aggregateMode})

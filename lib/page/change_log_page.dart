@@ -5,14 +5,14 @@ import 'package:mangaverse/type/pipe.dart';
 import 'package:mangaverse/main.dart';
 
 @RoutePage()
-class ChangeLogPage extends StatefulWidget {
-  const ChangeLogPage({super.key});
+class ChangelogPage extends StatefulWidget {
+  const ChangelogPage({super.key});
 
   @override
-  State<ChangeLogPage> createState() => _ChangeLogPageState();
+  State<ChangelogPage> createState() => _ChangelogPageState();
 }
 
-class _ChangeLogPageState extends State<ChangeLogPage> {
+class _ChangelogPageState extends State<ChangelogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

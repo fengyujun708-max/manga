@@ -28,6 +28,8 @@ import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/plugin_registry_cubit.dart';
 import 'package:mangaverse/i18n/i18n_helper.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
+import 'package:mangaverse/service/global_error_handler.dart';
+import 'package:mangaverse/service/auth_manager.dart';
 import 'package:mangaverse/i18n/system_locale_service.dart';
 import 'package:mangaverse/network/http/wind_http.dart';
 import 'package:mangaverse/network/sync/sync_device_id.dart';
