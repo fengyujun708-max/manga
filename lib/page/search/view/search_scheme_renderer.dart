@@ -28,7 +28,11 @@ class SearchSchemeRenderer {
           break;
         case 'divider':
           widgets.add(
-            Divider(height: (config['height'] as num?)?.toDouble() ?? 1),
+            Divider(
+              height: (config['height'] as num?)?.toDouble() ?? 1,
+              color: MangaVerseColors.border,
+              thickness: 0.5,
+            ),
           );
           break;
         case 'history':

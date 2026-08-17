@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart' as p;
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/string_select.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/page/comic_info/comic_info.dart';
@@ -170,10 +171,11 @@ class _InfoColumnState extends State<_InfoColumn> {
   @override
   Widget build(BuildContext context) {
     final displaySource = _resolvePluginDisplayName(widget.from);
-    final titleStyle = context.theme.textTheme.headlineSmall?.copyWith(
+    final titleStyle = const TextStyle(
+      fontSize: 24,
       fontWeight: FontWeight.w800,
       height: 1.15,
-      color: context.textColor,
+      color: MangaVerseColors.foreground,
     );
 
     return Column(
@@ -184,19 +186,19 @@ class _InfoColumnState extends State<_InfoColumn> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: context.theme.colorScheme.surfaceContainerLow,
+                color: MangaVerseColors.accent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: context.theme.colorScheme.outlineVariant.withValues(
-                    alpha: 0.3,
-                  ),
+                  color: MangaVerseColors.accent.withValues(alpha: 0.3),
                 ),
               ),
               child: Text(
                 displaySource,
-                style: context.theme.textTheme.labelMedium?.copyWith(
+                style: const TextStyle(
+                  fontSize: 12,
                   letterSpacing: 0.8,
                   fontWeight: FontWeight.w700,
+                  color: MangaVerseColors.accent,
                 ),
               ),
             ),
@@ -208,28 +210,28 @@ class _InfoColumnState extends State<_InfoColumn> {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: context.theme.colorScheme.surfaceContainerLow,
+                  color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: context.theme.colorScheme.outlineVariant.withValues(
-                      alpha: 0.3,
-                    ),
+                    color: MangaVerseColors.border,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.storage_rounded,
                       size: 14,
-                      color: context.textColor.withValues(alpha: 0.6),
+                      color: MangaVerseColors.mutedForeground,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _formatFileSize(_storageSize!),
-                      style: context.theme.textTheme.labelMedium?.copyWith(
+                      style: const TextStyle(
+                        fontSize: 12,
                         letterSpacing: 0.8,
                         fontWeight: FontWeight.w700,
+                        color: MangaVerseColors.mutedForeground,
                       ),
                     ),
                   ],
@@ -268,14 +270,10 @@ class _InfoColumnState extends State<_InfoColumn> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: context.theme.colorScheme.primary.withValues(
-                    alpha: 0.10,
-                  ),
+                  color: MangaVerseColors.accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: context.theme.colorScheme.primary.withValues(
-                      alpha: 0.30,
-                    ),
+                    color: MangaVerseColors.accent.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -285,15 +283,13 @@ class _InfoColumnState extends State<_InfoColumn> {
                       height: 34,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: context.theme.colorScheme.primary.withValues(
-                          alpha: 0.14,
-                        ),
+                        color: MangaVerseColors.accent.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(9),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.history_rounded,
                         size: 18,
-                        color: context.theme.colorScheme.primary,
+                        color: MangaVerseColors.accent,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -304,19 +300,20 @@ class _InfoColumnState extends State<_InfoColumn> {
                         children: [
                           Text(
                             t.comicInfo.readHistory,
-                            style: context.theme.textTheme.labelMedium
-                                ?.copyWith(
-                                  color: context.theme.colorScheme.primary,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.2,
-                                ),
+                            style: const TextStyle(
+                              color: MangaVerseColors.accent,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                              letterSpacing: 0.2,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             widget.stringSelectDate,
-                            style: context.theme.textTheme.bodyMedium?.copyWith(
-                              color: context.textColor,
+                            style: const TextStyle(
+                              color: MangaVerseColors.foreground,
                               fontWeight: FontWeight.w700,
+                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -326,9 +323,10 @@ class _InfoColumnState extends State<_InfoColumn> {
                       const SizedBox(width: 8),
                       Text(
                         t.comicInfo.continueRead,
-                        style: context.theme.textTheme.labelLarge?.copyWith(
-                          color: context.theme.colorScheme.primary,
+                        style: const TextStyle(
+                          color: MangaVerseColors.accent,
                           fontWeight: FontWeight.w800,
+                          fontSize: 14,
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -378,19 +376,19 @@ class _MetaPill extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 38),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: context.theme.colorScheme.surfaceContainerLow,
+        color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: context.theme.colorScheme.outlineVariant.withValues(
-            alpha: 0.32,
-          ),
+          color: MangaVerseColors.border,
         ),
       ),
       child: Text(
         label,
-        style: context.theme.textTheme.bodySmall?.copyWith(
+        style: const TextStyle(
           fontWeight: FontWeight.w600,
+          fontSize: 12,
           height: 1.15,
+          color: MangaVerseColors.mutedForeground,
         ),
       ),
     );

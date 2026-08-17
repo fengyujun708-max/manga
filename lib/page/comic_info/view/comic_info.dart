@@ -9,6 +9,7 @@ import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:mangaverse/config/global/global_setting.dart';
 import 'package:mangaverse/config/router/router.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/string_select.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/main.dart';
@@ -129,15 +130,18 @@ class _ComicInfoState extends State<_ComicInfo>
         .state
         .cloudFavoritePreferred;
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
         actions: [
           const SizedBox(width: 50),
           IconButton(
-            icon: const Icon(Icons.home),
+            icon: const Icon(Icons.home, color: Colors.white),
             onPressed: () => popToRoot(context),
           ),
           Expanded(child: Container()),
@@ -150,6 +154,7 @@ class _ComicInfoState extends State<_ComicInfo>
                   isFollowing
                       ? Icons.notifications_active
                       : Icons.notifications_none,
+                  color: Colors.white,
                 ),
                 tooltip: isFollowing
                     ? t.comicInfo.unfollow
@@ -159,7 +164,7 @@ class _ComicInfoState extends State<_ComicInfo>
             },
           ),
           FluentPopupMenuButton<MenuOption>(
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (MenuOption item) {
               switch (item) {
                 case MenuOption.export:
@@ -237,7 +242,11 @@ class _ComicInfoState extends State<_ComicInfo>
         builder: (context, state) {
           switch (state.status) {
             case GetComicInfoStatus.initial:
-              return Center(child: CircularProgressIndicator());
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: MangaVerseColors.accent,
+                ),
+              );
             case GetComicInfoStatus.failure:
               if (state.result.contains("under review") &&
                   state.result.contains("1014")) {
@@ -356,7 +365,7 @@ class _ComicInfoState extends State<_ComicInfo>
           },
           child: ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 180),
+            padding: const EdgeInsets.fromLTRB(20, 88, 20, 180),
             itemCount: 1,
             itemBuilder: (context, index) => Center(
               child: ConstrainedBox(
@@ -486,7 +495,7 @@ class _ComicInfoState extends State<_ComicInfo>
       child: Divider(
         height: 1,
         thickness: 0.5,
-        color: context.theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+        color: MangaVerseColors.border,
       ),
     );
   }

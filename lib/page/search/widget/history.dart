@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangaverse/config/global/global_setting.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/page/search/method/on_search.dart';
 
@@ -18,8 +19,6 @@ class _HistoryWidgetState extends State<HistoryWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
     final globalSettingState = context.watch<GlobalSettingCubit>().state;
 
     return Column(
@@ -30,8 +29,10 @@ class _HistoryWidgetState extends State<HistoryWidget> {
             children: [
               Text(
                 t.search.history,
-                style: textTheme.titleMedium?.copyWith(
+                style: const TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: MangaVerseColors.foreground,
                 ),
               ),
               const Spacer(),
@@ -43,7 +44,7 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 20),
                   tooltip: t.search.clearHistory,
-                  color: colorScheme.outline,
+                  color: MangaVerseColors.mutedForeground,
                   onPressed: _resetHistory,
                 ),
               ],
@@ -62,8 +63,6 @@ class _HistoryWidgetState extends State<HistoryWidget> {
   }
 
   Widget _buildSortButton() {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Tooltip(
       message: _isNewestFirst ? t.search.newestFirst : t.search.oldestFirst,
       child: TextButton.icon(
@@ -72,13 +71,13 @@ class _HistoryWidgetState extends State<HistoryWidget> {
           minimumSize: const Size(0, 36),
         ),
         icon: Icon(
-          _isNewestFirst ? Icons.history : Icons.history_toggle_off, // 图标随状态变
+          _isNewestFirst ? Icons.history : Icons.history_toggle_off,
           size: 18,
-          color: colorScheme.primary,
+          color: MangaVerseColors.accent,
         ),
         label: Text(
           _isNewestFirst ? t.search.descending : t.search.ascending,
-          style: TextStyle(fontSize: 12, color: colorScheme.primary),
+          style: TextStyle(fontSize: 12, color: MangaVerseColors.accent),
         ),
         onPressed: () {
           setState(() {
@@ -97,14 +96,12 @@ class _HistoryWidgetState extends State<HistoryWidget> {
           Icon(
             Icons.manage_search,
             size: 64,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            color: MangaVerseColors.surfaceVariant,
           ),
           const SizedBox(height: 16),
           Text(
             t.search.noHistory,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(color: MangaVerseColors.mutedForeground),
           ),
         ],
       ),
@@ -130,16 +127,14 @@ class _HistoryWidgetState extends State<HistoryWidget> {
               onLongPress: () => _deleteSingle(historyItem),
               child: InputChip(
                 label: Text(keyword),
-                labelStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
+                labelStyle: const TextStyle(
+                  color: MangaVerseColors.foreground,
                   fontSize: 14,
                 ),
-                backgroundColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerLow,
+                backgroundColor: MangaVerseColors.surfaceVariant.withValues(alpha: 0.5),
                 side: BorderSide(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                  width: 1.0,
+                  color: MangaVerseColors.border,
+                  width: 0.5,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

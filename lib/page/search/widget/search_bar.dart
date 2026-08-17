@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/plugin_registry_cubit.dart';
 import 'package:mangaverse/network/http/plugin/unified_comic_plugin.dart';
 import 'package:mangaverse/page/search/cubit/search_cubit.dart';
@@ -76,8 +77,6 @@ class _SearchBarState extends State<SearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return BlocListener<SearchCubit, SearchStates>(
       listenWhen: (previous, current) =>
           previous.searchKeyword != current.searchKeyword,
@@ -93,25 +92,44 @@ class _SearchBarState extends State<SearchBar> {
           });
         }
       },
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(4, 8, 8, 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              MangaVerseColors.background,
+              MangaVerseColors.background.withValues(alpha: 0.9),
+              Colors.transparent,
+            ],
+          ),
+        ),
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back, color: MangaVerseColors.foreground),
               onPressed: () => context.maybePop(),
             ),
             Expanded(
               child: Container(
-                height: 48,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(24),
+                  color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: MangaVerseColors.border,
+                    width: 0.5,
+                  ),
                 ),
                 child: Row(
                   children: [
                     const SizedBox(width: 16),
-                    Icon(Icons.search, color: colorScheme.onSurfaceVariant),
+                    Icon(
+                      Icons.search,
+                      color: MangaVerseColors.mutedForeground,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
@@ -123,16 +141,16 @@ class _SearchBarState extends State<SearchBar> {
                           keyword,
                           aggregateMode: widget.aggregateMode,
                         ),
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: colorScheme.onSurface,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: MangaVerseColors.foreground,
                         ),
                         decoration: InputDecoration(
                           hintText: t.search.searchHint,
                           border: InputBorder.none,
                           isDense: true,
                           hintStyle: TextStyle(
-                            color: colorScheme.onSurfaceVariant.withValues(
+                            color: MangaVerseColors.mutedForeground.withValues(
                               alpha: 0.7,
                             ),
                           ),
@@ -141,52 +159,90 @@ class _SearchBarState extends State<SearchBar> {
                     ),
                     if (_controller.text.isNotEmpty)
                       IconButton(
-                        icon: const Icon(Icons.cancel, size: 20),
+                        icon: const Icon(
+                          Icons.cancel,
+                          size: 18,
+                          color: MangaVerseColors.mutedForeground,
+                        ),
                         onPressed: () => _controller.clear(),
                       ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.tune,
+                        size: 18,
+                        color: MangaVerseColors.mutedForeground,
+                      ),
+                      onPressed: () async {
+                        final searchCubit = context.read<SearchCubit>();
+                        if (widget.aggregateMode) {
+                          final options = _sourceOptions(context);
+                          if (_aggregateSources.isEmpty) {
+                            _aggregateSources = {
+                              for (final source in options) source.pluginId: true,
+                            };
+                          }
+                          final selected = await showSourceSelectDialog(
+                            context,
+                            initial: _aggregateSources,
+                            sourceOptions: options,
+                          );
+                          if (selected != null && mounted) {
+                            searchCubit.update(
+                              searchCubit.state.copyWith(
+                                aggregateSources: Map<String, bool>.from(selected),
+                              ),
+                            );
+                            setState(() {
+                              _aggregateSources = selected;
+                            });
+                          }
+                          return;
+                        }
+                        await _showSingleSourceAdvancedSearch(context);
+                      },
+                    ),
                   ],
                 ),
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.tune),
-              onPressed: () async {
-                final searchCubit = context.read<SearchCubit>();
-                if (widget.aggregateMode) {
-                  final options = _sourceOptions(context);
-                  if (_aggregateSources.isEmpty) {
-                    _aggregateSources = {
-                      for (final source in options) source.pluginId: true,
-                    };
-                  }
-                  final selected = await showSourceSelectDialog(
+            const SizedBox(width: 4),
+            SizedBox(
+              height: 36,
+              child: Material(
+                color: MangaVerseColors.accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(18),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => onSearch(
                     context,
-                    initial: _aggregateSources,
-                    sourceOptions: options,
-                  );
-                  if (selected != null && mounted) {
-                    searchCubit.update(
-                      searchCubit.state.copyWith(
-                        aggregateSources: Map<String, bool>.from(selected),
-                      ),
-                    );
-                    setState(() {
-                      _aggregateSources = selected;
-                    });
-                  }
-                  return;
-                }
-                await _showSingleSourceAdvancedSearch(context);
-              },
-            ),
-            TextButton(
-              onPressed: () => onSearch(
-                context,
-                _controller.text,
-                aggregateMode: widget.aggregateMode,
-                aggregateSources: _aggregateSources,
+                    _controller.text,
+                    aggregateMode: widget.aggregateMode,
+                    aggregateSources: _aggregateSources,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.search,
+                          size: 16,
+                          color: MangaVerseColors.accent,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          '搜索',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: MangaVerseColors.accent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              child: Text(t.search.title),
             ),
           ],
         ),
