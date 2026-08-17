@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:mangaverse/config/global/global_setting.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/main.dart';
 import 'package:mangaverse/page/comic_read/cubit/image_size_cubit.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
@@ -118,28 +119,19 @@ class _SliderWidgetState extends State<SliderWidget> {
             height: 52,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
-              color: context.theme.colorScheme.surfaceContainerHigh.withValues(
-                alpha: 0.9,
-              ),
+              color: MangaVerseColors.surfaceVariant.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: context.theme.colorScheme.outlineVariant.withValues(
-                  alpha: 0.35,
-                ),
-              ),
+              border: Border.all(color: MangaVerseColors.border),
             ),
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 6,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                activeTrackColor: context.theme.colorScheme.primary,
-                inactiveTrackColor: context.theme.colorScheme.primary
-                    .withValues(alpha: 0.22),
-                thumbColor: context.theme.colorScheme.primary,
-                overlayColor: context.theme.colorScheme.primary.withValues(
-                  alpha: 0.16,
-                ),
+                activeTrackColor: MangaVerseColors.accent,
+                inactiveTrackColor: MangaVerseColors.accent.withValues(alpha: 0.25),
+                thumbColor: MangaVerseColors.accent,
+                overlayColor: MangaVerseColors.accent.withValues(alpha: 0.15),
                 showValueIndicator: ShowValueIndicator.never,
               ),
               child: Slider(

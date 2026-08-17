@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangaverse/config/router/router.gr.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/object_box/model.dart';
 import 'package:mangaverse/page/comic_follow/cubit/comic_follow_cubit.dart';
 import 'package:mangaverse/type/enum.dart';
@@ -84,17 +85,22 @@ class _ComicFollowPageContent extends StatelessWidget {
           Icon(
             Icons.notifications_none,
             size: 64,
-            color: context.theme.colorScheme.outlineVariant,
+            color: MangaVerseColors.mutedForeground,
           ),
           const SizedBox(height: 16),
           Text(
             t.comicFollow.empty,
-            style: context.theme.textTheme.titleMedium?.copyWith(
-              color: context.theme.colorScheme.onSurfaceVariant,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: MangaVerseColors.mutedForeground,
             ),
           ),
           const SizedBox(height: 8),
-          Text(t.comicFollow.emptyHint, style: const TextStyle(fontSize: 14)),
+          Text(
+            t.comicFollow.emptyHint,
+            style: const TextStyle(fontSize: 14, color: MangaVerseColors.mutedForeground),
+          ),
         ],
       ),
     );

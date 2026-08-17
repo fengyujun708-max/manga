@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/cubit/string_select.dart';
 import 'package:mangaverse/page/comic_info/comic_info.dart';
 import 'package:mangaverse/page/download/adapters/download_chapter_adapter.dart';
@@ -360,18 +361,14 @@ class ChapterNavigationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return _FrostedCircleIconButton(
       tooltip: tooltip,
       isEnabled: isEnabled,
       onPressed: onTap,
       icon: icon,
-      foregroundColor: colorScheme.onSecondaryContainer,
-      backgroundColor: colorScheme.secondaryContainer.withValues(alpha: 0.72),
-      disabledBackgroundColor: colorScheme.surfaceContainerHighest.withValues(
-        alpha: 0.38,
-      ),
+      foregroundColor: MangaVerseColors.foreground,
+      backgroundColor: MangaVerseColors.surfaceVariant.withValues(alpha: 0.7),
+      disabledBackgroundColor: MangaVerseColors.surfaceVariant.withValues(alpha: 0.3),
     );
   }
 }
@@ -392,17 +389,14 @@ class FloatingActionIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
     return _FrostedCircleIconButton(
       tooltip: tooltip,
       isEnabled: isEnabled,
       onPressed: onPressed,
       icon: icon,
-      foregroundColor: colorScheme.onPrimaryContainer,
-      backgroundColor: colorScheme.primaryContainer.withValues(alpha: 0.76),
-      disabledBackgroundColor: colorScheme.surfaceContainerHighest.withValues(
-        alpha: 0.38,
-      ),
+      foregroundColor: Colors.white,
+      backgroundColor: MangaVerseColors.accent.withValues(alpha: 0.8),
+      disabledBackgroundColor: MangaVerseColors.surfaceVariant.withValues(alpha: 0.3),
     );
   }
 }
@@ -428,8 +422,6 @@ class _FrostedCircleIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.theme.colorScheme;
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(999),
       child: BackdropFilter(
@@ -442,12 +434,10 @@ class _FrostedCircleIconButton extends StatelessWidget {
             shape: const CircleBorder(),
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor,
-            disabledForegroundColor: colorScheme.onSurface.withValues(
-              alpha: 0.38,
-            ),
+            disabledForegroundColor: MangaVerseColors.mutedForeground,
             disabledBackgroundColor: disabledBackgroundColor,
             side: BorderSide(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+              color: MangaVerseColors.border,
             ),
           ),
           icon: Icon(icon),

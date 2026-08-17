@@ -276,13 +276,13 @@ class _BookshelfPageContentState extends State<_BookshelfPageContent>
         style: const TextStyle(fontSize: 14, color: MangaVerseColors.foreground),
         decoration: InputDecoration(
           hintText: t.bookshelf.searchList,
-          hintStyle: TextStyle(color: context.textColor.withValues(alpha: 0.5)),
+          hintStyle: const TextStyle(color: MangaVerseColors.mutedForeground),
           isCollapsed: true,
           border: InputBorder.none,
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.search,
             size: 18,
-            color: context.textColor.withValues(alpha: 0.6),
+            color: MangaVerseColors.mutedForeground,
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 14,
@@ -291,7 +291,7 @@ class _BookshelfPageContentState extends State<_BookshelfPageContent>
           suffixIcon: _searchController.text.isEmpty
               ? null
               : IconButton(
-                  icon: const Icon(Icons.close, size: 16),
+                  icon: const Icon(Icons.close, size: 16, color: MangaVerseColors.mutedForeground),
                   onPressed: () {
                     _searchController.clear();
                     _setKeyword('');

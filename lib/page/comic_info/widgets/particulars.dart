@@ -330,10 +330,10 @@ class _InfoColumnState extends State<_InfoColumn> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(
+                      const Icon(
                         Icons.play_arrow_rounded,
                         size: 20,
-                        color: context.theme.colorScheme.primary,
+                        color: MangaVerseColors.accent,
                       ),
                     ],
                   ],

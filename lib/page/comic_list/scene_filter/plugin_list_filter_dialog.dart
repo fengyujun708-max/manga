@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/page/comic_list/scene_filter/plugin_list_filter_schema.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/util/context/context_extensions.dart';
@@ -79,9 +80,10 @@ class _PluginListFilterDialogState extends State<PluginListFilterDialog> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 field.label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: context.theme.colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                  color: MangaVerseColors.mutedForeground,
                 ),
               ),
             ),
@@ -110,8 +112,9 @@ class _PluginListFilterDialogState extends State<PluginListFilterDialog> {
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
                         levelLabel,
-                        style: TextStyle(
-                          color: context.theme.colorScheme.onSurfaceVariant,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: MangaVerseColors.mutedForeground,
                         ),
                       ),
                     ),
@@ -126,9 +129,26 @@ class _PluginListFilterDialogState extends State<PluginListFilterDialog> {
                       final selected = selectedValue == value;
 
                       return ChoiceChip(
-                        label: Text(optionLabel),
+                        label: Text(
+                          optionLabel,
+                          style: const TextStyle(fontSize: 13),
+                        ),
                         selected: selected,
                         showCheckmark: false,
+                        selectedColor: MangaVerseColors.accent.withValues(alpha: 0.2),
+                        backgroundColor: MangaVerseColors.surfaceVariant.withValues(alpha: 0.3),
+                        labelStyle: TextStyle(
+                          color: selected
+                              ? MangaVerseColors.accent
+                              : MangaVerseColors.foreground,
+                          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                        side: BorderSide(
+                          color: selected ? MangaVerseColors.accent : MangaVerseColors.border,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         onSelected: (_) {
                           setState(() {
                             _selections[field.key] = value;

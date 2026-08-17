@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mangaverse/config/theme/mangaverse_theme.dart';
 import 'package:mangaverse/page/comic_read/cubit/reader_cubit.dart';
 import 'package:mangaverse/i18n/strings.g.dart';
 import 'package:mangaverse/page/comments/widgets/title.dart';
@@ -26,7 +27,6 @@ class ComicReadAppBar extends StatelessWidget {
     final isMenuVisible = context.select(
       (ReaderCubit cubit) => cubit.state.isMenuVisible,
     );
-    final colorScheme = context.theme.colorScheme;
     const appBarRadius = 14.0;
 
     return Positioned(
@@ -59,13 +59,14 @@ class ComicReadAppBar extends StatelessWidget {
                         isDesktopFullscreen
                             ? Icons.fullscreen_exit_rounded
                             : Icons.fullscreen_rounded,
+                        color: MangaVerseColors.foreground,
                       ),
                     ),
                 ],
-                backgroundColor: colorScheme.surface.withValues(alpha: 0.78),
+                backgroundColor: MangaVerseColors.background.withValues(alpha: 0.85),
                 surfaceTintColor: Colors.transparent,
-                elevation: isMenuVisible ? 4.0 : 0.0,
-                shadowColor: Colors.black.withValues(alpha: 0.2),
+                elevation: isMenuVisible ? 8.0 : 0.0,
+                shadowColor: MangaVerseColors.accent.withValues(alpha: 0.15),
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(appBarRadius),
