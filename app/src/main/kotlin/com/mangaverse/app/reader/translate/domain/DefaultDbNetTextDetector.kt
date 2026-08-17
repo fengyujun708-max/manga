@@ -1,5 +1,7 @@
 package com.mangaverse.app.reader.translate.domain
 
+const val DBNET_MODEL_ID = "dbnet_2025_onnx"
+
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.net.Uri

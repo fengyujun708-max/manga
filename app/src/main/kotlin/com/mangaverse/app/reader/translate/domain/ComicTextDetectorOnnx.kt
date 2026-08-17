@@ -1,5 +1,7 @@
 package com.mangaverse.app.reader.translate.domain
 
+const val CTD_MODEL_ID = "comictextdetector_2025_onnx"
+
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log

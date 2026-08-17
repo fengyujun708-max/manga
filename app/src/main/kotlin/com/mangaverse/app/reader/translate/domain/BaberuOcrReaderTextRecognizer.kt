@@ -1,5 +1,7 @@
 package com.mangaverse.app.reader.translate.domain
 
+const val BABERU_MODEL_ID = "baberu_ocr_2025_onnx"
+
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect

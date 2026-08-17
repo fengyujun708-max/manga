@@ -26,7 +26,7 @@ class OnnxBubbleDetectorEngine @Inject constructor() {
 
 	private val LOG_TAG = "OnnxBubbleDetectorEngine"
 
-	enum class AttemptStatus { SUCCESS, MODEL_NOT_AVAILABLE, INFERENCE_FAILED, NO_BOXES }
+	enum class AttemptStatus { SUCCESS, MODEL_NOT_AVAILABLE, INFERENCE_FAILED, NO_BOXES, NO_MODEL_DOWNLOADED, RUNTIME_UNAVAILABLE }
 
 	data class DetectedBox(
 		val rect: Rect,

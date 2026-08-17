@@ -647,7 +647,7 @@ class ReaderPageTranslationProcessor @Inject constructor(
 		val recBackend = when (recModelId) {
 			"MLKIT" -> OcrRecognizerBackend.MLKIT
 			MANGA_OCR_RECOGNIZER_MODEL_ID -> OcrRecognizerBackend.MANGA_OCR
-			BaberuOcrReaderTextRecognizer.MODEL_ID -> OcrRecognizerBackend.BABERU
+			BABERU_MODEL_ID -> OcrRecognizerBackend.BABERU
 			else -> OcrRecognizerBackend.PADDLE
 		}
 		if (configuredRecModelId == "AUTO") {
@@ -680,8 +680,8 @@ class ReaderPageTranslationProcessor @Inject constructor(
 			OnnxModelCategory.BUBBLE_DETECTION -> OcrDetectorBackend.BUBBLE
 			OnnxModelCategory.OCR_DETECTOR -> {
 				when (model.id) {
-					ComicTextDetectorOnnx.MODEL_ID -> OcrDetectorBackend.CTD
-					DefaultDbNetTextDetector.MODEL_ID -> OcrDetectorBackend.DBNET
+					CTD_MODEL_ID -> OcrDetectorBackend.CTD
+					DBNET_MODEL_ID -> OcrDetectorBackend.DBNET
 					else -> OcrDetectorBackend.PADDLE
 				}
 			}
@@ -896,18 +896,8 @@ class ReaderPageTranslationProcessor @Inject constructor(
 	}
 
 	private fun logMangaOcrDiagnostics() {
-		val diagnostics = mangaOcrReaderTextRecognizer.consumeLastDiagnostics() ?: return
-		log {
-			"metric.ocr.mangaocr.attempted=${diagnostics.attemptedCount} recognized=${diagnostics.recognizedCount} " +
-				"empty=${diagnostics.emptyCount} empty_ratio=${diagnostics.emptyRatio}"
-		}
-		log { "metric.ocr.mangaocr.crops ${diagnostics.cropSummary}" }
-		if (diagnostics.emptySamples.isNotEmpty()) {
-			log { "metric.ocr.mangaocr.empty_crop_samples=${diagnostics.emptySamples.joinToString(";")}" }
-		}
-		diagnostics.traceSamples.forEachIndexed { index, sample ->
-			log { "metric.ocr.mangaocr.trace[$index]=$sample" }
-		}
+		// 诊断日志已简化（引擎已改后端 API）
+		mangaOcrReaderTextRecognizer.consumeLastDiagnostics()
 	}
 
 	private fun detectedBlocksToRegions(blocks: List<OcrTextBlock>): List<TextRegion> {
