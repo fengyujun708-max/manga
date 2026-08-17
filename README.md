@@ -212,3 +212,5 @@ AltStore 是目前最稳定且对新手友好的 iOS 侧载工具，支持通过
     <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=deretame/MangaVerse&type=Date" />
   </picture>
 </p>
+
+
