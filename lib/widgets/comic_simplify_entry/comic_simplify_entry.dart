@@ -14,7 +14,7 @@ import 'package:mangaverse/util/text/chinese_convert.dart';
 import 'package:mangaverse/widgets/comic_simplify_entry/comic_simplify_entry_info.dart';
 import 'package:mangaverse/widgets/comic_simplify_entry/cover.dart';
 
-const double kComicCardBorderRadius = 5.0;
+const double kComicCardBorderRadius = 8.0;
 
 class ComicFixedSizeHorizontalList extends StatelessWidget {
   final List<ComicSimplifyEntryInfo> entries;
