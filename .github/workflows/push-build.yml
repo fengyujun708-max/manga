@@ -43,15 +43,15 @@ jobs:
 
       - name: 生成签名密钥 (CI)
         run: |
-          cd android
+          mkdir -p android/app
           keytool -genkeypair -alias androiddebugkey -keyalg RSA -keysize 2048 \
-            -validity 9999 -keystore Breeze-key.keystore \
+            -validity 9999 -keystore android/app/Breeze-key.keystore \
             -storepass android -keypass android \
             -dname "CN=MangaVerse,OU=Dev,O=MangaVerse,L=Shenzhen,ST=Guangdong,C=CN"
-          echo "storeFile=Breeze-key.keystore" > key.properties
-          echo "storePassword=android" >> key.properties
-          echo "keyPassword=android" >> key.properties
-          echo "keyAlias=androiddebugkey" >> key.properties
+          echo "storeFile=Breeze-key.keystore" > android/key.properties
+          echo "storePassword=android" >> android/key.properties
+          echo "keyPassword=android" >> android/key.properties
+          echo "keyAlias=androiddebugkey" >> android/key.properties
 
       - name: 设置 Java 21 & SDK
         uses: actions/setup-java@v4
