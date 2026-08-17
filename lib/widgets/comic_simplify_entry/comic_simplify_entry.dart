@@ -1,0 +1,485 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:mangaverse/i18n/strings.g.dart';
+import 'package:uuid/uuid.dart';
+import 'package:mangaverse/type/enum.dart';
+import 'package:mangaverse/type/pipe.dart';
+import 'package:mangaverse/widgets/toast.dart';
+
+import 'package:mangaverse/main.dart';
+import 'package:mangaverse/network/http/picture/picture.dart';
+import 'package:mangaverse/object_box/objectbox.g.dart';
+import 'package:mangaverse/config/router/router.gr.dart';
+import 'package:mangaverse/util/text/chinese_convert.dart';
+import 'package:mangaverse/widgets/comic_simplify_entry/comic_simplify_entry_info.dart';
+import 'package:mangaverse/widgets/comic_simplify_entry/cover.dart';
+
+const double kComicCardBorderRadius = 5.0;
+
+class ComicFixedSizeHorizontalList extends StatelessWidget {
+  final List<ComicSimplifyEntryInfo> entries;
+  final double spacing; // 卡片之间的横向间距
+  final double itemWidth; // 卡片固定宽度
+  final bool roundedCorner; // 是否有圆角
+  final bool useRandomImageKey;
+
+  const ComicFixedSizeHorizontalList({
+    super.key,
+    required this.entries,
+    this.spacing = 10.0, // 默认间距设为 10
+    this.itemWidth = 200, // 固定宽度，不随窗口宽高比变化
+    this.roundedCorner = true,
+    this.useRandomImageKey = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // 使用固定的宽高，避免在 Windows 桌面端拖动窗口时因
+    // MediaQuery.orientation 随宽高比切换而导致高度跳变
+    final double itemHeight = itemWidth / 0.75;
+
+    // 最外层需要限制高度，否则横向 ListView 会报错
+    return SizedBox(
+      height: itemHeight,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: entries.length,
+        itemBuilder: (context, index) {
+          final info = entries[index];
+
+          // 过滤无数据的情况
+          if (info.title == "无数据") {
+            return const SizedBox.shrink();
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(right: spacing),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _navigateToComicInfo(context, info),
+              child: SizedBox(
+                width: itemWidth,
+                height: itemHeight,
+                child: _buildCoverWithTitle(
+                  info,
+                  itemWidth,
+                  itemHeight,
+                  useRandomImageKey
+                      ? ValueKey('cover-${const Uuid().v4()}')
+                      : ValueKey('cover-${info.from}:${info.id}:${info.path}'),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCoverWithTitle(
+    ComicSimplifyEntryInfo info,
+    double width,
+    double height,
+    Key coverKey,
+  ) {
+    final circular = roundedCorner ? kComicCardBorderRadius : 0.0;
+    return Stack(
+      children: [
+        // 1. 底层封面图
+        CoverWidget(
+          key: coverKey,
+          fileServer: info.fileServer,
+          path: info.path,
+          id: info.id,
+          pictureType: info.pictureType,
+          from: info.from,
+          roundedCorner: roundedCorner,
+          width: width,
+          height: height,
+        ),
+
+        // 2. 顶部阴影与标题
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.7),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: const [0.0, 0.7],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(circular),
+                bottomRight: Radius.circular(circular),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 5.0),
+            child: Text(
+              info.title.let(convertChineseForDisplay),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.0,
+                fontWeight: FontWeight.w500,
+                shadows: [
+                  Shadow(
+                    offset: const Offset(0, 1),
+                    blurRadius: 2,
+                    color: Colors.black.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.start,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 点击跳转逻辑 (需要把当前的 info 传进来)
+  void _navigateToComicInfo(BuildContext context, ComicSimplifyEntryInfo info) {
+    final pluginId = (info.source.trim().isNotEmpty ? info.source : info.from)
+        .trim();
+    if (pluginId.isEmpty) return;
+    context.pushRoute(
+      ComicInfoRoute(
+        comicId: info.id,
+        type: ComicEntryType.normal,
+        from: pluginId,
+        pluginId: pluginId,
+      ),
+    );
+  }
+}
+
+class ComicSimplifyEntry extends StatelessWidget {
+  final ComicSimplifyEntryInfo info;
+  final ComicEntryType type;
+  final VoidCallback? refresh;
+  final ValueChanged<String>? onDeleteSuccess;
+  final ValueChanged<ComicSimplifyEntryInfo>? onTapOverride;
+  final void Function(
+    ComicSimplifyEntryInfo info,
+    LongPressStartDetails details,
+  )?
+  onLongPressOverride;
+  final void Function(ComicSimplifyEntryInfo info, TapDownDetails details)?
+  onSecondaryTapDown;
+  final bool isSelected;
+  final bool selectionMode;
+  final bool topPadding;
+  final bool roundedCorner;
+
+  const ComicSimplifyEntry({
+    super.key,
+    required this.info,
+    required this.type,
+    this.refresh,
+    this.onDeleteSuccess,
+    this.onTapOverride,
+    this.onLongPressOverride,
+    this.onSecondaryTapDown,
+    this.isSelected = false,
+    this.selectionMode = false,
+    this.topPadding = true,
+    this.roundedCorner = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (info.title == "无数据") {
+      return const SizedBox.shrink();
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = width / 0.75;
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            final onTapHandler = onTapOverride;
+            if (onTapHandler != null) {
+              onTapHandler(info);
+              return;
+            }
+            _navigateToComicInfo(context);
+          },
+          onLongPressStart: (details) {
+            final onLongPressHandler = onLongPressOverride;
+            if (onLongPressHandler != null) {
+              onLongPressHandler(info, details);
+              return;
+            }
+            if (type != ComicEntryType.normal) {
+              _showDeleteDialog(context);
+            }
+          },
+          onSecondaryTapDown: (details) {
+            onSecondaryTapDown?.call(info, details);
+          },
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: _buildCoverWithTitle(context, width, height),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCoverWithTitle(
+    BuildContext context,
+    double width,
+    double height,
+  ) {
+    final circular = roundedCorner ? kComicCardBorderRadius : 0.0;
+    final primary = Theme.of(context).colorScheme.primary;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(circular),
+      child: Container(
+        foregroundDecoration: isSelected && selectionMode
+            ? BoxDecoration(
+                border: Border.all(color: primary, width: 4),
+                borderRadius: BorderRadius.circular(circular),
+              )
+            : null,
+        child: Stack(
+          children: [
+            CoverWidget(
+              fileServer: info.fileServer,
+              path: info.path,
+              id: info.id,
+              pictureType: info.pictureType,
+              from: info.from,
+              roundedCorner: roundedCorner,
+              width: width,
+              height: height,
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.7),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.0, 0.7],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(circular),
+                    bottomRight: Radius.circular(circular),
+                  ),
+                ),
+                padding: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 5.0),
+                child: Text(
+                  info.title.let(convertChineseForDisplay),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                    shadows: [
+                      Shadow(
+                        offset: const Offset(0, 1),
+                        blurRadius: 2,
+                        color: Colors.black.withValues(alpha: 0.5),
+                      ),
+                    ],
+                  ),
+                  maxLines: 3, // 最多显示3行
+                  overflow: TextOverflow.ellipsis, // 超出部分显示省略号
+                  textAlign:
+                      TextAlign.start, // 文字对齐方式，也可以用 TextAlign.center 居中显示
+                ),
+              ),
+            ),
+            if (selectionMode)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: isSelected ? primary : Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2.5),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black87,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    isSelected ? Icons.check : Icons.radio_button_unchecked,
+                    color: isSelected ? Colors.white : Colors.black54,
+                    size: 20,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToComicInfo(BuildContext context) {
+    final pluginId = (info.source.trim().isNotEmpty ? info.source : info.from)
+        .trim();
+    if (pluginId.isEmpty) return;
+    context.pushRoute(
+      ComicInfoRoute(
+        comicId: info.id,
+        type: type,
+        from: pluginId,
+        pluginId: pluginId,
+      ),
+    );
+  }
+
+  Future<void> _showDeleteDialog(BuildContext context) async {
+    final (title, content) = _getDialogContent();
+
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text(t.common.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              context.router.pop();
+              _handleDeleteAction(context);
+            },
+            child: Text(t.common.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  (String, String) _getDialogContent() {
+    logger.d(type);
+    switch (type) {
+      case ComicEntryType.favorite:
+        return (
+          t.comicEntry.deleteFavorite,
+          t.comicEntry.deleteFavoriteConfirm(
+            title: info.title.let(convertChineseForDisplay),
+          ),
+        );
+      case ComicEntryType.history:
+        return (
+          t.comicEntry.deleteHistory,
+          t.comicEntry.deleteHistoryConfirm(
+            title: info.title.let(convertChineseForDisplay),
+          ),
+        );
+      case ComicEntryType.download:
+        return (
+          t.comicEntry.deleteDownload,
+          t.comicEntry.deleteDownloadConfirm(
+            title: info.title.let(convertChineseForDisplay),
+          ),
+        );
+      default:
+        return ("", "");
+    }
+  }
+
+  Future<void> _handleDeleteAction(BuildContext context) async {
+    try {
+      if (type == ComicEntryType.history) {
+        await _deleteHistory();
+      } else if (type == ComicEntryType.download) {
+        await _deleteDownload();
+      } else if (type == ComicEntryType.favorite) {
+        await _deleteFavorite();
+      }
+      final deletedKey = '${info.from.trim()}:${info.id}';
+      if (onDeleteSuccess != null) {
+        onDeleteSuccess!(deletedKey);
+      } else {
+        refresh?.call();
+      }
+    } catch (e, s) {
+      logger.e('删除失败', error: e, stackTrace: s);
+      showErrorToast(t.comicEntry.deleteFailed);
+    }
+  }
+
+  Future<void> _deleteHistory() async {
+    final uniqueKey = '${info.from.trim()}:${info.id}';
+    final temp = objectbox.unifiedHistoryBox
+        .query(UnifiedComicHistory_.uniqueKey.equals(uniqueKey))
+        .build()
+        .findFirst();
+
+    if (temp != null) {
+      temp.deleted = true;
+      temp.updatedAt = DateTime.now().toUtc();
+      objectbox.unifiedHistoryBox.put(temp);
+    }
+  }
+
+  Future<void> _deleteDownload() async {
+    final uniqueKey = '${info.from.trim()}:${info.id}';
+    final temp = objectbox.unifiedDownloadBox
+        .query(UnifiedComicDownload_.uniqueKey.equals(uniqueKey))
+        .build()
+        .findFirst();
+
+    if (temp != null) {
+      objectbox.unifiedDownloadBox.remove(temp.id);
+      await _deleteDownloadDirectory(info.id);
+    }
+  }
+
+  Future<void> _deleteFavorite() async {
+    final uniqueKey = '${info.from.trim()}:${info.id}';
+    final temp = objectbox.unifiedFavoriteBox
+        .query(UnifiedComicFavorite_.uniqueKey.equals(uniqueKey))
+        .build()
+        .findFirst();
+
+    if (temp != null) {
+      temp.deleted = true;
+      temp.updatedAt = DateTime.now().toUtc();
+      objectbox.unifiedFavoriteBox.put(temp);
+    }
+  }
+
+  Future<void> _deleteDownloadDirectory(String id) async {
+    try {
+      await deleteComicDownloadDirectory(info.from, id);
+      logger.d('目录已成功删除: $id');
+    } catch (e) {
+      logger.e('删除目录时发生错误: $e');
+      throw Exception('删除目录失败');
+    }
+  }
+}

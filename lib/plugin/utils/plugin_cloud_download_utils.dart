@@ -1,0 +1,338 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:mangaverse/main.dart';
+import 'package:mangaverse/network/utils/github_proxy.dart';
+import 'package:mangaverse/plugin/plugin_registry_service.dart';
+import 'package:mangaverse/src/rust/api/qjs.dart';
+import 'package:mangaverse/src/rust/api/simple.dart';
+import 'package:mangaverse/util/json/json_value.dart';
+
+const _cloudPluginListDirectUrl =
+    'https://raw.githubusercontent.com/deretame/Breeze-plugin-list/main/plugins_data.json';
+
+const cloudPluginListApi = 'https://api.windy-78.site/plugin-list';
+
+const _cdnMirrors = [
+  'https://jsdelivr.topthink.com/',
+  'https://cdn.jsdmirror.com/',
+  'https://cdn.jsdmirror.cn/',
+  'https://www.webcache.cn/',
+  'https://jsd.onmicrosoft.cn/',
+  'https://cdn.jsdelivr.net/',
+];
+
+const _ghCdnMirrors = [
+  'https://cdn.jsdmirror.com/',
+  'https://cdn.jsdmirror.cn/',
+  'https://jsd.onmicrosoft.cn/',
+  'https://cdn.jsdelivr.net/',
+];
+
+Future<String> fetchCloudPluginListWithCdnFallback() async {
+  final client = WindHttp(
+    connectTimeout: const Duration(seconds: 8),
+    receiveTimeout: const Duration(seconds: 15),
+  );
+
+  try {
+    logger.d('尝试使用自建 API: $cloudPluginListApi');
+    final response = await client.fetch(
+      cloudPluginListApi,
+      headers: {'Accept': 'application/json, text/plain, */*'},
+    );
+    final body = response.text.trim();
+    if (response.ok && body.isNotEmpty) {
+      return body;
+    }
+  } catch (e, stackTrace) {
+    logger.w(
+      '自建 API 通道失败: $cloudPluginListApi',
+      error: e,
+      stackTrace: stackTrace,
+    );
+  }
+
+  var version = 'latest';
+
+  try {
+    final temp = await client.fetch(
+      'https://breeze-version.s3.bitiful.net/plugin-list-version.json',
+    );
+    final data = temp.json;
+    version = (data is Map ? data['version'] : null) ?? 'latest';
+  } catch (e) {
+    logger.e(e);
+    return fetchCloudPluginListPayload(_cloudPluginListDirectUrl);
+  }
+
+  for (final mirror in _ghCdnMirrors) {
+    final url =
+        '${mirror}gh/deretame/Breeze-plugin-list@$version/plugins_data.json';
+    logger.d('尝试使用 GitHub CDN 镜像: $url');
+    try {
+      final response = await client.fetch(
+        url,
+        headers: {'Accept': 'application/json, text/plain, */*'},
+      );
+      final body = response.text.trim();
+      if (response.ok && body.isNotEmpty) {
+        return body;
+      }
+    } catch (e, stackTrace) {
+      logger.w('CDN 镜像通道失败: $url', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  return fetchCloudPluginListPayload(_cloudPluginListDirectUrl);
+}
+
+Future<String> fetchCloudPluginListPayload(String sourceUrl) async {
+  final requestUrls = buildCloudRequestCandidates(sourceUrl);
+  final client = WindHttp(
+    connectTimeout: const Duration(seconds: 12),
+    receiveTimeout: const Duration(seconds: 20),
+  );
+
+  Object? lastError;
+  for (final requestUrl in requestUrls) {
+    try {
+      final response = await client.fetch(
+        requestUrl,
+        headers: {'Accept': 'application/json, text/plain, */*'},
+      );
+      final body = response.text.trim();
+      if (response.ok && body.isNotEmpty) {
+        return body;
+      }
+    } catch (e, stackTrace) {
+      lastError = e;
+      logger.w('云端插件列表通道失败: $requestUrl', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  throw StateError('所有云端插件列表通道都不可用: $lastError');
+}
+
+List<String> buildCloudRequestCandidates(String sourceUrl) {
+  final mirrorBaseUrls = [
+    'https://v4.gh-proxy.org/',
+    'https://gh-proxy.org/',
+    'https://v6.gh-proxy.org/',
+    'https://cdn.gh-proxy.org/',
+  ];
+  final uri = Uri.tryParse(sourceUrl);
+  final result = <String>[];
+  if (sourceUrl == _cloudPluginListDirectUrl) {
+    result.add(cloudPluginListApi);
+  }
+  if (uri != null) {
+    final isGithubHost =
+        uri.host == 'raw.githubusercontent.com' ||
+        uri.host == 'github.com' ||
+        uri.host == 'www.github.com';
+    if (isGithubHost) {
+      for (final baseUrl in mirrorBaseUrls) {
+        result.add('$baseUrl/$sourceUrl');
+      }
+    }
+  }
+  result.add(sourceUrl);
+  return result.toSet().toList();
+}
+
+Future<String> downloadFromJsdelivrOrGitHub({
+  required String npmName,
+  required String cloudVersion,
+  required String updateUrl,
+}) async {
+  if (npmName.isNotEmpty) {
+    for (final ext in ['.cjs.br', '.cjs']) {
+      final assetPath = 'npm/$npmName@$cloudVersion/dist/$npmName.bundle$ext';
+      for (final mirror in _cdnMirrors) {
+        final url = '$mirror$assetPath';
+        try {
+          final response = await downloadPluginAssetWithFallback(url);
+          final script = await decodeDownloadedPluginScript(
+            response: response,
+            resolvedUrl: url,
+          );
+          final trimmed = script.trim();
+          if (trimmed.isNotEmpty) {
+            return trimmed;
+          }
+        } catch (e) {
+          logger.w('CDN 下载尝试失败: $url', error: e);
+        }
+      }
+    }
+    logger.w('所有 CDN 镜像下载失败，回退 GitHub release: $npmName');
+  }
+
+  final release = await fetchReleaseData(updateUrl);
+  final asset = pickPreferredPluginAsset(asJsonList(release['assets']));
+  if (asset == null) {
+    throw StateError('未找到可安装资源（仅支持 .cjs.br 或 .cjs）');
+  }
+
+  final downloadUrl = asset['browser_download_url']?.toString().trim() ?? '';
+  if (downloadUrl.isEmpty) {
+    throw StateError('release 资产缺少 browser_download_url');
+  }
+
+  final response = await downloadPluginAssetWithFallback(downloadUrl);
+  final script = await decodeDownloadedPluginScript(
+    response: response,
+    resolvedUrl: downloadUrl,
+  );
+  final trimmed = script.trim();
+  if (trimmed.isEmpty) {
+    throw StateError('下载到的插件脚本为空');
+  }
+  return trimmed;
+}
+
+Future<FetchResponse> downloadPluginAssetWithFallback(String sourceUrl) async {
+  final requestUrls = buildCloudRequestCandidates(sourceUrl);
+  final client = WindHttp(
+    connectTimeout: const Duration(seconds: 12),
+    receiveTimeout: const Duration(seconds: 30),
+    followRedirects: true,
+  );
+
+  Object? lastError;
+  for (final requestUrl in requestUrls) {
+    try {
+      final response = await client.fetch(
+        requestUrl,
+        headers: {'Accept': '*/*'},
+      );
+      if (response.body.isNotEmpty) {
+        return response;
+      }
+      lastError = StateError('空响应: $requestUrl');
+    } catch (e, stackTrace) {
+      lastError = e;
+      logger.w('插件资源下载通道失败: $requestUrl', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  throw StateError('插件资源下载失败: $lastError');
+}
+
+Future<String> decodeDownloadedPluginScript({
+  required FetchResponse response,
+  required String resolvedUrl,
+}) async {
+  final body = response.body;
+  if (body.isEmpty) {
+    return '';
+  }
+
+  final lowerUrl = resolvedUrl.toLowerCase();
+  final contentEncoding = (response.header('content-encoding') ?? '')
+      .toLowerCase();
+  final shouldUseBrotli =
+      lowerUrl.endsWith('.br') || contentEncoding.contains('br');
+  return decodePluginScriptFromBytes(
+    bytes: body,
+    shouldUseBrotli: shouldUseBrotli,
+  );
+}
+
+Future<String> decodePluginScriptFromBytes({
+  required List<int> bytes,
+  required bool shouldUseBrotli,
+}) async {
+  if (bytes.isEmpty) {
+    return '';
+  }
+  final decodedBytes = shouldUseBrotli
+      ? await decompressExtreme(data: bytes)
+      : bytes;
+  return utf8.decode(decodedBytes, allowMalformed: true);
+}
+
+Map<String, dynamic>? pickPreferredPluginAsset(List<dynamic> rawAssets) {
+  final assets = rawAssets
+      .map((item) => asJsonMap(item))
+      .where(
+        (item) =>
+            (item['browser_download_url']?.toString().trim().isNotEmpty ??
+                false) &&
+            (item['name']?.toString().trim().isNotEmpty ?? false),
+      )
+      .toList();
+  if (assets.isEmpty) {
+    return null;
+  }
+
+  Map<String, dynamic>? findByExt(String ext) {
+    for (final asset in assets) {
+      final name = asset['name']?.toString().toLowerCase().trim() ?? '';
+      if (name.endsWith(ext)) {
+        return asset;
+      }
+    }
+    return null;
+  }
+
+  return findByExt('.cjs.br') ?? findByExt('.cjs');
+}
+
+Future<Map<String, dynamic>> callGetInfoByGlobalQjs(String bundleJs) async {
+  await PluginRegistryService.I.initializeGlobalRuntime();
+  final bytes = await qjsTaskCall(
+    runtimeName: 'global',
+    taskGroupKey: '',
+    isOnce: true,
+    bundleJs: bundleJs,
+    fnPath: 'getInfo',
+    argsJson: '{}',
+  );
+  final raw = utf8.decode(bytes, allowMalformed: true);
+  return requireJsonMap(jsonDecode(raw), message: 'getInfo 返回格式错误');
+}
+
+String readUuidFromInfo(Map<String, dynamic> info) {
+  final uuid = info['uuid']?.toString().trim() ?? '';
+  if (uuid.isNotEmpty) {
+    return uuid;
+  }
+  final dataUuid = asJsonMap(info['data'])['uuid']?.toString().trim() ?? '';
+  if (dataUuid.isNotEmpty) {
+    return dataUuid;
+  }
+  return '';
+}
+
+String readVersionFromInfo(Map<String, dynamic> info) {
+  final version = info['version']?.toString().trim() ?? '';
+  if (version.isNotEmpty) {
+    return version;
+  }
+  final dataVersion =
+      asJsonMap(info['data'])['version']?.toString().trim() ?? '';
+  if (dataVersion.isNotEmpty) {
+    return dataVersion;
+  }
+  return '0.0.0';
+}
+
+bool isNetworkRetryableError(Object error) {
+  if (error is TimeoutException ||
+      error is SocketException ||
+      error is HandshakeException) {
+    return true;
+  }
+  final text = error.toString().toLowerCase();
+  return text.contains('socketexception') ||
+      text.contains('timed out') ||
+      text.contains('timeout') ||
+      text.contains('connection reset') ||
+      text.contains('connection refused') ||
+      text.contains('network') ||
+      text.contains('fetch failed') ||
+      text.contains('download failed');
+}

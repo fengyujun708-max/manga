@@ -1,0 +1,2837 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'global_setting.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$GlobalSettingState {
+
+ bool get dynamicColor; ThemeMode get themeMode; bool get isAMOLED;@ColorConverter() Color get seedColor; int get themeInitState;@LocaleConverter() Locale get locale; bool get localeFollowsSystem; int get welcomePageNum; SyncSettingState get syncSetting; List<String> get maskedKeywords; bool get socks5ProxyEnabled; String get socks5Proxy; bool get needCleanCache; int get comicChoice; bool get disableBika; bool get enableMemoryDebug; String get logAddress; bool get forceEnableImpeller; bool get androidKeepAliveEnabled; bool get backPressExitEnabled; bool get updateAccelerate; bool get oldPageRollbackEnabled; bool get cloudFavoritePreferred; bool get autoFollowOnCollect; bool get leftHandModeEnabled; bool get clickCoverToStartReading; List<String> get searchHistory; ProxySettingState get proxySetting; double get windowWidth; double get windowHeight; double get windowX; double get windowY; ReadSettingState get readSetting; String get customExportPath; AppLockSettingState get appLockSetting; String get compatibleVersion; CacheSettingState get cacheSetting; ChineseConvertMode get chineseConvertMode; BookshelfSettingState get bookshelfSetting;
+/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GlobalSettingStateCopyWith<GlobalSettingState> get copyWith => _$GlobalSettingStateCopyWithImpl<GlobalSettingState>(this as GlobalSettingState, _$identity);
+
+  /// Serializes this GlobalSettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GlobalSettingState&&(identical(other.dynamicColor, dynamicColor) || other.dynamicColor == dynamicColor)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.isAMOLED, isAMOLED) || other.isAMOLED == isAMOLED)&&(identical(other.seedColor, seedColor) || other.seedColor == seedColor)&&(identical(other.themeInitState, themeInitState) || other.themeInitState == themeInitState)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.localeFollowsSystem, localeFollowsSystem) || other.localeFollowsSystem == localeFollowsSystem)&&(identical(other.welcomePageNum, welcomePageNum) || other.welcomePageNum == welcomePageNum)&&(identical(other.syncSetting, syncSetting) || other.syncSetting == syncSetting)&&const DeepCollectionEquality().equals(other.maskedKeywords, maskedKeywords)&&(identical(other.socks5ProxyEnabled, socks5ProxyEnabled) || other.socks5ProxyEnabled == socks5ProxyEnabled)&&(identical(other.socks5Proxy, socks5Proxy) || other.socks5Proxy == socks5Proxy)&&(identical(other.needCleanCache, needCleanCache) || other.needCleanCache == needCleanCache)&&(identical(other.comicChoice, comicChoice) || other.comicChoice == comicChoice)&&(identical(other.disableBika, disableBika) || other.disableBika == disableBika)&&(identical(other.enableMemoryDebug, enableMemoryDebug) || other.enableMemoryDebug == enableMemoryDebug)&&(identical(other.logAddress, logAddress) || other.logAddress == logAddress)&&(identical(other.forceEnableImpeller, forceEnableImpeller) || other.forceEnableImpeller == forceEnableImpeller)&&(identical(other.androidKeepAliveEnabled, androidKeepAliveEnabled) || other.androidKeepAliveEnabled == androidKeepAliveEnabled)&&(identical(other.backPressExitEnabled, backPressExitEnabled) || other.backPressExitEnabled == backPressExitEnabled)&&(identical(other.updateAccelerate, updateAccelerate) || other.updateAccelerate == updateAccelerate)&&(identical(other.oldPageRollbackEnabled, oldPageRollbackEnabled) || other.oldPageRollbackEnabled == oldPageRollbackEnabled)&&(identical(other.cloudFavoritePreferred, cloudFavoritePreferred) || other.cloudFavoritePreferred == cloudFavoritePreferred)&&(identical(other.autoFollowOnCollect, autoFollowOnCollect) || other.autoFollowOnCollect == autoFollowOnCollect)&&(identical(other.leftHandModeEnabled, leftHandModeEnabled) || other.leftHandModeEnabled == leftHandModeEnabled)&&(identical(other.clickCoverToStartReading, clickCoverToStartReading) || other.clickCoverToStartReading == clickCoverToStartReading)&&const DeepCollectionEquality().equals(other.searchHistory, searchHistory)&&(identical(other.proxySetting, proxySetting) || other.proxySetting == proxySetting)&&(identical(other.windowWidth, windowWidth) || other.windowWidth == windowWidth)&&(identical(other.windowHeight, windowHeight) || other.windowHeight == windowHeight)&&(identical(other.windowX, windowX) || other.windowX == windowX)&&(identical(other.windowY, windowY) || other.windowY == windowY)&&(identical(other.readSetting, readSetting) || other.readSetting == readSetting)&&(identical(other.customExportPath, customExportPath) || other.customExportPath == customExportPath)&&(identical(other.appLockSetting, appLockSetting) || other.appLockSetting == appLockSetting)&&(identical(other.compatibleVersion, compatibleVersion) || other.compatibleVersion == compatibleVersion)&&(identical(other.cacheSetting, cacheSetting) || other.cacheSetting == cacheSetting)&&(identical(other.chineseConvertMode, chineseConvertMode) || other.chineseConvertMode == chineseConvertMode)&&(identical(other.bookshelfSetting, bookshelfSetting) || other.bookshelfSetting == bookshelfSetting));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,dynamicColor,themeMode,isAMOLED,seedColor,themeInitState,locale,localeFollowsSystem,welcomePageNum,syncSetting,const DeepCollectionEquality().hash(maskedKeywords),socks5ProxyEnabled,socks5Proxy,needCleanCache,comicChoice,disableBika,enableMemoryDebug,logAddress,forceEnableImpeller,androidKeepAliveEnabled,backPressExitEnabled,updateAccelerate,oldPageRollbackEnabled,cloudFavoritePreferred,autoFollowOnCollect,leftHandModeEnabled,clickCoverToStartReading,const DeepCollectionEquality().hash(searchHistory),proxySetting,windowWidth,windowHeight,windowX,windowY,readSetting,customExportPath,appLockSetting,compatibleVersion,cacheSetting,chineseConvertMode,bookshelfSetting]);
+
+@override
+String toString() {
+  return 'GlobalSettingState(dynamicColor: $dynamicColor, themeMode: $themeMode, isAMOLED: $isAMOLED, seedColor: $seedColor, themeInitState: $themeInitState, locale: $locale, localeFollowsSystem: $localeFollowsSystem, welcomePageNum: $welcomePageNum, syncSetting: $syncSetting, maskedKeywords: $maskedKeywords, socks5ProxyEnabled: $socks5ProxyEnabled, socks5Proxy: $socks5Proxy, needCleanCache: $needCleanCache, comicChoice: $comicChoice, disableBika: $disableBika, enableMemoryDebug: $enableMemoryDebug, logAddress: $logAddress, forceEnableImpeller: $forceEnableImpeller, androidKeepAliveEnabled: $androidKeepAliveEnabled, backPressExitEnabled: $backPressExitEnabled, updateAccelerate: $updateAccelerate, oldPageRollbackEnabled: $oldPageRollbackEnabled, cloudFavoritePreferred: $cloudFavoritePreferred, autoFollowOnCollect: $autoFollowOnCollect, leftHandModeEnabled: $leftHandModeEnabled, clickCoverToStartReading: $clickCoverToStartReading, searchHistory: $searchHistory, proxySetting: $proxySetting, windowWidth: $windowWidth, windowHeight: $windowHeight, windowX: $windowX, windowY: $windowY, readSetting: $readSetting, customExportPath: $customExportPath, appLockSetting: $appLockSetting, compatibleVersion: $compatibleVersion, cacheSetting: $cacheSetting, chineseConvertMode: $chineseConvertMode, bookshelfSetting: $bookshelfSetting)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GlobalSettingStateCopyWith<$Res>  {
+  factory $GlobalSettingStateCopyWith(GlobalSettingState value, $Res Function(GlobalSettingState) _then) = _$GlobalSettingStateCopyWithImpl;
+@useResult
+$Res call({
+ bool dynamicColor, ThemeMode themeMode, bool isAMOLED,@ColorConverter() Color seedColor, int themeInitState,@LocaleConverter() Locale locale, bool localeFollowsSystem, int welcomePageNum, SyncSettingState syncSetting, List<String> maskedKeywords, bool socks5ProxyEnabled, String socks5Proxy, bool needCleanCache, int comicChoice, bool disableBika, bool enableMemoryDebug, String logAddress, bool forceEnableImpeller, bool androidKeepAliveEnabled, bool backPressExitEnabled, bool updateAccelerate, bool oldPageRollbackEnabled, bool cloudFavoritePreferred, bool autoFollowOnCollect, bool leftHandModeEnabled, bool clickCoverToStartReading, List<String> searchHistory, ProxySettingState proxySetting, double windowWidth, double windowHeight, double windowX, double windowY, ReadSettingState readSetting, String customExportPath, AppLockSettingState appLockSetting, String compatibleVersion, CacheSettingState cacheSetting, ChineseConvertMode chineseConvertMode, BookshelfSettingState bookshelfSetting
+});
+
+
+$SyncSettingStateCopyWith<$Res> get syncSetting;$ProxySettingStateCopyWith<$Res> get proxySetting;$ReadSettingStateCopyWith<$Res> get readSetting;$AppLockSettingStateCopyWith<$Res> get appLockSetting;$CacheSettingStateCopyWith<$Res> get cacheSetting;$BookshelfSettingStateCopyWith<$Res> get bookshelfSetting;
+
+}
+/// @nodoc
+class _$GlobalSettingStateCopyWithImpl<$Res>
+    implements $GlobalSettingStateCopyWith<$Res> {
+  _$GlobalSettingStateCopyWithImpl(this._self, this._then);
+
+  final GlobalSettingState _self;
+  final $Res Function(GlobalSettingState) _then;
+
+/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? dynamicColor = null,Object? themeMode = null,Object? isAMOLED = null,Object? seedColor = null,Object? themeInitState = null,Object? locale = null,Object? localeFollowsSystem = null,Object? welcomePageNum = null,Object? syncSetting = null,Object? maskedKeywords = null,Object? socks5ProxyEnabled = null,Object? socks5Proxy = null,Object? needCleanCache = null,Object? comicChoice = null,Object? disableBika = null,Object? enableMemoryDebug = null,Object? logAddress = null,Object? forceEnableImpeller = null,Object? androidKeepAliveEnabled = null,Object? backPressExitEnabled = null,Object? updateAccelerate = null,Object? oldPageRollbackEnabled = null,Object? cloudFavoritePreferred = null,Object? autoFollowOnCollect = null,Object? leftHandModeEnabled = null,Object? clickCoverToStartReading = null,Object? searchHistory = null,Object? proxySetting = null,Object? windowWidth = null,Object? windowHeight = null,Object? windowX = null,Object? windowY = null,Object? readSetting = null,Object? customExportPath = null,Object? appLockSetting = null,Object? compatibleVersion = null,Object? cacheSetting = null,Object? chineseConvertMode = null,Object? bookshelfSetting = null,}) {
+  return _then(_self.copyWith(
+dynamicColor: null == dynamicColor ? _self.dynamicColor : dynamicColor // ignore: cast_nullable_to_non_nullable
+as bool,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+as ThemeMode,isAMOLED: null == isAMOLED ? _self.isAMOLED : isAMOLED // ignore: cast_nullable_to_non_nullable
+as bool,seedColor: null == seedColor ? _self.seedColor : seedColor // ignore: cast_nullable_to_non_nullable
+as Color,themeInitState: null == themeInitState ? _self.themeInitState : themeInitState // ignore: cast_nullable_to_non_nullable
+as int,locale: null == locale ? _self.locale : locale // ignore: cast_nullable_to_non_nullable
+as Locale,localeFollowsSystem: null == localeFollowsSystem ? _self.localeFollowsSystem : localeFollowsSystem // ignore: cast_nullable_to_non_nullable
+as bool,welcomePageNum: null == welcomePageNum ? _self.welcomePageNum : welcomePageNum // ignore: cast_nullable_to_non_nullable
+as int,syncSetting: null == syncSetting ? _self.syncSetting : syncSetting // ignore: cast_nullable_to_non_nullable
+as SyncSettingState,maskedKeywords: null == maskedKeywords ? _self.maskedKeywords : maskedKeywords // ignore: cast_nullable_to_non_nullable
+as List<String>,socks5ProxyEnabled: null == socks5ProxyEnabled ? _self.socks5ProxyEnabled : socks5ProxyEnabled // ignore: cast_nullable_to_non_nullable
+as bool,socks5Proxy: null == socks5Proxy ? _self.socks5Proxy : socks5Proxy // ignore: cast_nullable_to_non_nullable
+as String,needCleanCache: null == needCleanCache ? _self.needCleanCache : needCleanCache // ignore: cast_nullable_to_non_nullable
+as bool,comicChoice: null == comicChoice ? _self.comicChoice : comicChoice // ignore: cast_nullable_to_non_nullable
+as int,disableBika: null == disableBika ? _self.disableBika : disableBika // ignore: cast_nullable_to_non_nullable
+as bool,enableMemoryDebug: null == enableMemoryDebug ? _self.enableMemoryDebug : enableMemoryDebug // ignore: cast_nullable_to_non_nullable
+as bool,logAddress: null == logAddress ? _self.logAddress : logAddress // ignore: cast_nullable_to_non_nullable
+as String,forceEnableImpeller: null == forceEnableImpeller ? _self.forceEnableImpeller : forceEnableImpeller // ignore: cast_nullable_to_non_nullable
+as bool,androidKeepAliveEnabled: null == androidKeepAliveEnabled ? _self.androidKeepAliveEnabled : androidKeepAliveEnabled // ignore: cast_nullable_to_non_nullable
+as bool,backPressExitEnabled: null == backPressExitEnabled ? _self.backPressExitEnabled : backPressExitEnabled // ignore: cast_nullable_to_non_nullable
+as bool,updateAccelerate: null == updateAccelerate ? _self.updateAccelerate : updateAccelerate // ignore: cast_nullable_to_non_nullable
+as bool,oldPageRollbackEnabled: null == oldPageRollbackEnabled ? _self.oldPageRollbackEnabled : oldPageRollbackEnabled // ignore: cast_nullable_to_non_nullable
+as bool,cloudFavoritePreferred: null == cloudFavoritePreferred ? _self.cloudFavoritePreferred : cloudFavoritePreferred // ignore: cast_nullable_to_non_nullable
+as bool,autoFollowOnCollect: null == autoFollowOnCollect ? _self.autoFollowOnCollect : autoFollowOnCollect // ignore: cast_nullable_to_non_nullable
+as bool,leftHandModeEnabled: null == leftHandModeEnabled ? _self.leftHandModeEnabled : leftHandModeEnabled // ignore: cast_nullable_to_non_nullable
+as bool,clickCoverToStartReading: null == clickCoverToStartReading ? _self.clickCoverToStartReading : clickCoverToStartReading // ignore: cast_nullable_to_non_nullable
+as bool,searchHistory: null == searchHistory ? _self.searchHistory : searchHistory // ignore: cast_nullable_to_non_nullable
+as List<String>,proxySetting: null == proxySetting ? _self.proxySetting : proxySetting // ignore: cast_nullable_to_non_nullable
+as ProxySettingState,windowWidth: null == windowWidth ? _self.windowWidth : windowWidth // ignore: cast_nullable_to_non_nullable
+as double,windowHeight: null == windowHeight ? _self.windowHeight : windowHeight // ignore: cast_nullable_to_non_nullable
+as double,windowX: null == windowX ? _self.windowX : windowX // ignore: cast_nullable_to_non_nullable
+as double,windowY: null == windowY ? _self.windowY : windowY // ignore: cast_nullable_to_non_nullable
+as double,readSetting: null == readSetting ? _self.readSetting : readSetting // ignore: cast_nullable_to_non_nullable
+as ReadSettingState,customExportPath: null == customExportPath ? _self.customExportPath : customExportPath // ignore: cast_nullable_to_non_nullable
+as String,appLockSetting: null == appLockSetting ? _self.appLockSetting : appLockSetting // ignore: cast_nullable_to_non_nullable
+as AppLockSettingState,compatibleVersion: null == compatibleVersion ? _self.compatibleVersion : compatibleVersion // ignore: cast_nullable_to_non_nullable
+as String,cacheSetting: null == cacheSetting ? _self.cacheSetting : cacheSetting // ignore: cast_nullable_to_non_nullable
+as CacheSettingState,chineseConvertMode: null == chineseConvertMode ? _self.chineseConvertMode : chineseConvertMode // ignore: cast_nullable_to_non_nullable
+as ChineseConvertMode,bookshelfSetting: null == bookshelfSetting ? _self.bookshelfSetting : bookshelfSetting // ignore: cast_nullable_to_non_nullable
+as BookshelfSettingState,
+  ));
+}
+/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SyncSettingStateCopyWith<$Res> get syncSetting {
+  
+  return $SyncSettingStateCopyWith<$Res>(_self.syncSetting, (value) {
+    return _then(_self.copyWith(syncSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ProxySettingStateCopyWith<$Res> get proxySetting {
+  
+  return $ProxySettingStateCopyWith<$Res>(_self.proxySetting, (value) {
+    return _then(_self.copyWith(proxySetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ReadSettingStateCopyWith<$Res> get readSetting {
+  
+  return $ReadSettingStateCopyWith<$Res>(_self.readSetting, (value) {
+    return _then(_self.copyWith(readSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$AppLockSettingStateCopyWith<$Res> get appLockSetting {
+  
+  return $AppLockSettingStateCopyWith<$Res>(_self.appLockSetting, (value) {
+    return _then(_self.copyWith(appLockSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CacheSettingStateCopyWith<$Res> get cacheSetting {
+  
+  return $CacheSettingStateCopyWith<$Res>(_self.cacheSetting, (value) {
+    return _then(_self.copyWith(cacheSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$BookshelfSettingStateCopyWith<$Res> get bookshelfSetting {
+  
+  return $BookshelfSettingStateCopyWith<$Res>(_self.bookshelfSetting, (value) {
+    return _then(_self.copyWith(bookshelfSetting: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [GlobalSettingState].
+extension GlobalSettingStatePatterns on GlobalSettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GlobalSettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GlobalSettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GlobalSettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _GlobalSettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GlobalSettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GlobalSettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool dynamicColor,  ThemeMode themeMode,  bool isAMOLED, @ColorConverter()  Color seedColor,  int themeInitState, @LocaleConverter()  Locale locale,  bool localeFollowsSystem,  int welcomePageNum,  SyncSettingState syncSetting,  List<String> maskedKeywords,  bool socks5ProxyEnabled,  String socks5Proxy,  bool needCleanCache,  int comicChoice,  bool disableBika,  bool enableMemoryDebug,  String logAddress,  bool forceEnableImpeller,  bool androidKeepAliveEnabled,  bool backPressExitEnabled,  bool updateAccelerate,  bool oldPageRollbackEnabled,  bool cloudFavoritePreferred,  bool autoFollowOnCollect,  bool leftHandModeEnabled,  bool clickCoverToStartReading,  List<String> searchHistory,  ProxySettingState proxySetting,  double windowWidth,  double windowHeight,  double windowX,  double windowY,  ReadSettingState readSetting,  String customExportPath,  AppLockSettingState appLockSetting,  String compatibleVersion,  CacheSettingState cacheSetting,  ChineseConvertMode chineseConvertMode,  BookshelfSettingState bookshelfSetting)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GlobalSettingState() when $default != null:
+return $default(_that.dynamicColor,_that.themeMode,_that.isAMOLED,_that.seedColor,_that.themeInitState,_that.locale,_that.localeFollowsSystem,_that.welcomePageNum,_that.syncSetting,_that.maskedKeywords,_that.socks5ProxyEnabled,_that.socks5Proxy,_that.needCleanCache,_that.comicChoice,_that.disableBika,_that.enableMemoryDebug,_that.logAddress,_that.forceEnableImpeller,_that.androidKeepAliveEnabled,_that.backPressExitEnabled,_that.updateAccelerate,_that.oldPageRollbackEnabled,_that.cloudFavoritePreferred,_that.autoFollowOnCollect,_that.leftHandModeEnabled,_that.clickCoverToStartReading,_that.searchHistory,_that.proxySetting,_that.windowWidth,_that.windowHeight,_that.windowX,_that.windowY,_that.readSetting,_that.customExportPath,_that.appLockSetting,_that.compatibleVersion,_that.cacheSetting,_that.chineseConvertMode,_that.bookshelfSetting);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool dynamicColor,  ThemeMode themeMode,  bool isAMOLED, @ColorConverter()  Color seedColor,  int themeInitState, @LocaleConverter()  Locale locale,  bool localeFollowsSystem,  int welcomePageNum,  SyncSettingState syncSetting,  List<String> maskedKeywords,  bool socks5ProxyEnabled,  String socks5Proxy,  bool needCleanCache,  int comicChoice,  bool disableBika,  bool enableMemoryDebug,  String logAddress,  bool forceEnableImpeller,  bool androidKeepAliveEnabled,  bool backPressExitEnabled,  bool updateAccelerate,  bool oldPageRollbackEnabled,  bool cloudFavoritePreferred,  bool autoFollowOnCollect,  bool leftHandModeEnabled,  bool clickCoverToStartReading,  List<String> searchHistory,  ProxySettingState proxySetting,  double windowWidth,  double windowHeight,  double windowX,  double windowY,  ReadSettingState readSetting,  String customExportPath,  AppLockSettingState appLockSetting,  String compatibleVersion,  CacheSettingState cacheSetting,  ChineseConvertMode chineseConvertMode,  BookshelfSettingState bookshelfSetting)  $default,) {final _that = this;
+switch (_that) {
+case _GlobalSettingState():
+return $default(_that.dynamicColor,_that.themeMode,_that.isAMOLED,_that.seedColor,_that.themeInitState,_that.locale,_that.localeFollowsSystem,_that.welcomePageNum,_that.syncSetting,_that.maskedKeywords,_that.socks5ProxyEnabled,_that.socks5Proxy,_that.needCleanCache,_that.comicChoice,_that.disableBika,_that.enableMemoryDebug,_that.logAddress,_that.forceEnableImpeller,_that.androidKeepAliveEnabled,_that.backPressExitEnabled,_that.updateAccelerate,_that.oldPageRollbackEnabled,_that.cloudFavoritePreferred,_that.autoFollowOnCollect,_that.leftHandModeEnabled,_that.clickCoverToStartReading,_that.searchHistory,_that.proxySetting,_that.windowWidth,_that.windowHeight,_that.windowX,_that.windowY,_that.readSetting,_that.customExportPath,_that.appLockSetting,_that.compatibleVersion,_that.cacheSetting,_that.chineseConvertMode,_that.bookshelfSetting);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool dynamicColor,  ThemeMode themeMode,  bool isAMOLED, @ColorConverter()  Color seedColor,  int themeInitState, @LocaleConverter()  Locale locale,  bool localeFollowsSystem,  int welcomePageNum,  SyncSettingState syncSetting,  List<String> maskedKeywords,  bool socks5ProxyEnabled,  String socks5Proxy,  bool needCleanCache,  int comicChoice,  bool disableBika,  bool enableMemoryDebug,  String logAddress,  bool forceEnableImpeller,  bool androidKeepAliveEnabled,  bool backPressExitEnabled,  bool updateAccelerate,  bool oldPageRollbackEnabled,  bool cloudFavoritePreferred,  bool autoFollowOnCollect,  bool leftHandModeEnabled,  bool clickCoverToStartReading,  List<String> searchHistory,  ProxySettingState proxySetting,  double windowWidth,  double windowHeight,  double windowX,  double windowY,  ReadSettingState readSetting,  String customExportPath,  AppLockSettingState appLockSetting,  String compatibleVersion,  CacheSettingState cacheSetting,  ChineseConvertMode chineseConvertMode,  BookshelfSettingState bookshelfSetting)?  $default,) {final _that = this;
+switch (_that) {
+case _GlobalSettingState() when $default != null:
+return $default(_that.dynamicColor,_that.themeMode,_that.isAMOLED,_that.seedColor,_that.themeInitState,_that.locale,_that.localeFollowsSystem,_that.welcomePageNum,_that.syncSetting,_that.maskedKeywords,_that.socks5ProxyEnabled,_that.socks5Proxy,_that.needCleanCache,_that.comicChoice,_that.disableBika,_that.enableMemoryDebug,_that.logAddress,_that.forceEnableImpeller,_that.androidKeepAliveEnabled,_that.backPressExitEnabled,_that.updateAccelerate,_that.oldPageRollbackEnabled,_that.cloudFavoritePreferred,_that.autoFollowOnCollect,_that.leftHandModeEnabled,_that.clickCoverToStartReading,_that.searchHistory,_that.proxySetting,_that.windowWidth,_that.windowHeight,_that.windowX,_that.windowY,_that.readSetting,_that.customExportPath,_that.appLockSetting,_that.compatibleVersion,_that.cacheSetting,_that.chineseConvertMode,_that.bookshelfSetting);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _GlobalSettingState implements GlobalSettingState {
+  const _GlobalSettingState({this.dynamicColor = true, this.themeMode = ThemeMode.system, this.isAMOLED = true, @ColorConverter() this.seedColor = const Color(0xFFEF5350), this.themeInitState = 0, @LocaleConverter() this.locale = const Locale('zh', 'CN'), this.localeFollowsSystem = true, this.welcomePageNum = 0, this.syncSetting = const SyncSettingState(), final  List<String> maskedKeywords = const [], this.socks5ProxyEnabled = true, this.socks5Proxy = '', this.needCleanCache = false, this.comicChoice = 1, this.disableBika = false, this.enableMemoryDebug = false, this.logAddress = '', this.forceEnableImpeller = false, this.androidKeepAliveEnabled = false, this.backPressExitEnabled = false, this.updateAccelerate = true, this.oldPageRollbackEnabled = false, this.cloudFavoritePreferred = false, this.autoFollowOnCollect = false, this.leftHandModeEnabled = false, this.clickCoverToStartReading = false, final  List<String> searchHistory = const [], this.proxySetting = const ProxySettingState(), this.windowWidth = 1280.0, this.windowHeight = 720.0, this.windowX = 0, this.windowY = 0, this.readSetting = const ReadSettingState(), this.customExportPath = '', this.appLockSetting = const AppLockSettingState(), this.compatibleVersion = "", this.cacheSetting = const CacheSettingState(), this.chineseConvertMode = ChineseConvertMode.off, this.bookshelfSetting = const BookshelfSettingState()}): _maskedKeywords = maskedKeywords,_searchHistory = searchHistory;
+  factory _GlobalSettingState.fromJson(Map<String, dynamic> json) => _$GlobalSettingStateFromJson(json);
+
+@override@JsonKey() final  bool dynamicColor;
+@override@JsonKey() final  ThemeMode themeMode;
+@override@JsonKey() final  bool isAMOLED;
+@override@JsonKey()@ColorConverter() final  Color seedColor;
+@override@JsonKey() final  int themeInitState;
+@override@JsonKey()@LocaleConverter() final  Locale locale;
+@override@JsonKey() final  bool localeFollowsSystem;
+@override@JsonKey() final  int welcomePageNum;
+@override@JsonKey() final  SyncSettingState syncSetting;
+ final  List<String> _maskedKeywords;
+@override@JsonKey() List<String> get maskedKeywords {
+  if (_maskedKeywords is EqualUnmodifiableListView) return _maskedKeywords;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_maskedKeywords);
+}
+
+@override@JsonKey() final  bool socks5ProxyEnabled;
+@override@JsonKey() final  String socks5Proxy;
+@override@JsonKey() final  bool needCleanCache;
+@override@JsonKey() final  int comicChoice;
+@override@JsonKey() final  bool disableBika;
+@override@JsonKey() final  bool enableMemoryDebug;
+@override@JsonKey() final  String logAddress;
+@override@JsonKey() final  bool forceEnableImpeller;
+@override@JsonKey() final  bool androidKeepAliveEnabled;
+@override@JsonKey() final  bool backPressExitEnabled;
+@override@JsonKey() final  bool updateAccelerate;
+@override@JsonKey() final  bool oldPageRollbackEnabled;
+@override@JsonKey() final  bool cloudFavoritePreferred;
+@override@JsonKey() final  bool autoFollowOnCollect;
+@override@JsonKey() final  bool leftHandModeEnabled;
+@override@JsonKey() final  bool clickCoverToStartReading;
+ final  List<String> _searchHistory;
+@override@JsonKey() List<String> get searchHistory {
+  if (_searchHistory is EqualUnmodifiableListView) return _searchHistory;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_searchHistory);
+}
+
+@override@JsonKey() final  ProxySettingState proxySetting;
+@override@JsonKey() final  double windowWidth;
+@override@JsonKey() final  double windowHeight;
+@override@JsonKey() final  double windowX;
+@override@JsonKey() final  double windowY;
+@override@JsonKey() final  ReadSettingState readSetting;
+@override@JsonKey() final  String customExportPath;
+@override@JsonKey() final  AppLockSettingState appLockSetting;
+@override@JsonKey() final  String compatibleVersion;
+@override@JsonKey() final  CacheSettingState cacheSetting;
+@override@JsonKey() final  ChineseConvertMode chineseConvertMode;
+@override@JsonKey() final  BookshelfSettingState bookshelfSetting;
+
+/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GlobalSettingStateCopyWith<_GlobalSettingState> get copyWith => __$GlobalSettingStateCopyWithImpl<_GlobalSettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$GlobalSettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GlobalSettingState&&(identical(other.dynamicColor, dynamicColor) || other.dynamicColor == dynamicColor)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.isAMOLED, isAMOLED) || other.isAMOLED == isAMOLED)&&(identical(other.seedColor, seedColor) || other.seedColor == seedColor)&&(identical(other.themeInitState, themeInitState) || other.themeInitState == themeInitState)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.localeFollowsSystem, localeFollowsSystem) || other.localeFollowsSystem == localeFollowsSystem)&&(identical(other.welcomePageNum, welcomePageNum) || other.welcomePageNum == welcomePageNum)&&(identical(other.syncSetting, syncSetting) || other.syncSetting == syncSetting)&&const DeepCollectionEquality().equals(other._maskedKeywords, _maskedKeywords)&&(identical(other.socks5ProxyEnabled, socks5ProxyEnabled) || other.socks5ProxyEnabled == socks5ProxyEnabled)&&(identical(other.socks5Proxy, socks5Proxy) || other.socks5Proxy == socks5Proxy)&&(identical(other.needCleanCache, needCleanCache) || other.needCleanCache == needCleanCache)&&(identical(other.comicChoice, comicChoice) || other.comicChoice == comicChoice)&&(identical(other.disableBika, disableBika) || other.disableBika == disableBika)&&(identical(other.enableMemoryDebug, enableMemoryDebug) || other.enableMemoryDebug == enableMemoryDebug)&&(identical(other.logAddress, logAddress) || other.logAddress == logAddress)&&(identical(other.forceEnableImpeller, forceEnableImpeller) || other.forceEnableImpeller == forceEnableImpeller)&&(identical(other.androidKeepAliveEnabled, androidKeepAliveEnabled) || other.androidKeepAliveEnabled == androidKeepAliveEnabled)&&(identical(other.backPressExitEnabled, backPressExitEnabled) || other.backPressExitEnabled == backPressExitEnabled)&&(identical(other.updateAccelerate, updateAccelerate) || other.updateAccelerate == updateAccelerate)&&(identical(other.oldPageRollbackEnabled, oldPageRollbackEnabled) || other.oldPageRollbackEnabled == oldPageRollbackEnabled)&&(identical(other.cloudFavoritePreferred, cloudFavoritePreferred) || other.cloudFavoritePreferred == cloudFavoritePreferred)&&(identical(other.autoFollowOnCollect, autoFollowOnCollect) || other.autoFollowOnCollect == autoFollowOnCollect)&&(identical(other.leftHandModeEnabled, leftHandModeEnabled) || other.leftHandModeEnabled == leftHandModeEnabled)&&(identical(other.clickCoverToStartReading, clickCoverToStartReading) || other.clickCoverToStartReading == clickCoverToStartReading)&&const DeepCollectionEquality().equals(other._searchHistory, _searchHistory)&&(identical(other.proxySetting, proxySetting) || other.proxySetting == proxySetting)&&(identical(other.windowWidth, windowWidth) || other.windowWidth == windowWidth)&&(identical(other.windowHeight, windowHeight) || other.windowHeight == windowHeight)&&(identical(other.windowX, windowX) || other.windowX == windowX)&&(identical(other.windowY, windowY) || other.windowY == windowY)&&(identical(other.readSetting, readSetting) || other.readSetting == readSetting)&&(identical(other.customExportPath, customExportPath) || other.customExportPath == customExportPath)&&(identical(other.appLockSetting, appLockSetting) || other.appLockSetting == appLockSetting)&&(identical(other.compatibleVersion, compatibleVersion) || other.compatibleVersion == compatibleVersion)&&(identical(other.cacheSetting, cacheSetting) || other.cacheSetting == cacheSetting)&&(identical(other.chineseConvertMode, chineseConvertMode) || other.chineseConvertMode == chineseConvertMode)&&(identical(other.bookshelfSetting, bookshelfSetting) || other.bookshelfSetting == bookshelfSetting));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,dynamicColor,themeMode,isAMOLED,seedColor,themeInitState,locale,localeFollowsSystem,welcomePageNum,syncSetting,const DeepCollectionEquality().hash(_maskedKeywords),socks5ProxyEnabled,socks5Proxy,needCleanCache,comicChoice,disableBika,enableMemoryDebug,logAddress,forceEnableImpeller,androidKeepAliveEnabled,backPressExitEnabled,updateAccelerate,oldPageRollbackEnabled,cloudFavoritePreferred,autoFollowOnCollect,leftHandModeEnabled,clickCoverToStartReading,const DeepCollectionEquality().hash(_searchHistory),proxySetting,windowWidth,windowHeight,windowX,windowY,readSetting,customExportPath,appLockSetting,compatibleVersion,cacheSetting,chineseConvertMode,bookshelfSetting]);
+
+@override
+String toString() {
+  return 'GlobalSettingState(dynamicColor: $dynamicColor, themeMode: $themeMode, isAMOLED: $isAMOLED, seedColor: $seedColor, themeInitState: $themeInitState, locale: $locale, localeFollowsSystem: $localeFollowsSystem, welcomePageNum: $welcomePageNum, syncSetting: $syncSetting, maskedKeywords: $maskedKeywords, socks5ProxyEnabled: $socks5ProxyEnabled, socks5Proxy: $socks5Proxy, needCleanCache: $needCleanCache, comicChoice: $comicChoice, disableBika: $disableBika, enableMemoryDebug: $enableMemoryDebug, logAddress: $logAddress, forceEnableImpeller: $forceEnableImpeller, androidKeepAliveEnabled: $androidKeepAliveEnabled, backPressExitEnabled: $backPressExitEnabled, updateAccelerate: $updateAccelerate, oldPageRollbackEnabled: $oldPageRollbackEnabled, cloudFavoritePreferred: $cloudFavoritePreferred, autoFollowOnCollect: $autoFollowOnCollect, leftHandModeEnabled: $leftHandModeEnabled, clickCoverToStartReading: $clickCoverToStartReading, searchHistory: $searchHistory, proxySetting: $proxySetting, windowWidth: $windowWidth, windowHeight: $windowHeight, windowX: $windowX, windowY: $windowY, readSetting: $readSetting, customExportPath: $customExportPath, appLockSetting: $appLockSetting, compatibleVersion: $compatibleVersion, cacheSetting: $cacheSetting, chineseConvertMode: $chineseConvertMode, bookshelfSetting: $bookshelfSetting)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GlobalSettingStateCopyWith<$Res> implements $GlobalSettingStateCopyWith<$Res> {
+  factory _$GlobalSettingStateCopyWith(_GlobalSettingState value, $Res Function(_GlobalSettingState) _then) = __$GlobalSettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ bool dynamicColor, ThemeMode themeMode, bool isAMOLED,@ColorConverter() Color seedColor, int themeInitState,@LocaleConverter() Locale locale, bool localeFollowsSystem, int welcomePageNum, SyncSettingState syncSetting, List<String> maskedKeywords, bool socks5ProxyEnabled, String socks5Proxy, bool needCleanCache, int comicChoice, bool disableBika, bool enableMemoryDebug, String logAddress, bool forceEnableImpeller, bool androidKeepAliveEnabled, bool backPressExitEnabled, bool updateAccelerate, bool oldPageRollbackEnabled, bool cloudFavoritePreferred, bool autoFollowOnCollect, bool leftHandModeEnabled, bool clickCoverToStartReading, List<String> searchHistory, ProxySettingState proxySetting, double windowWidth, double windowHeight, double windowX, double windowY, ReadSettingState readSetting, String customExportPath, AppLockSettingState appLockSetting, String compatibleVersion, CacheSettingState cacheSetting, ChineseConvertMode chineseConvertMode, BookshelfSettingState bookshelfSetting
+});
+
+
+@override $SyncSettingStateCopyWith<$Res> get syncSetting;@override $ProxySettingStateCopyWith<$Res> get proxySetting;@override $ReadSettingStateCopyWith<$Res> get readSetting;@override $AppLockSettingStateCopyWith<$Res> get appLockSetting;@override $CacheSettingStateCopyWith<$Res> get cacheSetting;@override $BookshelfSettingStateCopyWith<$Res> get bookshelfSetting;
+
+}
+/// @nodoc
+class __$GlobalSettingStateCopyWithImpl<$Res>
+    implements _$GlobalSettingStateCopyWith<$Res> {
+  __$GlobalSettingStateCopyWithImpl(this._self, this._then);
+
+  final _GlobalSettingState _self;
+  final $Res Function(_GlobalSettingState) _then;
+
+/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? dynamicColor = null,Object? themeMode = null,Object? isAMOLED = null,Object? seedColor = null,Object? themeInitState = null,Object? locale = null,Object? localeFollowsSystem = null,Object? welcomePageNum = null,Object? syncSetting = null,Object? maskedKeywords = null,Object? socks5ProxyEnabled = null,Object? socks5Proxy = null,Object? needCleanCache = null,Object? comicChoice = null,Object? disableBika = null,Object? enableMemoryDebug = null,Object? logAddress = null,Object? forceEnableImpeller = null,Object? androidKeepAliveEnabled = null,Object? backPressExitEnabled = null,Object? updateAccelerate = null,Object? oldPageRollbackEnabled = null,Object? cloudFavoritePreferred = null,Object? autoFollowOnCollect = null,Object? leftHandModeEnabled = null,Object? clickCoverToStartReading = null,Object? searchHistory = null,Object? proxySetting = null,Object? windowWidth = null,Object? windowHeight = null,Object? windowX = null,Object? windowY = null,Object? readSetting = null,Object? customExportPath = null,Object? appLockSetting = null,Object? compatibleVersion = null,Object? cacheSetting = null,Object? chineseConvertMode = null,Object? bookshelfSetting = null,}) {
+  return _then(_GlobalSettingState(
+dynamicColor: null == dynamicColor ? _self.dynamicColor : dynamicColor // ignore: cast_nullable_to_non_nullable
+as bool,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+as ThemeMode,isAMOLED: null == isAMOLED ? _self.isAMOLED : isAMOLED // ignore: cast_nullable_to_non_nullable
+as bool,seedColor: null == seedColor ? _self.seedColor : seedColor // ignore: cast_nullable_to_non_nullable
+as Color,themeInitState: null == themeInitState ? _self.themeInitState : themeInitState // ignore: cast_nullable_to_non_nullable
+as int,locale: null == locale ? _self.locale : locale // ignore: cast_nullable_to_non_nullable
+as Locale,localeFollowsSystem: null == localeFollowsSystem ? _self.localeFollowsSystem : localeFollowsSystem // ignore: cast_nullable_to_non_nullable
+as bool,welcomePageNum: null == welcomePageNum ? _self.welcomePageNum : welcomePageNum // ignore: cast_nullable_to_non_nullable
+as int,syncSetting: null == syncSetting ? _self.syncSetting : syncSetting // ignore: cast_nullable_to_non_nullable
+as SyncSettingState,maskedKeywords: null == maskedKeywords ? _self._maskedKeywords : maskedKeywords // ignore: cast_nullable_to_non_nullable
+as List<String>,socks5ProxyEnabled: null == socks5ProxyEnabled ? _self.socks5ProxyEnabled : socks5ProxyEnabled // ignore: cast_nullable_to_non_nullable
+as bool,socks5Proxy: null == socks5Proxy ? _self.socks5Proxy : socks5Proxy // ignore: cast_nullable_to_non_nullable
+as String,needCleanCache: null == needCleanCache ? _self.needCleanCache : needCleanCache // ignore: cast_nullable_to_non_nullable
+as bool,comicChoice: null == comicChoice ? _self.comicChoice : comicChoice // ignore: cast_nullable_to_non_nullable
+as int,disableBika: null == disableBika ? _self.disableBika : disableBika // ignore: cast_nullable_to_non_nullable
+as bool,enableMemoryDebug: null == enableMemoryDebug ? _self.enableMemoryDebug : enableMemoryDebug // ignore: cast_nullable_to_non_nullable
+as bool,logAddress: null == logAddress ? _self.logAddress : logAddress // ignore: cast_nullable_to_non_nullable
+as String,forceEnableImpeller: null == forceEnableImpeller ? _self.forceEnableImpeller : forceEnableImpeller // ignore: cast_nullable_to_non_nullable
+as bool,androidKeepAliveEnabled: null == androidKeepAliveEnabled ? _self.androidKeepAliveEnabled : androidKeepAliveEnabled // ignore: cast_nullable_to_non_nullable
+as bool,backPressExitEnabled: null == backPressExitEnabled ? _self.backPressExitEnabled : backPressExitEnabled // ignore: cast_nullable_to_non_nullable
+as bool,updateAccelerate: null == updateAccelerate ? _self.updateAccelerate : updateAccelerate // ignore: cast_nullable_to_non_nullable
+as bool,oldPageRollbackEnabled: null == oldPageRollbackEnabled ? _self.oldPageRollbackEnabled : oldPageRollbackEnabled // ignore: cast_nullable_to_non_nullable
+as bool,cloudFavoritePreferred: null == cloudFavoritePreferred ? _self.cloudFavoritePreferred : cloudFavoritePreferred // ignore: cast_nullable_to_non_nullable
+as bool,autoFollowOnCollect: null == autoFollowOnCollect ? _self.autoFollowOnCollect : autoFollowOnCollect // ignore: cast_nullable_to_non_nullable
+as bool,leftHandModeEnabled: null == leftHandModeEnabled ? _self.leftHandModeEnabled : leftHandModeEnabled // ignore: cast_nullable_to_non_nullable
+as bool,clickCoverToStartReading: null == clickCoverToStartReading ? _self.clickCoverToStartReading : clickCoverToStartReading // ignore: cast_nullable_to_non_nullable
+as bool,searchHistory: null == searchHistory ? _self._searchHistory : searchHistory // ignore: cast_nullable_to_non_nullable
+as List<String>,proxySetting: null == proxySetting ? _self.proxySetting : proxySetting // ignore: cast_nullable_to_non_nullable
+as ProxySettingState,windowWidth: null == windowWidth ? _self.windowWidth : windowWidth // ignore: cast_nullable_to_non_nullable
+as double,windowHeight: null == windowHeight ? _self.windowHeight : windowHeight // ignore: cast_nullable_to_non_nullable
+as double,windowX: null == windowX ? _self.windowX : windowX // ignore: cast_nullable_to_non_nullable
+as double,windowY: null == windowY ? _self.windowY : windowY // ignore: cast_nullable_to_non_nullable
+as double,readSetting: null == readSetting ? _self.readSetting : readSetting // ignore: cast_nullable_to_non_nullable
+as ReadSettingState,customExportPath: null == customExportPath ? _self.customExportPath : customExportPath // ignore: cast_nullable_to_non_nullable
+as String,appLockSetting: null == appLockSetting ? _self.appLockSetting : appLockSetting // ignore: cast_nullable_to_non_nullable
+as AppLockSettingState,compatibleVersion: null == compatibleVersion ? _self.compatibleVersion : compatibleVersion // ignore: cast_nullable_to_non_nullable
+as String,cacheSetting: null == cacheSetting ? _self.cacheSetting : cacheSetting // ignore: cast_nullable_to_non_nullable
+as CacheSettingState,chineseConvertMode: null == chineseConvertMode ? _self.chineseConvertMode : chineseConvertMode // ignore: cast_nullable_to_non_nullable
+as ChineseConvertMode,bookshelfSetting: null == bookshelfSetting ? _self.bookshelfSetting : bookshelfSetting // ignore: cast_nullable_to_non_nullable
+as BookshelfSettingState,
+  ));
+}
+
+/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SyncSettingStateCopyWith<$Res> get syncSetting {
+  
+  return $SyncSettingStateCopyWith<$Res>(_self.syncSetting, (value) {
+    return _then(_self.copyWith(syncSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ProxySettingStateCopyWith<$Res> get proxySetting {
+  
+  return $ProxySettingStateCopyWith<$Res>(_self.proxySetting, (value) {
+    return _then(_self.copyWith(proxySetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ReadSettingStateCopyWith<$Res> get readSetting {
+  
+  return $ReadSettingStateCopyWith<$Res>(_self.readSetting, (value) {
+    return _then(_self.copyWith(readSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$AppLockSettingStateCopyWith<$Res> get appLockSetting {
+  
+  return $AppLockSettingStateCopyWith<$Res>(_self.appLockSetting, (value) {
+    return _then(_self.copyWith(appLockSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CacheSettingStateCopyWith<$Res> get cacheSetting {
+  
+  return $CacheSettingStateCopyWith<$Res>(_self.cacheSetting, (value) {
+    return _then(_self.copyWith(cacheSetting: value));
+  });
+}/// Create a copy of GlobalSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$BookshelfSettingStateCopyWith<$Res> get bookshelfSetting {
+  
+  return $BookshelfSettingStateCopyWith<$Res>(_self.bookshelfSetting, (value) {
+    return _then(_self.copyWith(bookshelfSetting: value));
+  });
+}
+}
+
+
+/// @nodoc
+mixin _$CacheSettingState {
+
+ bool get autoCleanCache; int get cacheSizeLimit;
+/// Create a copy of CacheSettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CacheSettingStateCopyWith<CacheSettingState> get copyWith => _$CacheSettingStateCopyWithImpl<CacheSettingState>(this as CacheSettingState, _$identity);
+
+  /// Serializes this CacheSettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CacheSettingState&&(identical(other.autoCleanCache, autoCleanCache) || other.autoCleanCache == autoCleanCache)&&(identical(other.cacheSizeLimit, cacheSizeLimit) || other.cacheSizeLimit == cacheSizeLimit));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,autoCleanCache,cacheSizeLimit);
+
+@override
+String toString() {
+  return 'CacheSettingState(autoCleanCache: $autoCleanCache, cacheSizeLimit: $cacheSizeLimit)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CacheSettingStateCopyWith<$Res>  {
+  factory $CacheSettingStateCopyWith(CacheSettingState value, $Res Function(CacheSettingState) _then) = _$CacheSettingStateCopyWithImpl;
+@useResult
+$Res call({
+ bool autoCleanCache, int cacheSizeLimit
+});
+
+
+
+
+}
+/// @nodoc
+class _$CacheSettingStateCopyWithImpl<$Res>
+    implements $CacheSettingStateCopyWith<$Res> {
+  _$CacheSettingStateCopyWithImpl(this._self, this._then);
+
+  final CacheSettingState _self;
+  final $Res Function(CacheSettingState) _then;
+
+/// Create a copy of CacheSettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? autoCleanCache = null,Object? cacheSizeLimit = null,}) {
+  return _then(_self.copyWith(
+autoCleanCache: null == autoCleanCache ? _self.autoCleanCache : autoCleanCache // ignore: cast_nullable_to_non_nullable
+as bool,cacheSizeLimit: null == cacheSizeLimit ? _self.cacheSizeLimit : cacheSizeLimit // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [CacheSettingState].
+extension CacheSettingStatePatterns on CacheSettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CacheSettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _CacheSettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CacheSettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _CacheSettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CacheSettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _CacheSettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool autoCleanCache,  int cacheSizeLimit)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _CacheSettingState() when $default != null:
+return $default(_that.autoCleanCache,_that.cacheSizeLimit);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool autoCleanCache,  int cacheSizeLimit)  $default,) {final _that = this;
+switch (_that) {
+case _CacheSettingState():
+return $default(_that.autoCleanCache,_that.cacheSizeLimit);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool autoCleanCache,  int cacheSizeLimit)?  $default,) {final _that = this;
+switch (_that) {
+case _CacheSettingState() when $default != null:
+return $default(_that.autoCleanCache,_that.cacheSizeLimit);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _CacheSettingState implements CacheSettingState {
+  const _CacheSettingState({this.autoCleanCache = true, this.cacheSizeLimit = 1073741824});
+  factory _CacheSettingState.fromJson(Map<String, dynamic> json) => _$CacheSettingStateFromJson(json);
+
+@override@JsonKey() final  bool autoCleanCache;
+@override@JsonKey() final  int cacheSizeLimit;
+
+/// Create a copy of CacheSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CacheSettingStateCopyWith<_CacheSettingState> get copyWith => __$CacheSettingStateCopyWithImpl<_CacheSettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$CacheSettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CacheSettingState&&(identical(other.autoCleanCache, autoCleanCache) || other.autoCleanCache == autoCleanCache)&&(identical(other.cacheSizeLimit, cacheSizeLimit) || other.cacheSizeLimit == cacheSizeLimit));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,autoCleanCache,cacheSizeLimit);
+
+@override
+String toString() {
+  return 'CacheSettingState(autoCleanCache: $autoCleanCache, cacheSizeLimit: $cacheSizeLimit)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CacheSettingStateCopyWith<$Res> implements $CacheSettingStateCopyWith<$Res> {
+  factory _$CacheSettingStateCopyWith(_CacheSettingState value, $Res Function(_CacheSettingState) _then) = __$CacheSettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ bool autoCleanCache, int cacheSizeLimit
+});
+
+
+
+
+}
+/// @nodoc
+class __$CacheSettingStateCopyWithImpl<$Res>
+    implements _$CacheSettingStateCopyWith<$Res> {
+  __$CacheSettingStateCopyWithImpl(this._self, this._then);
+
+  final _CacheSettingState _self;
+  final $Res Function(_CacheSettingState) _then;
+
+/// Create a copy of CacheSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? autoCleanCache = null,Object? cacheSizeLimit = null,}) {
+  return _then(_CacheSettingState(
+autoCleanCache: null == autoCleanCache ? _self.autoCleanCache : autoCleanCache // ignore: cast_nullable_to_non_nullable
+as bool,cacheSizeLimit: null == cacheSizeLimit ? _self.cacheSizeLimit : cacheSizeLimit // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$AppLockSettingState {
+
+ bool get enabled; String get gesturePasswordHash; String get resetPinHash;
+/// Create a copy of AppLockSettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AppLockSettingStateCopyWith<AppLockSettingState> get copyWith => _$AppLockSettingStateCopyWithImpl<AppLockSettingState>(this as AppLockSettingState, _$identity);
+
+  /// Serializes this AppLockSettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppLockSettingState&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.gesturePasswordHash, gesturePasswordHash) || other.gesturePasswordHash == gesturePasswordHash)&&(identical(other.resetPinHash, resetPinHash) || other.resetPinHash == resetPinHash));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,enabled,gesturePasswordHash,resetPinHash);
+
+@override
+String toString() {
+  return 'AppLockSettingState(enabled: $enabled, gesturePasswordHash: $gesturePasswordHash, resetPinHash: $resetPinHash)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AppLockSettingStateCopyWith<$Res>  {
+  factory $AppLockSettingStateCopyWith(AppLockSettingState value, $Res Function(AppLockSettingState) _then) = _$AppLockSettingStateCopyWithImpl;
+@useResult
+$Res call({
+ bool enabled, String gesturePasswordHash, String resetPinHash
+});
+
+
+
+
+}
+/// @nodoc
+class _$AppLockSettingStateCopyWithImpl<$Res>
+    implements $AppLockSettingStateCopyWith<$Res> {
+  _$AppLockSettingStateCopyWithImpl(this._self, this._then);
+
+  final AppLockSettingState _self;
+  final $Res Function(AppLockSettingState) _then;
+
+/// Create a copy of AppLockSettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? enabled = null,Object? gesturePasswordHash = null,Object? resetPinHash = null,}) {
+  return _then(_self.copyWith(
+enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
+as bool,gesturePasswordHash: null == gesturePasswordHash ? _self.gesturePasswordHash : gesturePasswordHash // ignore: cast_nullable_to_non_nullable
+as String,resetPinHash: null == resetPinHash ? _self.resetPinHash : resetPinHash // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AppLockSettingState].
+extension AppLockSettingStatePatterns on AppLockSettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AppLockSettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AppLockSettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AppLockSettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _AppLockSettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AppLockSettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AppLockSettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enabled,  String gesturePasswordHash,  String resetPinHash)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AppLockSettingState() when $default != null:
+return $default(_that.enabled,_that.gesturePasswordHash,_that.resetPinHash);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enabled,  String gesturePasswordHash,  String resetPinHash)  $default,) {final _that = this;
+switch (_that) {
+case _AppLockSettingState():
+return $default(_that.enabled,_that.gesturePasswordHash,_that.resetPinHash);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enabled,  String gesturePasswordHash,  String resetPinHash)?  $default,) {final _that = this;
+switch (_that) {
+case _AppLockSettingState() when $default != null:
+return $default(_that.enabled,_that.gesturePasswordHash,_that.resetPinHash);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _AppLockSettingState extends AppLockSettingState {
+  const _AppLockSettingState({this.enabled = false, this.gesturePasswordHash = '', this.resetPinHash = ''}): super._();
+  factory _AppLockSettingState.fromJson(Map<String, dynamic> json) => _$AppLockSettingStateFromJson(json);
+
+@override@JsonKey() final  bool enabled;
+@override@JsonKey() final  String gesturePasswordHash;
+@override@JsonKey() final  String resetPinHash;
+
+/// Create a copy of AppLockSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AppLockSettingStateCopyWith<_AppLockSettingState> get copyWith => __$AppLockSettingStateCopyWithImpl<_AppLockSettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$AppLockSettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppLockSettingState&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.gesturePasswordHash, gesturePasswordHash) || other.gesturePasswordHash == gesturePasswordHash)&&(identical(other.resetPinHash, resetPinHash) || other.resetPinHash == resetPinHash));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,enabled,gesturePasswordHash,resetPinHash);
+
+@override
+String toString() {
+  return 'AppLockSettingState(enabled: $enabled, gesturePasswordHash: $gesturePasswordHash, resetPinHash: $resetPinHash)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AppLockSettingStateCopyWith<$Res> implements $AppLockSettingStateCopyWith<$Res> {
+  factory _$AppLockSettingStateCopyWith(_AppLockSettingState value, $Res Function(_AppLockSettingState) _then) = __$AppLockSettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ bool enabled, String gesturePasswordHash, String resetPinHash
+});
+
+
+
+
+}
+/// @nodoc
+class __$AppLockSettingStateCopyWithImpl<$Res>
+    implements _$AppLockSettingStateCopyWith<$Res> {
+  __$AppLockSettingStateCopyWithImpl(this._self, this._then);
+
+  final _AppLockSettingState _self;
+  final $Res Function(_AppLockSettingState) _then;
+
+/// Create a copy of AppLockSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? enabled = null,Object? gesturePasswordHash = null,Object? resetPinHash = null,}) {
+  return _then(_AppLockSettingState(
+enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
+as bool,gesturePasswordHash: null == gesturePasswordHash ? _self.gesturePasswordHash : gesturePasswordHash // ignore: cast_nullable_to_non_nullable
+as String,resetPinHash: null == resetPinHash ? _self.resetPinHash : resetPinHash // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$ProxySettingState {
+
+ bool get enabled; ProxyType get type; String get address;
+/// Create a copy of ProxySettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ProxySettingStateCopyWith<ProxySettingState> get copyWith => _$ProxySettingStateCopyWithImpl<ProxySettingState>(this as ProxySettingState, _$identity);
+
+  /// Serializes this ProxySettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProxySettingState&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.type, type) || other.type == type)&&(identical(other.address, address) || other.address == address));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,enabled,type,address);
+
+@override
+String toString() {
+  return 'ProxySettingState(enabled: $enabled, type: $type, address: $address)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ProxySettingStateCopyWith<$Res>  {
+  factory $ProxySettingStateCopyWith(ProxySettingState value, $Res Function(ProxySettingState) _then) = _$ProxySettingStateCopyWithImpl;
+@useResult
+$Res call({
+ bool enabled, ProxyType type, String address
+});
+
+
+
+
+}
+/// @nodoc
+class _$ProxySettingStateCopyWithImpl<$Res>
+    implements $ProxySettingStateCopyWith<$Res> {
+  _$ProxySettingStateCopyWithImpl(this._self, this._then);
+
+  final ProxySettingState _self;
+  final $Res Function(ProxySettingState) _then;
+
+/// Create a copy of ProxySettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? enabled = null,Object? type = null,Object? address = null,}) {
+  return _then(_self.copyWith(
+enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
+as bool,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as ProxyType,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ProxySettingState].
+extension ProxySettingStatePatterns on ProxySettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ProxySettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ProxySettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ProxySettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _ProxySettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ProxySettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ProxySettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enabled,  ProxyType type,  String address)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ProxySettingState() when $default != null:
+return $default(_that.enabled,_that.type,_that.address);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enabled,  ProxyType type,  String address)  $default,) {final _that = this;
+switch (_that) {
+case _ProxySettingState():
+return $default(_that.enabled,_that.type,_that.address);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enabled,  ProxyType type,  String address)?  $default,) {final _that = this;
+switch (_that) {
+case _ProxySettingState() when $default != null:
+return $default(_that.enabled,_that.type,_that.address);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ProxySettingState implements ProxySettingState {
+  const _ProxySettingState({this.enabled = false, this.type = ProxyType.http, this.address = ''});
+  factory _ProxySettingState.fromJson(Map<String, dynamic> json) => _$ProxySettingStateFromJson(json);
+
+@override@JsonKey() final  bool enabled;
+@override@JsonKey() final  ProxyType type;
+@override@JsonKey() final  String address;
+
+/// Create a copy of ProxySettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ProxySettingStateCopyWith<_ProxySettingState> get copyWith => __$ProxySettingStateCopyWithImpl<_ProxySettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ProxySettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProxySettingState&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.type, type) || other.type == type)&&(identical(other.address, address) || other.address == address));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,enabled,type,address);
+
+@override
+String toString() {
+  return 'ProxySettingState(enabled: $enabled, type: $type, address: $address)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ProxySettingStateCopyWith<$Res> implements $ProxySettingStateCopyWith<$Res> {
+  factory _$ProxySettingStateCopyWith(_ProxySettingState value, $Res Function(_ProxySettingState) _then) = __$ProxySettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ bool enabled, ProxyType type, String address
+});
+
+
+
+
+}
+/// @nodoc
+class __$ProxySettingStateCopyWithImpl<$Res>
+    implements _$ProxySettingStateCopyWith<$Res> {
+  __$ProxySettingStateCopyWithImpl(this._self, this._then);
+
+  final _ProxySettingState _self;
+  final $Res Function(_ProxySettingState) _then;
+
+/// Create a copy of ProxySettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? enabled = null,Object? type = null,Object? address = null,}) {
+  return _then(_ProxySettingState(
+enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
+as bool,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as ProxyType,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$WebDavSettingState {
+
+ String get host; String get username; String get password;
+/// Create a copy of WebDavSettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$WebDavSettingStateCopyWith<WebDavSettingState> get copyWith => _$WebDavSettingStateCopyWithImpl<WebDavSettingState>(this as WebDavSettingState, _$identity);
+
+  /// Serializes this WebDavSettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WebDavSettingState&&(identical(other.host, host) || other.host == host)&&(identical(other.username, username) || other.username == username)&&(identical(other.password, password) || other.password == password));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,host,username,password);
+
+@override
+String toString() {
+  return 'WebDavSettingState(host: $host, username: $username, password: $password)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $WebDavSettingStateCopyWith<$Res>  {
+  factory $WebDavSettingStateCopyWith(WebDavSettingState value, $Res Function(WebDavSettingState) _then) = _$WebDavSettingStateCopyWithImpl;
+@useResult
+$Res call({
+ String host, String username, String password
+});
+
+
+
+
+}
+/// @nodoc
+class _$WebDavSettingStateCopyWithImpl<$Res>
+    implements $WebDavSettingStateCopyWith<$Res> {
+  _$WebDavSettingStateCopyWithImpl(this._self, this._then);
+
+  final WebDavSettingState _self;
+  final $Res Function(WebDavSettingState) _then;
+
+/// Create a copy of WebDavSettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? host = null,Object? username = null,Object? password = null,}) {
+  return _then(_self.copyWith(
+host: null == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [WebDavSettingState].
+extension WebDavSettingStatePatterns on WebDavSettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _WebDavSettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _WebDavSettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _WebDavSettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _WebDavSettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _WebDavSettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _WebDavSettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String host,  String username,  String password)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _WebDavSettingState() when $default != null:
+return $default(_that.host,_that.username,_that.password);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String host,  String username,  String password)  $default,) {final _that = this;
+switch (_that) {
+case _WebDavSettingState():
+return $default(_that.host,_that.username,_that.password);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String host,  String username,  String password)?  $default,) {final _that = this;
+switch (_that) {
+case _WebDavSettingState() when $default != null:
+return $default(_that.host,_that.username,_that.password);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _WebDavSettingState implements WebDavSettingState {
+  const _WebDavSettingState({this.host = '', this.username = '', this.password = ''});
+  factory _WebDavSettingState.fromJson(Map<String, dynamic> json) => _$WebDavSettingStateFromJson(json);
+
+@override@JsonKey() final  String host;
+@override@JsonKey() final  String username;
+@override@JsonKey() final  String password;
+
+/// Create a copy of WebDavSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$WebDavSettingStateCopyWith<_WebDavSettingState> get copyWith => __$WebDavSettingStateCopyWithImpl<_WebDavSettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$WebDavSettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WebDavSettingState&&(identical(other.host, host) || other.host == host)&&(identical(other.username, username) || other.username == username)&&(identical(other.password, password) || other.password == password));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,host,username,password);
+
+@override
+String toString() {
+  return 'WebDavSettingState(host: $host, username: $username, password: $password)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$WebDavSettingStateCopyWith<$Res> implements $WebDavSettingStateCopyWith<$Res> {
+  factory _$WebDavSettingStateCopyWith(_WebDavSettingState value, $Res Function(_WebDavSettingState) _then) = __$WebDavSettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ String host, String username, String password
+});
+
+
+
+
+}
+/// @nodoc
+class __$WebDavSettingStateCopyWithImpl<$Res>
+    implements _$WebDavSettingStateCopyWith<$Res> {
+  __$WebDavSettingStateCopyWithImpl(this._self, this._then);
+
+  final _WebDavSettingState _self;
+  final $Res Function(_WebDavSettingState) _then;
+
+/// Create a copy of WebDavSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? host = null,Object? username = null,Object? password = null,}) {
+  return _then(_WebDavSettingState(
+host: null == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$S3SettingState {
+
+ String get endpoint; String get accessKey; String get secretKey; String get bucket; String get region; bool get useSSL; int get port; bool get pathStyle;
+/// Create a copy of S3SettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$S3SettingStateCopyWith<S3SettingState> get copyWith => _$S3SettingStateCopyWithImpl<S3SettingState>(this as S3SettingState, _$identity);
+
+  /// Serializes this S3SettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is S3SettingState&&(identical(other.endpoint, endpoint) || other.endpoint == endpoint)&&(identical(other.accessKey, accessKey) || other.accessKey == accessKey)&&(identical(other.secretKey, secretKey) || other.secretKey == secretKey)&&(identical(other.bucket, bucket) || other.bucket == bucket)&&(identical(other.region, region) || other.region == region)&&(identical(other.useSSL, useSSL) || other.useSSL == useSSL)&&(identical(other.port, port) || other.port == port)&&(identical(other.pathStyle, pathStyle) || other.pathStyle == pathStyle));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,endpoint,accessKey,secretKey,bucket,region,useSSL,port,pathStyle);
+
+@override
+String toString() {
+  return 'S3SettingState(endpoint: $endpoint, accessKey: $accessKey, secretKey: $secretKey, bucket: $bucket, region: $region, useSSL: $useSSL, port: $port, pathStyle: $pathStyle)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $S3SettingStateCopyWith<$Res>  {
+  factory $S3SettingStateCopyWith(S3SettingState value, $Res Function(S3SettingState) _then) = _$S3SettingStateCopyWithImpl;
+@useResult
+$Res call({
+ String endpoint, String accessKey, String secretKey, String bucket, String region, bool useSSL, int port, bool pathStyle
+});
+
+
+
+
+}
+/// @nodoc
+class _$S3SettingStateCopyWithImpl<$Res>
+    implements $S3SettingStateCopyWith<$Res> {
+  _$S3SettingStateCopyWithImpl(this._self, this._then);
+
+  final S3SettingState _self;
+  final $Res Function(S3SettingState) _then;
+
+/// Create a copy of S3SettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? endpoint = null,Object? accessKey = null,Object? secretKey = null,Object? bucket = null,Object? region = null,Object? useSSL = null,Object? port = null,Object? pathStyle = null,}) {
+  return _then(_self.copyWith(
+endpoint: null == endpoint ? _self.endpoint : endpoint // ignore: cast_nullable_to_non_nullable
+as String,accessKey: null == accessKey ? _self.accessKey : accessKey // ignore: cast_nullable_to_non_nullable
+as String,secretKey: null == secretKey ? _self.secretKey : secretKey // ignore: cast_nullable_to_non_nullable
+as String,bucket: null == bucket ? _self.bucket : bucket // ignore: cast_nullable_to_non_nullable
+as String,region: null == region ? _self.region : region // ignore: cast_nullable_to_non_nullable
+as String,useSSL: null == useSSL ? _self.useSSL : useSSL // ignore: cast_nullable_to_non_nullable
+as bool,port: null == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
+as int,pathStyle: null == pathStyle ? _self.pathStyle : pathStyle // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [S3SettingState].
+extension S3SettingStatePatterns on S3SettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _S3SettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _S3SettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _S3SettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _S3SettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _S3SettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _S3SettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String endpoint,  String accessKey,  String secretKey,  String bucket,  String region,  bool useSSL,  int port,  bool pathStyle)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _S3SettingState() when $default != null:
+return $default(_that.endpoint,_that.accessKey,_that.secretKey,_that.bucket,_that.region,_that.useSSL,_that.port,_that.pathStyle);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String endpoint,  String accessKey,  String secretKey,  String bucket,  String region,  bool useSSL,  int port,  bool pathStyle)  $default,) {final _that = this;
+switch (_that) {
+case _S3SettingState():
+return $default(_that.endpoint,_that.accessKey,_that.secretKey,_that.bucket,_that.region,_that.useSSL,_that.port,_that.pathStyle);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String endpoint,  String accessKey,  String secretKey,  String bucket,  String region,  bool useSSL,  int port,  bool pathStyle)?  $default,) {final _that = this;
+switch (_that) {
+case _S3SettingState() when $default != null:
+return $default(_that.endpoint,_that.accessKey,_that.secretKey,_that.bucket,_that.region,_that.useSSL,_that.port,_that.pathStyle);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _S3SettingState implements S3SettingState {
+  const _S3SettingState({this.endpoint = '', this.accessKey = '', this.secretKey = '', this.bucket = '', this.region = '', this.useSSL = true, this.port = 0, this.pathStyle = false});
+  factory _S3SettingState.fromJson(Map<String, dynamic> json) => _$S3SettingStateFromJson(json);
+
+@override@JsonKey() final  String endpoint;
+@override@JsonKey() final  String accessKey;
+@override@JsonKey() final  String secretKey;
+@override@JsonKey() final  String bucket;
+@override@JsonKey() final  String region;
+@override@JsonKey() final  bool useSSL;
+@override@JsonKey() final  int port;
+@override@JsonKey() final  bool pathStyle;
+
+/// Create a copy of S3SettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$S3SettingStateCopyWith<_S3SettingState> get copyWith => __$S3SettingStateCopyWithImpl<_S3SettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$S3SettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _S3SettingState&&(identical(other.endpoint, endpoint) || other.endpoint == endpoint)&&(identical(other.accessKey, accessKey) || other.accessKey == accessKey)&&(identical(other.secretKey, secretKey) || other.secretKey == secretKey)&&(identical(other.bucket, bucket) || other.bucket == bucket)&&(identical(other.region, region) || other.region == region)&&(identical(other.useSSL, useSSL) || other.useSSL == useSSL)&&(identical(other.port, port) || other.port == port)&&(identical(other.pathStyle, pathStyle) || other.pathStyle == pathStyle));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,endpoint,accessKey,secretKey,bucket,region,useSSL,port,pathStyle);
+
+@override
+String toString() {
+  return 'S3SettingState(endpoint: $endpoint, accessKey: $accessKey, secretKey: $secretKey, bucket: $bucket, region: $region, useSSL: $useSSL, port: $port, pathStyle: $pathStyle)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$S3SettingStateCopyWith<$Res> implements $S3SettingStateCopyWith<$Res> {
+  factory _$S3SettingStateCopyWith(_S3SettingState value, $Res Function(_S3SettingState) _then) = __$S3SettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ String endpoint, String accessKey, String secretKey, String bucket, String region, bool useSSL, int port, bool pathStyle
+});
+
+
+
+
+}
+/// @nodoc
+class __$S3SettingStateCopyWithImpl<$Res>
+    implements _$S3SettingStateCopyWith<$Res> {
+  __$S3SettingStateCopyWithImpl(this._self, this._then);
+
+  final _S3SettingState _self;
+  final $Res Function(_S3SettingState) _then;
+
+/// Create a copy of S3SettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? endpoint = null,Object? accessKey = null,Object? secretKey = null,Object? bucket = null,Object? region = null,Object? useSSL = null,Object? port = null,Object? pathStyle = null,}) {
+  return _then(_S3SettingState(
+endpoint: null == endpoint ? _self.endpoint : endpoint // ignore: cast_nullable_to_non_nullable
+as String,accessKey: null == accessKey ? _self.accessKey : accessKey // ignore: cast_nullable_to_non_nullable
+as String,secretKey: null == secretKey ? _self.secretKey : secretKey // ignore: cast_nullable_to_non_nullable
+as String,bucket: null == bucket ? _self.bucket : bucket // ignore: cast_nullable_to_non_nullable
+as String,region: null == region ? _self.region : region // ignore: cast_nullable_to_non_nullable
+as String,useSSL: null == useSSL ? _self.useSSL : useSSL // ignore: cast_nullable_to_non_nullable
+as bool,port: null == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
+as int,pathStyle: null == pathStyle ? _self.pathStyle : pathStyle // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$SyncSettingState {
+
+ SyncServiceType get syncServiceType; WebDavSettingState get webdavSetting; S3SettingState get s3Setting; bool get syncSettings; bool get syncPlugins; bool get autoSync; bool get syncNotify; int get settingsSyncTime;
+/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SyncSettingStateCopyWith<SyncSettingState> get copyWith => _$SyncSettingStateCopyWithImpl<SyncSettingState>(this as SyncSettingState, _$identity);
+
+  /// Serializes this SyncSettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncSettingState&&(identical(other.syncServiceType, syncServiceType) || other.syncServiceType == syncServiceType)&&(identical(other.webdavSetting, webdavSetting) || other.webdavSetting == webdavSetting)&&(identical(other.s3Setting, s3Setting) || other.s3Setting == s3Setting)&&(identical(other.syncSettings, syncSettings) || other.syncSettings == syncSettings)&&(identical(other.syncPlugins, syncPlugins) || other.syncPlugins == syncPlugins)&&(identical(other.autoSync, autoSync) || other.autoSync == autoSync)&&(identical(other.syncNotify, syncNotify) || other.syncNotify == syncNotify)&&(identical(other.settingsSyncTime, settingsSyncTime) || other.settingsSyncTime == settingsSyncTime));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,syncServiceType,webdavSetting,s3Setting,syncSettings,syncPlugins,autoSync,syncNotify,settingsSyncTime);
+
+@override
+String toString() {
+  return 'SyncSettingState(syncServiceType: $syncServiceType, webdavSetting: $webdavSetting, s3Setting: $s3Setting, syncSettings: $syncSettings, syncPlugins: $syncPlugins, autoSync: $autoSync, syncNotify: $syncNotify, settingsSyncTime: $settingsSyncTime)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SyncSettingStateCopyWith<$Res>  {
+  factory $SyncSettingStateCopyWith(SyncSettingState value, $Res Function(SyncSettingState) _then) = _$SyncSettingStateCopyWithImpl;
+@useResult
+$Res call({
+ SyncServiceType syncServiceType, WebDavSettingState webdavSetting, S3SettingState s3Setting, bool syncSettings, bool syncPlugins, bool autoSync, bool syncNotify, int settingsSyncTime
+});
+
+
+$WebDavSettingStateCopyWith<$Res> get webdavSetting;$S3SettingStateCopyWith<$Res> get s3Setting;
+
+}
+/// @nodoc
+class _$SyncSettingStateCopyWithImpl<$Res>
+    implements $SyncSettingStateCopyWith<$Res> {
+  _$SyncSettingStateCopyWithImpl(this._self, this._then);
+
+  final SyncSettingState _self;
+  final $Res Function(SyncSettingState) _then;
+
+/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? syncServiceType = null,Object? webdavSetting = null,Object? s3Setting = null,Object? syncSettings = null,Object? syncPlugins = null,Object? autoSync = null,Object? syncNotify = null,Object? settingsSyncTime = null,}) {
+  return _then(_self.copyWith(
+syncServiceType: null == syncServiceType ? _self.syncServiceType : syncServiceType // ignore: cast_nullable_to_non_nullable
+as SyncServiceType,webdavSetting: null == webdavSetting ? _self.webdavSetting : webdavSetting // ignore: cast_nullable_to_non_nullable
+as WebDavSettingState,s3Setting: null == s3Setting ? _self.s3Setting : s3Setting // ignore: cast_nullable_to_non_nullable
+as S3SettingState,syncSettings: null == syncSettings ? _self.syncSettings : syncSettings // ignore: cast_nullable_to_non_nullable
+as bool,syncPlugins: null == syncPlugins ? _self.syncPlugins : syncPlugins // ignore: cast_nullable_to_non_nullable
+as bool,autoSync: null == autoSync ? _self.autoSync : autoSync // ignore: cast_nullable_to_non_nullable
+as bool,syncNotify: null == syncNotify ? _self.syncNotify : syncNotify // ignore: cast_nullable_to_non_nullable
+as bool,settingsSyncTime: null == settingsSyncTime ? _self.settingsSyncTime : settingsSyncTime // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$WebDavSettingStateCopyWith<$Res> get webdavSetting {
+  
+  return $WebDavSettingStateCopyWith<$Res>(_self.webdavSetting, (value) {
+    return _then(_self.copyWith(webdavSetting: value));
+  });
+}/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$S3SettingStateCopyWith<$Res> get s3Setting {
+  
+  return $S3SettingStateCopyWith<$Res>(_self.s3Setting, (value) {
+    return _then(_self.copyWith(s3Setting: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [SyncSettingState].
+extension SyncSettingStatePatterns on SyncSettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SyncSettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SyncSettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SyncSettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _SyncSettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SyncSettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SyncSettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( SyncServiceType syncServiceType,  WebDavSettingState webdavSetting,  S3SettingState s3Setting,  bool syncSettings,  bool syncPlugins,  bool autoSync,  bool syncNotify,  int settingsSyncTime)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SyncSettingState() when $default != null:
+return $default(_that.syncServiceType,_that.webdavSetting,_that.s3Setting,_that.syncSettings,_that.syncPlugins,_that.autoSync,_that.syncNotify,_that.settingsSyncTime);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( SyncServiceType syncServiceType,  WebDavSettingState webdavSetting,  S3SettingState s3Setting,  bool syncSettings,  bool syncPlugins,  bool autoSync,  bool syncNotify,  int settingsSyncTime)  $default,) {final _that = this;
+switch (_that) {
+case _SyncSettingState():
+return $default(_that.syncServiceType,_that.webdavSetting,_that.s3Setting,_that.syncSettings,_that.syncPlugins,_that.autoSync,_that.syncNotify,_that.settingsSyncTime);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( SyncServiceType syncServiceType,  WebDavSettingState webdavSetting,  S3SettingState s3Setting,  bool syncSettings,  bool syncPlugins,  bool autoSync,  bool syncNotify,  int settingsSyncTime)?  $default,) {final _that = this;
+switch (_that) {
+case _SyncSettingState() when $default != null:
+return $default(_that.syncServiceType,_that.webdavSetting,_that.s3Setting,_that.syncSettings,_that.syncPlugins,_that.autoSync,_that.syncNotify,_that.settingsSyncTime);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _SyncSettingState implements SyncSettingState {
+  const _SyncSettingState({this.syncServiceType = SyncServiceType.none, this.webdavSetting = const WebDavSettingState(), this.s3Setting = const S3SettingState(), this.syncSettings = false, this.syncPlugins = false, this.autoSync = true, this.syncNotify = true, this.settingsSyncTime = 0});
+  factory _SyncSettingState.fromJson(Map<String, dynamic> json) => _$SyncSettingStateFromJson(json);
+
+@override@JsonKey() final  SyncServiceType syncServiceType;
+@override@JsonKey() final  WebDavSettingState webdavSetting;
+@override@JsonKey() final  S3SettingState s3Setting;
+@override@JsonKey() final  bool syncSettings;
+@override@JsonKey() final  bool syncPlugins;
+@override@JsonKey() final  bool autoSync;
+@override@JsonKey() final  bool syncNotify;
+@override@JsonKey() final  int settingsSyncTime;
+
+/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SyncSettingStateCopyWith<_SyncSettingState> get copyWith => __$SyncSettingStateCopyWithImpl<_SyncSettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$SyncSettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncSettingState&&(identical(other.syncServiceType, syncServiceType) || other.syncServiceType == syncServiceType)&&(identical(other.webdavSetting, webdavSetting) || other.webdavSetting == webdavSetting)&&(identical(other.s3Setting, s3Setting) || other.s3Setting == s3Setting)&&(identical(other.syncSettings, syncSettings) || other.syncSettings == syncSettings)&&(identical(other.syncPlugins, syncPlugins) || other.syncPlugins == syncPlugins)&&(identical(other.autoSync, autoSync) || other.autoSync == autoSync)&&(identical(other.syncNotify, syncNotify) || other.syncNotify == syncNotify)&&(identical(other.settingsSyncTime, settingsSyncTime) || other.settingsSyncTime == settingsSyncTime));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,syncServiceType,webdavSetting,s3Setting,syncSettings,syncPlugins,autoSync,syncNotify,settingsSyncTime);
+
+@override
+String toString() {
+  return 'SyncSettingState(syncServiceType: $syncServiceType, webdavSetting: $webdavSetting, s3Setting: $s3Setting, syncSettings: $syncSettings, syncPlugins: $syncPlugins, autoSync: $autoSync, syncNotify: $syncNotify, settingsSyncTime: $settingsSyncTime)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SyncSettingStateCopyWith<$Res> implements $SyncSettingStateCopyWith<$Res> {
+  factory _$SyncSettingStateCopyWith(_SyncSettingState value, $Res Function(_SyncSettingState) _then) = __$SyncSettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ SyncServiceType syncServiceType, WebDavSettingState webdavSetting, S3SettingState s3Setting, bool syncSettings, bool syncPlugins, bool autoSync, bool syncNotify, int settingsSyncTime
+});
+
+
+@override $WebDavSettingStateCopyWith<$Res> get webdavSetting;@override $S3SettingStateCopyWith<$Res> get s3Setting;
+
+}
+/// @nodoc
+class __$SyncSettingStateCopyWithImpl<$Res>
+    implements _$SyncSettingStateCopyWith<$Res> {
+  __$SyncSettingStateCopyWithImpl(this._self, this._then);
+
+  final _SyncSettingState _self;
+  final $Res Function(_SyncSettingState) _then;
+
+/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? syncServiceType = null,Object? webdavSetting = null,Object? s3Setting = null,Object? syncSettings = null,Object? syncPlugins = null,Object? autoSync = null,Object? syncNotify = null,Object? settingsSyncTime = null,}) {
+  return _then(_SyncSettingState(
+syncServiceType: null == syncServiceType ? _self.syncServiceType : syncServiceType // ignore: cast_nullable_to_non_nullable
+as SyncServiceType,webdavSetting: null == webdavSetting ? _self.webdavSetting : webdavSetting // ignore: cast_nullable_to_non_nullable
+as WebDavSettingState,s3Setting: null == s3Setting ? _self.s3Setting : s3Setting // ignore: cast_nullable_to_non_nullable
+as S3SettingState,syncSettings: null == syncSettings ? _self.syncSettings : syncSettings // ignore: cast_nullable_to_non_nullable
+as bool,syncPlugins: null == syncPlugins ? _self.syncPlugins : syncPlugins // ignore: cast_nullable_to_non_nullable
+as bool,autoSync: null == autoSync ? _self.autoSync : autoSync // ignore: cast_nullable_to_non_nullable
+as bool,syncNotify: null == syncNotify ? _self.syncNotify : syncNotify // ignore: cast_nullable_to_non_nullable
+as bool,settingsSyncTime: null == settingsSyncTime ? _self.settingsSyncTime : settingsSyncTime // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$WebDavSettingStateCopyWith<$Res> get webdavSetting {
+  
+  return $WebDavSettingStateCopyWith<$Res>(_self.webdavSetting, (value) {
+    return _then(_self.copyWith(webdavSetting: value));
+  });
+}/// Create a copy of SyncSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$S3SettingStateCopyWith<$Res> get s3Setting {
+  
+  return $S3SettingStateCopyWith<$Res>(_self.s3Setting, (value) {
+    return _then(_self.copyWith(s3Setting: value));
+  });
+}
+}
+
+
+/// @nodoc
+mixin _$ReadSettingState {
+
+ bool get noAnimation; bool get comicReadTopContainer; int get readMode; ReaderTapPageTurnMode get tapPageTurnMode; bool get tapPageTurnInWebtoon; ReaderBackgroundMode get readerBackgroundMode; bool get readFilterEnabled; int get readFilterOpacityPercent; bool get einkOptimization; int get einkDelayMs; bool get autoScroll; bool get autoScrollHidePauseButton; bool get autoScrollSmooth; int get autoScrollColumnIntervalMs; int get autoScrollPageIntervalMs; int get autoScrollColumnDistancePercent; int get preloadImageCount; int get preloadChapterCount; bool get doublePageMode; bool get doublePageLeadingBlank; bool get sidePaddingEnabled; int get sidePaddingPercent; bool get volumeKeyPageTurn; int get volumeKeyPageTurnDistancePercent; bool get doubleTapZoom; bool get doubleTapOpenMenu; bool get pageInfoShowPage; bool get pageInfoShowNetwork; bool get pageInfoShowBattery; bool get pageInfoShowTime; ReaderInfoVerticalPosition get pageInfoVerticalPosition; bool get pageInfoTopInStatusBar; ReaderInfoHorizontalPosition get pageInfoHorizontalPosition; int get pageInfoEdgePadding; int get pageInfoOpacityPercent; int get pageInfoFontSize;
+/// Create a copy of ReadSettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ReadSettingStateCopyWith<ReadSettingState> get copyWith => _$ReadSettingStateCopyWithImpl<ReadSettingState>(this as ReadSettingState, _$identity);
+
+  /// Serializes this ReadSettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReadSettingState&&(identical(other.noAnimation, noAnimation) || other.noAnimation == noAnimation)&&(identical(other.comicReadTopContainer, comicReadTopContainer) || other.comicReadTopContainer == comicReadTopContainer)&&(identical(other.readMode, readMode) || other.readMode == readMode)&&(identical(other.tapPageTurnMode, tapPageTurnMode) || other.tapPageTurnMode == tapPageTurnMode)&&(identical(other.tapPageTurnInWebtoon, tapPageTurnInWebtoon) || other.tapPageTurnInWebtoon == tapPageTurnInWebtoon)&&(identical(other.readerBackgroundMode, readerBackgroundMode) || other.readerBackgroundMode == readerBackgroundMode)&&(identical(other.readFilterEnabled, readFilterEnabled) || other.readFilterEnabled == readFilterEnabled)&&(identical(other.readFilterOpacityPercent, readFilterOpacityPercent) || other.readFilterOpacityPercent == readFilterOpacityPercent)&&(identical(other.einkOptimization, einkOptimization) || other.einkOptimization == einkOptimization)&&(identical(other.einkDelayMs, einkDelayMs) || other.einkDelayMs == einkDelayMs)&&(identical(other.autoScroll, autoScroll) || other.autoScroll == autoScroll)&&(identical(other.autoScrollHidePauseButton, autoScrollHidePauseButton) || other.autoScrollHidePauseButton == autoScrollHidePauseButton)&&(identical(other.autoScrollSmooth, autoScrollSmooth) || other.autoScrollSmooth == autoScrollSmooth)&&(identical(other.autoScrollColumnIntervalMs, autoScrollColumnIntervalMs) || other.autoScrollColumnIntervalMs == autoScrollColumnIntervalMs)&&(identical(other.autoScrollPageIntervalMs, autoScrollPageIntervalMs) || other.autoScrollPageIntervalMs == autoScrollPageIntervalMs)&&(identical(other.autoScrollColumnDistancePercent, autoScrollColumnDistancePercent) || other.autoScrollColumnDistancePercent == autoScrollColumnDistancePercent)&&(identical(other.preloadImageCount, preloadImageCount) || other.preloadImageCount == preloadImageCount)&&(identical(other.preloadChapterCount, preloadChapterCount) || other.preloadChapterCount == preloadChapterCount)&&(identical(other.doublePageMode, doublePageMode) || other.doublePageMode == doublePageMode)&&(identical(other.doublePageLeadingBlank, doublePageLeadingBlank) || other.doublePageLeadingBlank == doublePageLeadingBlank)&&(identical(other.sidePaddingEnabled, sidePaddingEnabled) || other.sidePaddingEnabled == sidePaddingEnabled)&&(identical(other.sidePaddingPercent, sidePaddingPercent) || other.sidePaddingPercent == sidePaddingPercent)&&(identical(other.volumeKeyPageTurn, volumeKeyPageTurn) || other.volumeKeyPageTurn == volumeKeyPageTurn)&&(identical(other.volumeKeyPageTurnDistancePercent, volumeKeyPageTurnDistancePercent) || other.volumeKeyPageTurnDistancePercent == volumeKeyPageTurnDistancePercent)&&(identical(other.doubleTapZoom, doubleTapZoom) || other.doubleTapZoom == doubleTapZoom)&&(identical(other.doubleTapOpenMenu, doubleTapOpenMenu) || other.doubleTapOpenMenu == doubleTapOpenMenu)&&(identical(other.pageInfoShowPage, pageInfoShowPage) || other.pageInfoShowPage == pageInfoShowPage)&&(identical(other.pageInfoShowNetwork, pageInfoShowNetwork) || other.pageInfoShowNetwork == pageInfoShowNetwork)&&(identical(other.pageInfoShowBattery, pageInfoShowBattery) || other.pageInfoShowBattery == pageInfoShowBattery)&&(identical(other.pageInfoShowTime, pageInfoShowTime) || other.pageInfoShowTime == pageInfoShowTime)&&(identical(other.pageInfoVerticalPosition, pageInfoVerticalPosition) || other.pageInfoVerticalPosition == pageInfoVerticalPosition)&&(identical(other.pageInfoTopInStatusBar, pageInfoTopInStatusBar) || other.pageInfoTopInStatusBar == pageInfoTopInStatusBar)&&(identical(other.pageInfoHorizontalPosition, pageInfoHorizontalPosition) || other.pageInfoHorizontalPosition == pageInfoHorizontalPosition)&&(identical(other.pageInfoEdgePadding, pageInfoEdgePadding) || other.pageInfoEdgePadding == pageInfoEdgePadding)&&(identical(other.pageInfoOpacityPercent, pageInfoOpacityPercent) || other.pageInfoOpacityPercent == pageInfoOpacityPercent)&&(identical(other.pageInfoFontSize, pageInfoFontSize) || other.pageInfoFontSize == pageInfoFontSize));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,noAnimation,comicReadTopContainer,readMode,tapPageTurnMode,tapPageTurnInWebtoon,readerBackgroundMode,readFilterEnabled,readFilterOpacityPercent,einkOptimization,einkDelayMs,autoScroll,autoScrollHidePauseButton,autoScrollSmooth,autoScrollColumnIntervalMs,autoScrollPageIntervalMs,autoScrollColumnDistancePercent,preloadImageCount,preloadChapterCount,doublePageMode,doublePageLeadingBlank,sidePaddingEnabled,sidePaddingPercent,volumeKeyPageTurn,volumeKeyPageTurnDistancePercent,doubleTapZoom,doubleTapOpenMenu,pageInfoShowPage,pageInfoShowNetwork,pageInfoShowBattery,pageInfoShowTime,pageInfoVerticalPosition,pageInfoTopInStatusBar,pageInfoHorizontalPosition,pageInfoEdgePadding,pageInfoOpacityPercent,pageInfoFontSize]);
+
+@override
+String toString() {
+  return 'ReadSettingState(noAnimation: $noAnimation, comicReadTopContainer: $comicReadTopContainer, readMode: $readMode, tapPageTurnMode: $tapPageTurnMode, tapPageTurnInWebtoon: $tapPageTurnInWebtoon, readerBackgroundMode: $readerBackgroundMode, readFilterEnabled: $readFilterEnabled, readFilterOpacityPercent: $readFilterOpacityPercent, einkOptimization: $einkOptimization, einkDelayMs: $einkDelayMs, autoScroll: $autoScroll, autoScrollHidePauseButton: $autoScrollHidePauseButton, autoScrollSmooth: $autoScrollSmooth, autoScrollColumnIntervalMs: $autoScrollColumnIntervalMs, autoScrollPageIntervalMs: $autoScrollPageIntervalMs, autoScrollColumnDistancePercent: $autoScrollColumnDistancePercent, preloadImageCount: $preloadImageCount, preloadChapterCount: $preloadChapterCount, doublePageMode: $doublePageMode, doublePageLeadingBlank: $doublePageLeadingBlank, sidePaddingEnabled: $sidePaddingEnabled, sidePaddingPercent: $sidePaddingPercent, volumeKeyPageTurn: $volumeKeyPageTurn, volumeKeyPageTurnDistancePercent: $volumeKeyPageTurnDistancePercent, doubleTapZoom: $doubleTapZoom, doubleTapOpenMenu: $doubleTapOpenMenu, pageInfoShowPage: $pageInfoShowPage, pageInfoShowNetwork: $pageInfoShowNetwork, pageInfoShowBattery: $pageInfoShowBattery, pageInfoShowTime: $pageInfoShowTime, pageInfoVerticalPosition: $pageInfoVerticalPosition, pageInfoTopInStatusBar: $pageInfoTopInStatusBar, pageInfoHorizontalPosition: $pageInfoHorizontalPosition, pageInfoEdgePadding: $pageInfoEdgePadding, pageInfoOpacityPercent: $pageInfoOpacityPercent, pageInfoFontSize: $pageInfoFontSize)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ReadSettingStateCopyWith<$Res>  {
+  factory $ReadSettingStateCopyWith(ReadSettingState value, $Res Function(ReadSettingState) _then) = _$ReadSettingStateCopyWithImpl;
+@useResult
+$Res call({
+ bool noAnimation, bool comicReadTopContainer, int readMode, ReaderTapPageTurnMode tapPageTurnMode, bool tapPageTurnInWebtoon, ReaderBackgroundMode readerBackgroundMode, bool readFilterEnabled, int readFilterOpacityPercent, bool einkOptimization, int einkDelayMs, bool autoScroll, bool autoScrollHidePauseButton, bool autoScrollSmooth, int autoScrollColumnIntervalMs, int autoScrollPageIntervalMs, int autoScrollColumnDistancePercent, int preloadImageCount, int preloadChapterCount, bool doublePageMode, bool doublePageLeadingBlank, bool sidePaddingEnabled, int sidePaddingPercent, bool volumeKeyPageTurn, int volumeKeyPageTurnDistancePercent, bool doubleTapZoom, bool doubleTapOpenMenu, bool pageInfoShowPage, bool pageInfoShowNetwork, bool pageInfoShowBattery, bool pageInfoShowTime, ReaderInfoVerticalPosition pageInfoVerticalPosition, bool pageInfoTopInStatusBar, ReaderInfoHorizontalPosition pageInfoHorizontalPosition, int pageInfoEdgePadding, int pageInfoOpacityPercent, int pageInfoFontSize
+});
+
+
+
+
+}
+/// @nodoc
+class _$ReadSettingStateCopyWithImpl<$Res>
+    implements $ReadSettingStateCopyWith<$Res> {
+  _$ReadSettingStateCopyWithImpl(this._self, this._then);
+
+  final ReadSettingState _self;
+  final $Res Function(ReadSettingState) _then;
+
+/// Create a copy of ReadSettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? noAnimation = null,Object? comicReadTopContainer = null,Object? readMode = null,Object? tapPageTurnMode = null,Object? tapPageTurnInWebtoon = null,Object? readerBackgroundMode = null,Object? readFilterEnabled = null,Object? readFilterOpacityPercent = null,Object? einkOptimization = null,Object? einkDelayMs = null,Object? autoScroll = null,Object? autoScrollHidePauseButton = null,Object? autoScrollSmooth = null,Object? autoScrollColumnIntervalMs = null,Object? autoScrollPageIntervalMs = null,Object? autoScrollColumnDistancePercent = null,Object? preloadImageCount = null,Object? preloadChapterCount = null,Object? doublePageMode = null,Object? doublePageLeadingBlank = null,Object? sidePaddingEnabled = null,Object? sidePaddingPercent = null,Object? volumeKeyPageTurn = null,Object? volumeKeyPageTurnDistancePercent = null,Object? doubleTapZoom = null,Object? doubleTapOpenMenu = null,Object? pageInfoShowPage = null,Object? pageInfoShowNetwork = null,Object? pageInfoShowBattery = null,Object? pageInfoShowTime = null,Object? pageInfoVerticalPosition = null,Object? pageInfoTopInStatusBar = null,Object? pageInfoHorizontalPosition = null,Object? pageInfoEdgePadding = null,Object? pageInfoOpacityPercent = null,Object? pageInfoFontSize = null,}) {
+  return _then(_self.copyWith(
+noAnimation: null == noAnimation ? _self.noAnimation : noAnimation // ignore: cast_nullable_to_non_nullable
+as bool,comicReadTopContainer: null == comicReadTopContainer ? _self.comicReadTopContainer : comicReadTopContainer // ignore: cast_nullable_to_non_nullable
+as bool,readMode: null == readMode ? _self.readMode : readMode // ignore: cast_nullable_to_non_nullable
+as int,tapPageTurnMode: null == tapPageTurnMode ? _self.tapPageTurnMode : tapPageTurnMode // ignore: cast_nullable_to_non_nullable
+as ReaderTapPageTurnMode,tapPageTurnInWebtoon: null == tapPageTurnInWebtoon ? _self.tapPageTurnInWebtoon : tapPageTurnInWebtoon // ignore: cast_nullable_to_non_nullable
+as bool,readerBackgroundMode: null == readerBackgroundMode ? _self.readerBackgroundMode : readerBackgroundMode // ignore: cast_nullable_to_non_nullable
+as ReaderBackgroundMode,readFilterEnabled: null == readFilterEnabled ? _self.readFilterEnabled : readFilterEnabled // ignore: cast_nullable_to_non_nullable
+as bool,readFilterOpacityPercent: null == readFilterOpacityPercent ? _self.readFilterOpacityPercent : readFilterOpacityPercent // ignore: cast_nullable_to_non_nullable
+as int,einkOptimization: null == einkOptimization ? _self.einkOptimization : einkOptimization // ignore: cast_nullable_to_non_nullable
+as bool,einkDelayMs: null == einkDelayMs ? _self.einkDelayMs : einkDelayMs // ignore: cast_nullable_to_non_nullable
+as int,autoScroll: null == autoScroll ? _self.autoScroll : autoScroll // ignore: cast_nullable_to_non_nullable
+as bool,autoScrollHidePauseButton: null == autoScrollHidePauseButton ? _self.autoScrollHidePauseButton : autoScrollHidePauseButton // ignore: cast_nullable_to_non_nullable
+as bool,autoScrollSmooth: null == autoScrollSmooth ? _self.autoScrollSmooth : autoScrollSmooth // ignore: cast_nullable_to_non_nullable
+as bool,autoScrollColumnIntervalMs: null == autoScrollColumnIntervalMs ? _self.autoScrollColumnIntervalMs : autoScrollColumnIntervalMs // ignore: cast_nullable_to_non_nullable
+as int,autoScrollPageIntervalMs: null == autoScrollPageIntervalMs ? _self.autoScrollPageIntervalMs : autoScrollPageIntervalMs // ignore: cast_nullable_to_non_nullable
+as int,autoScrollColumnDistancePercent: null == autoScrollColumnDistancePercent ? _self.autoScrollColumnDistancePercent : autoScrollColumnDistancePercent // ignore: cast_nullable_to_non_nullable
+as int,preloadImageCount: null == preloadImageCount ? _self.preloadImageCount : preloadImageCount // ignore: cast_nullable_to_non_nullable
+as int,preloadChapterCount: null == preloadChapterCount ? _self.preloadChapterCount : preloadChapterCount // ignore: cast_nullable_to_non_nullable
+as int,doublePageMode: null == doublePageMode ? _self.doublePageMode : doublePageMode // ignore: cast_nullable_to_non_nullable
+as bool,doublePageLeadingBlank: null == doublePageLeadingBlank ? _self.doublePageLeadingBlank : doublePageLeadingBlank // ignore: cast_nullable_to_non_nullable
+as bool,sidePaddingEnabled: null == sidePaddingEnabled ? _self.sidePaddingEnabled : sidePaddingEnabled // ignore: cast_nullable_to_non_nullable
+as bool,sidePaddingPercent: null == sidePaddingPercent ? _self.sidePaddingPercent : sidePaddingPercent // ignore: cast_nullable_to_non_nullable
+as int,volumeKeyPageTurn: null == volumeKeyPageTurn ? _self.volumeKeyPageTurn : volumeKeyPageTurn // ignore: cast_nullable_to_non_nullable
+as bool,volumeKeyPageTurnDistancePercent: null == volumeKeyPageTurnDistancePercent ? _self.volumeKeyPageTurnDistancePercent : volumeKeyPageTurnDistancePercent // ignore: cast_nullable_to_non_nullable
+as int,doubleTapZoom: null == doubleTapZoom ? _self.doubleTapZoom : doubleTapZoom // ignore: cast_nullable_to_non_nullable
+as bool,doubleTapOpenMenu: null == doubleTapOpenMenu ? _self.doubleTapOpenMenu : doubleTapOpenMenu // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowPage: null == pageInfoShowPage ? _self.pageInfoShowPage : pageInfoShowPage // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowNetwork: null == pageInfoShowNetwork ? _self.pageInfoShowNetwork : pageInfoShowNetwork // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowBattery: null == pageInfoShowBattery ? _self.pageInfoShowBattery : pageInfoShowBattery // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowTime: null == pageInfoShowTime ? _self.pageInfoShowTime : pageInfoShowTime // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoVerticalPosition: null == pageInfoVerticalPosition ? _self.pageInfoVerticalPosition : pageInfoVerticalPosition // ignore: cast_nullable_to_non_nullable
+as ReaderInfoVerticalPosition,pageInfoTopInStatusBar: null == pageInfoTopInStatusBar ? _self.pageInfoTopInStatusBar : pageInfoTopInStatusBar // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoHorizontalPosition: null == pageInfoHorizontalPosition ? _self.pageInfoHorizontalPosition : pageInfoHorizontalPosition // ignore: cast_nullable_to_non_nullable
+as ReaderInfoHorizontalPosition,pageInfoEdgePadding: null == pageInfoEdgePadding ? _self.pageInfoEdgePadding : pageInfoEdgePadding // ignore: cast_nullable_to_non_nullable
+as int,pageInfoOpacityPercent: null == pageInfoOpacityPercent ? _self.pageInfoOpacityPercent : pageInfoOpacityPercent // ignore: cast_nullable_to_non_nullable
+as int,pageInfoFontSize: null == pageInfoFontSize ? _self.pageInfoFontSize : pageInfoFontSize // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ReadSettingState].
+extension ReadSettingStatePatterns on ReadSettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ReadSettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ReadSettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ReadSettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _ReadSettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ReadSettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ReadSettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool noAnimation,  bool comicReadTopContainer,  int readMode,  ReaderTapPageTurnMode tapPageTurnMode,  bool tapPageTurnInWebtoon,  ReaderBackgroundMode readerBackgroundMode,  bool readFilterEnabled,  int readFilterOpacityPercent,  bool einkOptimization,  int einkDelayMs,  bool autoScroll,  bool autoScrollHidePauseButton,  bool autoScrollSmooth,  int autoScrollColumnIntervalMs,  int autoScrollPageIntervalMs,  int autoScrollColumnDistancePercent,  int preloadImageCount,  int preloadChapterCount,  bool doublePageMode,  bool doublePageLeadingBlank,  bool sidePaddingEnabled,  int sidePaddingPercent,  bool volumeKeyPageTurn,  int volumeKeyPageTurnDistancePercent,  bool doubleTapZoom,  bool doubleTapOpenMenu,  bool pageInfoShowPage,  bool pageInfoShowNetwork,  bool pageInfoShowBattery,  bool pageInfoShowTime,  ReaderInfoVerticalPosition pageInfoVerticalPosition,  bool pageInfoTopInStatusBar,  ReaderInfoHorizontalPosition pageInfoHorizontalPosition,  int pageInfoEdgePadding,  int pageInfoOpacityPercent,  int pageInfoFontSize)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ReadSettingState() when $default != null:
+return $default(_that.noAnimation,_that.comicReadTopContainer,_that.readMode,_that.tapPageTurnMode,_that.tapPageTurnInWebtoon,_that.readerBackgroundMode,_that.readFilterEnabled,_that.readFilterOpacityPercent,_that.einkOptimization,_that.einkDelayMs,_that.autoScroll,_that.autoScrollHidePauseButton,_that.autoScrollSmooth,_that.autoScrollColumnIntervalMs,_that.autoScrollPageIntervalMs,_that.autoScrollColumnDistancePercent,_that.preloadImageCount,_that.preloadChapterCount,_that.doublePageMode,_that.doublePageLeadingBlank,_that.sidePaddingEnabled,_that.sidePaddingPercent,_that.volumeKeyPageTurn,_that.volumeKeyPageTurnDistancePercent,_that.doubleTapZoom,_that.doubleTapOpenMenu,_that.pageInfoShowPage,_that.pageInfoShowNetwork,_that.pageInfoShowBattery,_that.pageInfoShowTime,_that.pageInfoVerticalPosition,_that.pageInfoTopInStatusBar,_that.pageInfoHorizontalPosition,_that.pageInfoEdgePadding,_that.pageInfoOpacityPercent,_that.pageInfoFontSize);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool noAnimation,  bool comicReadTopContainer,  int readMode,  ReaderTapPageTurnMode tapPageTurnMode,  bool tapPageTurnInWebtoon,  ReaderBackgroundMode readerBackgroundMode,  bool readFilterEnabled,  int readFilterOpacityPercent,  bool einkOptimization,  int einkDelayMs,  bool autoScroll,  bool autoScrollHidePauseButton,  bool autoScrollSmooth,  int autoScrollColumnIntervalMs,  int autoScrollPageIntervalMs,  int autoScrollColumnDistancePercent,  int preloadImageCount,  int preloadChapterCount,  bool doublePageMode,  bool doublePageLeadingBlank,  bool sidePaddingEnabled,  int sidePaddingPercent,  bool volumeKeyPageTurn,  int volumeKeyPageTurnDistancePercent,  bool doubleTapZoom,  bool doubleTapOpenMenu,  bool pageInfoShowPage,  bool pageInfoShowNetwork,  bool pageInfoShowBattery,  bool pageInfoShowTime,  ReaderInfoVerticalPosition pageInfoVerticalPosition,  bool pageInfoTopInStatusBar,  ReaderInfoHorizontalPosition pageInfoHorizontalPosition,  int pageInfoEdgePadding,  int pageInfoOpacityPercent,  int pageInfoFontSize)  $default,) {final _that = this;
+switch (_that) {
+case _ReadSettingState():
+return $default(_that.noAnimation,_that.comicReadTopContainer,_that.readMode,_that.tapPageTurnMode,_that.tapPageTurnInWebtoon,_that.readerBackgroundMode,_that.readFilterEnabled,_that.readFilterOpacityPercent,_that.einkOptimization,_that.einkDelayMs,_that.autoScroll,_that.autoScrollHidePauseButton,_that.autoScrollSmooth,_that.autoScrollColumnIntervalMs,_that.autoScrollPageIntervalMs,_that.autoScrollColumnDistancePercent,_that.preloadImageCount,_that.preloadChapterCount,_that.doublePageMode,_that.doublePageLeadingBlank,_that.sidePaddingEnabled,_that.sidePaddingPercent,_that.volumeKeyPageTurn,_that.volumeKeyPageTurnDistancePercent,_that.doubleTapZoom,_that.doubleTapOpenMenu,_that.pageInfoShowPage,_that.pageInfoShowNetwork,_that.pageInfoShowBattery,_that.pageInfoShowTime,_that.pageInfoVerticalPosition,_that.pageInfoTopInStatusBar,_that.pageInfoHorizontalPosition,_that.pageInfoEdgePadding,_that.pageInfoOpacityPercent,_that.pageInfoFontSize);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool noAnimation,  bool comicReadTopContainer,  int readMode,  ReaderTapPageTurnMode tapPageTurnMode,  bool tapPageTurnInWebtoon,  ReaderBackgroundMode readerBackgroundMode,  bool readFilterEnabled,  int readFilterOpacityPercent,  bool einkOptimization,  int einkDelayMs,  bool autoScroll,  bool autoScrollHidePauseButton,  bool autoScrollSmooth,  int autoScrollColumnIntervalMs,  int autoScrollPageIntervalMs,  int autoScrollColumnDistancePercent,  int preloadImageCount,  int preloadChapterCount,  bool doublePageMode,  bool doublePageLeadingBlank,  bool sidePaddingEnabled,  int sidePaddingPercent,  bool volumeKeyPageTurn,  int volumeKeyPageTurnDistancePercent,  bool doubleTapZoom,  bool doubleTapOpenMenu,  bool pageInfoShowPage,  bool pageInfoShowNetwork,  bool pageInfoShowBattery,  bool pageInfoShowTime,  ReaderInfoVerticalPosition pageInfoVerticalPosition,  bool pageInfoTopInStatusBar,  ReaderInfoHorizontalPosition pageInfoHorizontalPosition,  int pageInfoEdgePadding,  int pageInfoOpacityPercent,  int pageInfoFontSize)?  $default,) {final _that = this;
+switch (_that) {
+case _ReadSettingState() when $default != null:
+return $default(_that.noAnimation,_that.comicReadTopContainer,_that.readMode,_that.tapPageTurnMode,_that.tapPageTurnInWebtoon,_that.readerBackgroundMode,_that.readFilterEnabled,_that.readFilterOpacityPercent,_that.einkOptimization,_that.einkDelayMs,_that.autoScroll,_that.autoScrollHidePauseButton,_that.autoScrollSmooth,_that.autoScrollColumnIntervalMs,_that.autoScrollPageIntervalMs,_that.autoScrollColumnDistancePercent,_that.preloadImageCount,_that.preloadChapterCount,_that.doublePageMode,_that.doublePageLeadingBlank,_that.sidePaddingEnabled,_that.sidePaddingPercent,_that.volumeKeyPageTurn,_that.volumeKeyPageTurnDistancePercent,_that.doubleTapZoom,_that.doubleTapOpenMenu,_that.pageInfoShowPage,_that.pageInfoShowNetwork,_that.pageInfoShowBattery,_that.pageInfoShowTime,_that.pageInfoVerticalPosition,_that.pageInfoTopInStatusBar,_that.pageInfoHorizontalPosition,_that.pageInfoEdgePadding,_that.pageInfoOpacityPercent,_that.pageInfoFontSize);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ReadSettingState implements ReadSettingState {
+  const _ReadSettingState({this.noAnimation = false, this.comicReadTopContainer = true, this.readMode = 0, this.tapPageTurnMode = ReaderTapPageTurnMode.rightHand, this.tapPageTurnInWebtoon = false, this.readerBackgroundMode = ReaderBackgroundMode.auto, this.readFilterEnabled = true, this.readFilterOpacityPercent = 50, this.einkOptimization = false, this.einkDelayMs = 120, this.autoScroll = false, this.autoScrollHidePauseButton = false, this.autoScrollSmooth = false, this.autoScrollColumnIntervalMs = 1600, this.autoScrollPageIntervalMs = 3000, this.autoScrollColumnDistancePercent = 72, this.preloadImageCount = 3, this.preloadChapterCount = 1, this.doublePageMode = false, this.doublePageLeadingBlank = false, this.sidePaddingEnabled = false, this.sidePaddingPercent = 10, this.volumeKeyPageTurn = true, this.volumeKeyPageTurnDistancePercent = 72, this.doubleTapZoom = false, this.doubleTapOpenMenu = false, this.pageInfoShowPage = true, this.pageInfoShowNetwork = true, this.pageInfoShowBattery = false, this.pageInfoShowTime = true, this.pageInfoVerticalPosition = ReaderInfoVerticalPosition.bottom, this.pageInfoTopInStatusBar = false, this.pageInfoHorizontalPosition = ReaderInfoHorizontalPosition.left, this.pageInfoEdgePadding = 12, this.pageInfoOpacityPercent = 82, this.pageInfoFontSize = 12});
+  factory _ReadSettingState.fromJson(Map<String, dynamic> json) => _$ReadSettingStateFromJson(json);
+
+@override@JsonKey() final  bool noAnimation;
+@override@JsonKey() final  bool comicReadTopContainer;
+@override@JsonKey() final  int readMode;
+@override@JsonKey() final  ReaderTapPageTurnMode tapPageTurnMode;
+@override@JsonKey() final  bool tapPageTurnInWebtoon;
+@override@JsonKey() final  ReaderBackgroundMode readerBackgroundMode;
+@override@JsonKey() final  bool readFilterEnabled;
+@override@JsonKey() final  int readFilterOpacityPercent;
+@override@JsonKey() final  bool einkOptimization;
+@override@JsonKey() final  int einkDelayMs;
+@override@JsonKey() final  bool autoScroll;
+@override@JsonKey() final  bool autoScrollHidePauseButton;
+@override@JsonKey() final  bool autoScrollSmooth;
+@override@JsonKey() final  int autoScrollColumnIntervalMs;
+@override@JsonKey() final  int autoScrollPageIntervalMs;
+@override@JsonKey() final  int autoScrollColumnDistancePercent;
+@override@JsonKey() final  int preloadImageCount;
+@override@JsonKey() final  int preloadChapterCount;
+@override@JsonKey() final  bool doublePageMode;
+@override@JsonKey() final  bool doublePageLeadingBlank;
+@override@JsonKey() final  bool sidePaddingEnabled;
+@override@JsonKey() final  int sidePaddingPercent;
+@override@JsonKey() final  bool volumeKeyPageTurn;
+@override@JsonKey() final  int volumeKeyPageTurnDistancePercent;
+@override@JsonKey() final  bool doubleTapZoom;
+@override@JsonKey() final  bool doubleTapOpenMenu;
+@override@JsonKey() final  bool pageInfoShowPage;
+@override@JsonKey() final  bool pageInfoShowNetwork;
+@override@JsonKey() final  bool pageInfoShowBattery;
+@override@JsonKey() final  bool pageInfoShowTime;
+@override@JsonKey() final  ReaderInfoVerticalPosition pageInfoVerticalPosition;
+@override@JsonKey() final  bool pageInfoTopInStatusBar;
+@override@JsonKey() final  ReaderInfoHorizontalPosition pageInfoHorizontalPosition;
+@override@JsonKey() final  int pageInfoEdgePadding;
+@override@JsonKey() final  int pageInfoOpacityPercent;
+@override@JsonKey() final  int pageInfoFontSize;
+
+/// Create a copy of ReadSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ReadSettingStateCopyWith<_ReadSettingState> get copyWith => __$ReadSettingStateCopyWithImpl<_ReadSettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ReadSettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReadSettingState&&(identical(other.noAnimation, noAnimation) || other.noAnimation == noAnimation)&&(identical(other.comicReadTopContainer, comicReadTopContainer) || other.comicReadTopContainer == comicReadTopContainer)&&(identical(other.readMode, readMode) || other.readMode == readMode)&&(identical(other.tapPageTurnMode, tapPageTurnMode) || other.tapPageTurnMode == tapPageTurnMode)&&(identical(other.tapPageTurnInWebtoon, tapPageTurnInWebtoon) || other.tapPageTurnInWebtoon == tapPageTurnInWebtoon)&&(identical(other.readerBackgroundMode, readerBackgroundMode) || other.readerBackgroundMode == readerBackgroundMode)&&(identical(other.readFilterEnabled, readFilterEnabled) || other.readFilterEnabled == readFilterEnabled)&&(identical(other.readFilterOpacityPercent, readFilterOpacityPercent) || other.readFilterOpacityPercent == readFilterOpacityPercent)&&(identical(other.einkOptimization, einkOptimization) || other.einkOptimization == einkOptimization)&&(identical(other.einkDelayMs, einkDelayMs) || other.einkDelayMs == einkDelayMs)&&(identical(other.autoScroll, autoScroll) || other.autoScroll == autoScroll)&&(identical(other.autoScrollHidePauseButton, autoScrollHidePauseButton) || other.autoScrollHidePauseButton == autoScrollHidePauseButton)&&(identical(other.autoScrollSmooth, autoScrollSmooth) || other.autoScrollSmooth == autoScrollSmooth)&&(identical(other.autoScrollColumnIntervalMs, autoScrollColumnIntervalMs) || other.autoScrollColumnIntervalMs == autoScrollColumnIntervalMs)&&(identical(other.autoScrollPageIntervalMs, autoScrollPageIntervalMs) || other.autoScrollPageIntervalMs == autoScrollPageIntervalMs)&&(identical(other.autoScrollColumnDistancePercent, autoScrollColumnDistancePercent) || other.autoScrollColumnDistancePercent == autoScrollColumnDistancePercent)&&(identical(other.preloadImageCount, preloadImageCount) || other.preloadImageCount == preloadImageCount)&&(identical(other.preloadChapterCount, preloadChapterCount) || other.preloadChapterCount == preloadChapterCount)&&(identical(other.doublePageMode, doublePageMode) || other.doublePageMode == doublePageMode)&&(identical(other.doublePageLeadingBlank, doublePageLeadingBlank) || other.doublePageLeadingBlank == doublePageLeadingBlank)&&(identical(other.sidePaddingEnabled, sidePaddingEnabled) || other.sidePaddingEnabled == sidePaddingEnabled)&&(identical(other.sidePaddingPercent, sidePaddingPercent) || other.sidePaddingPercent == sidePaddingPercent)&&(identical(other.volumeKeyPageTurn, volumeKeyPageTurn) || other.volumeKeyPageTurn == volumeKeyPageTurn)&&(identical(other.volumeKeyPageTurnDistancePercent, volumeKeyPageTurnDistancePercent) || other.volumeKeyPageTurnDistancePercent == volumeKeyPageTurnDistancePercent)&&(identical(other.doubleTapZoom, doubleTapZoom) || other.doubleTapZoom == doubleTapZoom)&&(identical(other.doubleTapOpenMenu, doubleTapOpenMenu) || other.doubleTapOpenMenu == doubleTapOpenMenu)&&(identical(other.pageInfoShowPage, pageInfoShowPage) || other.pageInfoShowPage == pageInfoShowPage)&&(identical(other.pageInfoShowNetwork, pageInfoShowNetwork) || other.pageInfoShowNetwork == pageInfoShowNetwork)&&(identical(other.pageInfoShowBattery, pageInfoShowBattery) || other.pageInfoShowBattery == pageInfoShowBattery)&&(identical(other.pageInfoShowTime, pageInfoShowTime) || other.pageInfoShowTime == pageInfoShowTime)&&(identical(other.pageInfoVerticalPosition, pageInfoVerticalPosition) || other.pageInfoVerticalPosition == pageInfoVerticalPosition)&&(identical(other.pageInfoTopInStatusBar, pageInfoTopInStatusBar) || other.pageInfoTopInStatusBar == pageInfoTopInStatusBar)&&(identical(other.pageInfoHorizontalPosition, pageInfoHorizontalPosition) || other.pageInfoHorizontalPosition == pageInfoHorizontalPosition)&&(identical(other.pageInfoEdgePadding, pageInfoEdgePadding) || other.pageInfoEdgePadding == pageInfoEdgePadding)&&(identical(other.pageInfoOpacityPercent, pageInfoOpacityPercent) || other.pageInfoOpacityPercent == pageInfoOpacityPercent)&&(identical(other.pageInfoFontSize, pageInfoFontSize) || other.pageInfoFontSize == pageInfoFontSize));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,noAnimation,comicReadTopContainer,readMode,tapPageTurnMode,tapPageTurnInWebtoon,readerBackgroundMode,readFilterEnabled,readFilterOpacityPercent,einkOptimization,einkDelayMs,autoScroll,autoScrollHidePauseButton,autoScrollSmooth,autoScrollColumnIntervalMs,autoScrollPageIntervalMs,autoScrollColumnDistancePercent,preloadImageCount,preloadChapterCount,doublePageMode,doublePageLeadingBlank,sidePaddingEnabled,sidePaddingPercent,volumeKeyPageTurn,volumeKeyPageTurnDistancePercent,doubleTapZoom,doubleTapOpenMenu,pageInfoShowPage,pageInfoShowNetwork,pageInfoShowBattery,pageInfoShowTime,pageInfoVerticalPosition,pageInfoTopInStatusBar,pageInfoHorizontalPosition,pageInfoEdgePadding,pageInfoOpacityPercent,pageInfoFontSize]);
+
+@override
+String toString() {
+  return 'ReadSettingState(noAnimation: $noAnimation, comicReadTopContainer: $comicReadTopContainer, readMode: $readMode, tapPageTurnMode: $tapPageTurnMode, tapPageTurnInWebtoon: $tapPageTurnInWebtoon, readerBackgroundMode: $readerBackgroundMode, readFilterEnabled: $readFilterEnabled, readFilterOpacityPercent: $readFilterOpacityPercent, einkOptimization: $einkOptimization, einkDelayMs: $einkDelayMs, autoScroll: $autoScroll, autoScrollHidePauseButton: $autoScrollHidePauseButton, autoScrollSmooth: $autoScrollSmooth, autoScrollColumnIntervalMs: $autoScrollColumnIntervalMs, autoScrollPageIntervalMs: $autoScrollPageIntervalMs, autoScrollColumnDistancePercent: $autoScrollColumnDistancePercent, preloadImageCount: $preloadImageCount, preloadChapterCount: $preloadChapterCount, doublePageMode: $doublePageMode, doublePageLeadingBlank: $doublePageLeadingBlank, sidePaddingEnabled: $sidePaddingEnabled, sidePaddingPercent: $sidePaddingPercent, volumeKeyPageTurn: $volumeKeyPageTurn, volumeKeyPageTurnDistancePercent: $volumeKeyPageTurnDistancePercent, doubleTapZoom: $doubleTapZoom, doubleTapOpenMenu: $doubleTapOpenMenu, pageInfoShowPage: $pageInfoShowPage, pageInfoShowNetwork: $pageInfoShowNetwork, pageInfoShowBattery: $pageInfoShowBattery, pageInfoShowTime: $pageInfoShowTime, pageInfoVerticalPosition: $pageInfoVerticalPosition, pageInfoTopInStatusBar: $pageInfoTopInStatusBar, pageInfoHorizontalPosition: $pageInfoHorizontalPosition, pageInfoEdgePadding: $pageInfoEdgePadding, pageInfoOpacityPercent: $pageInfoOpacityPercent, pageInfoFontSize: $pageInfoFontSize)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ReadSettingStateCopyWith<$Res> implements $ReadSettingStateCopyWith<$Res> {
+  factory _$ReadSettingStateCopyWith(_ReadSettingState value, $Res Function(_ReadSettingState) _then) = __$ReadSettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ bool noAnimation, bool comicReadTopContainer, int readMode, ReaderTapPageTurnMode tapPageTurnMode, bool tapPageTurnInWebtoon, ReaderBackgroundMode readerBackgroundMode, bool readFilterEnabled, int readFilterOpacityPercent, bool einkOptimization, int einkDelayMs, bool autoScroll, bool autoScrollHidePauseButton, bool autoScrollSmooth, int autoScrollColumnIntervalMs, int autoScrollPageIntervalMs, int autoScrollColumnDistancePercent, int preloadImageCount, int preloadChapterCount, bool doublePageMode, bool doublePageLeadingBlank, bool sidePaddingEnabled, int sidePaddingPercent, bool volumeKeyPageTurn, int volumeKeyPageTurnDistancePercent, bool doubleTapZoom, bool doubleTapOpenMenu, bool pageInfoShowPage, bool pageInfoShowNetwork, bool pageInfoShowBattery, bool pageInfoShowTime, ReaderInfoVerticalPosition pageInfoVerticalPosition, bool pageInfoTopInStatusBar, ReaderInfoHorizontalPosition pageInfoHorizontalPosition, int pageInfoEdgePadding, int pageInfoOpacityPercent, int pageInfoFontSize
+});
+
+
+
+
+}
+/// @nodoc
+class __$ReadSettingStateCopyWithImpl<$Res>
+    implements _$ReadSettingStateCopyWith<$Res> {
+  __$ReadSettingStateCopyWithImpl(this._self, this._then);
+
+  final _ReadSettingState _self;
+  final $Res Function(_ReadSettingState) _then;
+
+/// Create a copy of ReadSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? noAnimation = null,Object? comicReadTopContainer = null,Object? readMode = null,Object? tapPageTurnMode = null,Object? tapPageTurnInWebtoon = null,Object? readerBackgroundMode = null,Object? readFilterEnabled = null,Object? readFilterOpacityPercent = null,Object? einkOptimization = null,Object? einkDelayMs = null,Object? autoScroll = null,Object? autoScrollHidePauseButton = null,Object? autoScrollSmooth = null,Object? autoScrollColumnIntervalMs = null,Object? autoScrollPageIntervalMs = null,Object? autoScrollColumnDistancePercent = null,Object? preloadImageCount = null,Object? preloadChapterCount = null,Object? doublePageMode = null,Object? doublePageLeadingBlank = null,Object? sidePaddingEnabled = null,Object? sidePaddingPercent = null,Object? volumeKeyPageTurn = null,Object? volumeKeyPageTurnDistancePercent = null,Object? doubleTapZoom = null,Object? doubleTapOpenMenu = null,Object? pageInfoShowPage = null,Object? pageInfoShowNetwork = null,Object? pageInfoShowBattery = null,Object? pageInfoShowTime = null,Object? pageInfoVerticalPosition = null,Object? pageInfoTopInStatusBar = null,Object? pageInfoHorizontalPosition = null,Object? pageInfoEdgePadding = null,Object? pageInfoOpacityPercent = null,Object? pageInfoFontSize = null,}) {
+  return _then(_ReadSettingState(
+noAnimation: null == noAnimation ? _self.noAnimation : noAnimation // ignore: cast_nullable_to_non_nullable
+as bool,comicReadTopContainer: null == comicReadTopContainer ? _self.comicReadTopContainer : comicReadTopContainer // ignore: cast_nullable_to_non_nullable
+as bool,readMode: null == readMode ? _self.readMode : readMode // ignore: cast_nullable_to_non_nullable
+as int,tapPageTurnMode: null == tapPageTurnMode ? _self.tapPageTurnMode : tapPageTurnMode // ignore: cast_nullable_to_non_nullable
+as ReaderTapPageTurnMode,tapPageTurnInWebtoon: null == tapPageTurnInWebtoon ? _self.tapPageTurnInWebtoon : tapPageTurnInWebtoon // ignore: cast_nullable_to_non_nullable
+as bool,readerBackgroundMode: null == readerBackgroundMode ? _self.readerBackgroundMode : readerBackgroundMode // ignore: cast_nullable_to_non_nullable
+as ReaderBackgroundMode,readFilterEnabled: null == readFilterEnabled ? _self.readFilterEnabled : readFilterEnabled // ignore: cast_nullable_to_non_nullable
+as bool,readFilterOpacityPercent: null == readFilterOpacityPercent ? _self.readFilterOpacityPercent : readFilterOpacityPercent // ignore: cast_nullable_to_non_nullable
+as int,einkOptimization: null == einkOptimization ? _self.einkOptimization : einkOptimization // ignore: cast_nullable_to_non_nullable
+as bool,einkDelayMs: null == einkDelayMs ? _self.einkDelayMs : einkDelayMs // ignore: cast_nullable_to_non_nullable
+as int,autoScroll: null == autoScroll ? _self.autoScroll : autoScroll // ignore: cast_nullable_to_non_nullable
+as bool,autoScrollHidePauseButton: null == autoScrollHidePauseButton ? _self.autoScrollHidePauseButton : autoScrollHidePauseButton // ignore: cast_nullable_to_non_nullable
+as bool,autoScrollSmooth: null == autoScrollSmooth ? _self.autoScrollSmooth : autoScrollSmooth // ignore: cast_nullable_to_non_nullable
+as bool,autoScrollColumnIntervalMs: null == autoScrollColumnIntervalMs ? _self.autoScrollColumnIntervalMs : autoScrollColumnIntervalMs // ignore: cast_nullable_to_non_nullable
+as int,autoScrollPageIntervalMs: null == autoScrollPageIntervalMs ? _self.autoScrollPageIntervalMs : autoScrollPageIntervalMs // ignore: cast_nullable_to_non_nullable
+as int,autoScrollColumnDistancePercent: null == autoScrollColumnDistancePercent ? _self.autoScrollColumnDistancePercent : autoScrollColumnDistancePercent // ignore: cast_nullable_to_non_nullable
+as int,preloadImageCount: null == preloadImageCount ? _self.preloadImageCount : preloadImageCount // ignore: cast_nullable_to_non_nullable
+as int,preloadChapterCount: null == preloadChapterCount ? _self.preloadChapterCount : preloadChapterCount // ignore: cast_nullable_to_non_nullable
+as int,doublePageMode: null == doublePageMode ? _self.doublePageMode : doublePageMode // ignore: cast_nullable_to_non_nullable
+as bool,doublePageLeadingBlank: null == doublePageLeadingBlank ? _self.doublePageLeadingBlank : doublePageLeadingBlank // ignore: cast_nullable_to_non_nullable
+as bool,sidePaddingEnabled: null == sidePaddingEnabled ? _self.sidePaddingEnabled : sidePaddingEnabled // ignore: cast_nullable_to_non_nullable
+as bool,sidePaddingPercent: null == sidePaddingPercent ? _self.sidePaddingPercent : sidePaddingPercent // ignore: cast_nullable_to_non_nullable
+as int,volumeKeyPageTurn: null == volumeKeyPageTurn ? _self.volumeKeyPageTurn : volumeKeyPageTurn // ignore: cast_nullable_to_non_nullable
+as bool,volumeKeyPageTurnDistancePercent: null == volumeKeyPageTurnDistancePercent ? _self.volumeKeyPageTurnDistancePercent : volumeKeyPageTurnDistancePercent // ignore: cast_nullable_to_non_nullable
+as int,doubleTapZoom: null == doubleTapZoom ? _self.doubleTapZoom : doubleTapZoom // ignore: cast_nullable_to_non_nullable
+as bool,doubleTapOpenMenu: null == doubleTapOpenMenu ? _self.doubleTapOpenMenu : doubleTapOpenMenu // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowPage: null == pageInfoShowPage ? _self.pageInfoShowPage : pageInfoShowPage // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowNetwork: null == pageInfoShowNetwork ? _self.pageInfoShowNetwork : pageInfoShowNetwork // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowBattery: null == pageInfoShowBattery ? _self.pageInfoShowBattery : pageInfoShowBattery // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoShowTime: null == pageInfoShowTime ? _self.pageInfoShowTime : pageInfoShowTime // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoVerticalPosition: null == pageInfoVerticalPosition ? _self.pageInfoVerticalPosition : pageInfoVerticalPosition // ignore: cast_nullable_to_non_nullable
+as ReaderInfoVerticalPosition,pageInfoTopInStatusBar: null == pageInfoTopInStatusBar ? _self.pageInfoTopInStatusBar : pageInfoTopInStatusBar // ignore: cast_nullable_to_non_nullable
+as bool,pageInfoHorizontalPosition: null == pageInfoHorizontalPosition ? _self.pageInfoHorizontalPosition : pageInfoHorizontalPosition // ignore: cast_nullable_to_non_nullable
+as ReaderInfoHorizontalPosition,pageInfoEdgePadding: null == pageInfoEdgePadding ? _self.pageInfoEdgePadding : pageInfoEdgePadding // ignore: cast_nullable_to_non_nullable
+as int,pageInfoOpacityPercent: null == pageInfoOpacityPercent ? _self.pageInfoOpacityPercent : pageInfoOpacityPercent // ignore: cast_nullable_to_non_nullable
+as int,pageInfoFontSize: null == pageInfoFontSize ? _self.pageInfoFontSize : pageInfoFontSize // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$BookshelfSettingState {
+
+ int get homePageIndex; bool get rememberFavoriteSort; String get favoriteSort; bool get rememberHistorySort; String get historySort; bool get rememberDownloadSort; String get downloadSort;
+/// Create a copy of BookshelfSettingState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BookshelfSettingStateCopyWith<BookshelfSettingState> get copyWith => _$BookshelfSettingStateCopyWithImpl<BookshelfSettingState>(this as BookshelfSettingState, _$identity);
+
+  /// Serializes this BookshelfSettingState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BookshelfSettingState&&(identical(other.homePageIndex, homePageIndex) || other.homePageIndex == homePageIndex)&&(identical(other.rememberFavoriteSort, rememberFavoriteSort) || other.rememberFavoriteSort == rememberFavoriteSort)&&(identical(other.favoriteSort, favoriteSort) || other.favoriteSort == favoriteSort)&&(identical(other.rememberHistorySort, rememberHistorySort) || other.rememberHistorySort == rememberHistorySort)&&(identical(other.historySort, historySort) || other.historySort == historySort)&&(identical(other.rememberDownloadSort, rememberDownloadSort) || other.rememberDownloadSort == rememberDownloadSort)&&(identical(other.downloadSort, downloadSort) || other.downloadSort == downloadSort));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,homePageIndex,rememberFavoriteSort,favoriteSort,rememberHistorySort,historySort,rememberDownloadSort,downloadSort);
+
+@override
+String toString() {
+  return 'BookshelfSettingState(homePageIndex: $homePageIndex, rememberFavoriteSort: $rememberFavoriteSort, favoriteSort: $favoriteSort, rememberHistorySort: $rememberHistorySort, historySort: $historySort, rememberDownloadSort: $rememberDownloadSort, downloadSort: $downloadSort)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BookshelfSettingStateCopyWith<$Res>  {
+  factory $BookshelfSettingStateCopyWith(BookshelfSettingState value, $Res Function(BookshelfSettingState) _then) = _$BookshelfSettingStateCopyWithImpl;
+@useResult
+$Res call({
+ int homePageIndex, bool rememberFavoriteSort, String favoriteSort, bool rememberHistorySort, String historySort, bool rememberDownloadSort, String downloadSort
+});
+
+
+
+
+}
+/// @nodoc
+class _$BookshelfSettingStateCopyWithImpl<$Res>
+    implements $BookshelfSettingStateCopyWith<$Res> {
+  _$BookshelfSettingStateCopyWithImpl(this._self, this._then);
+
+  final BookshelfSettingState _self;
+  final $Res Function(BookshelfSettingState) _then;
+
+/// Create a copy of BookshelfSettingState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? homePageIndex = null,Object? rememberFavoriteSort = null,Object? favoriteSort = null,Object? rememberHistorySort = null,Object? historySort = null,Object? rememberDownloadSort = null,Object? downloadSort = null,}) {
+  return _then(_self.copyWith(
+homePageIndex: null == homePageIndex ? _self.homePageIndex : homePageIndex // ignore: cast_nullable_to_non_nullable
+as int,rememberFavoriteSort: null == rememberFavoriteSort ? _self.rememberFavoriteSort : rememberFavoriteSort // ignore: cast_nullable_to_non_nullable
+as bool,favoriteSort: null == favoriteSort ? _self.favoriteSort : favoriteSort // ignore: cast_nullable_to_non_nullable
+as String,rememberHistorySort: null == rememberHistorySort ? _self.rememberHistorySort : rememberHistorySort // ignore: cast_nullable_to_non_nullable
+as bool,historySort: null == historySort ? _self.historySort : historySort // ignore: cast_nullable_to_non_nullable
+as String,rememberDownloadSort: null == rememberDownloadSort ? _self.rememberDownloadSort : rememberDownloadSort // ignore: cast_nullable_to_non_nullable
+as bool,downloadSort: null == downloadSort ? _self.downloadSort : downloadSort // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [BookshelfSettingState].
+extension BookshelfSettingStatePatterns on BookshelfSettingState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _BookshelfSettingState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _BookshelfSettingState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _BookshelfSettingState value)  $default,){
+final _that = this;
+switch (_that) {
+case _BookshelfSettingState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _BookshelfSettingState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _BookshelfSettingState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int homePageIndex,  bool rememberFavoriteSort,  String favoriteSort,  bool rememberHistorySort,  String historySort,  bool rememberDownloadSort,  String downloadSort)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _BookshelfSettingState() when $default != null:
+return $default(_that.homePageIndex,_that.rememberFavoriteSort,_that.favoriteSort,_that.rememberHistorySort,_that.historySort,_that.rememberDownloadSort,_that.downloadSort);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int homePageIndex,  bool rememberFavoriteSort,  String favoriteSort,  bool rememberHistorySort,  String historySort,  bool rememberDownloadSort,  String downloadSort)  $default,) {final _that = this;
+switch (_that) {
+case _BookshelfSettingState():
+return $default(_that.homePageIndex,_that.rememberFavoriteSort,_that.favoriteSort,_that.rememberHistorySort,_that.historySort,_that.rememberDownloadSort,_that.downloadSort);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int homePageIndex,  bool rememberFavoriteSort,  String favoriteSort,  bool rememberHistorySort,  String historySort,  bool rememberDownloadSort,  String downloadSort)?  $default,) {final _that = this;
+switch (_that) {
+case _BookshelfSettingState() when $default != null:
+return $default(_that.homePageIndex,_that.rememberFavoriteSort,_that.favoriteSort,_that.rememberHistorySort,_that.historySort,_that.rememberDownloadSort,_that.downloadSort);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _BookshelfSettingState implements BookshelfSettingState {
+  const _BookshelfSettingState({this.homePageIndex = 0, this.rememberFavoriteSort = false, this.favoriteSort = 'dd', this.rememberHistorySort = false, this.historySort = 'dd', this.rememberDownloadSort = false, this.downloadSort = 'dd'});
+  factory _BookshelfSettingState.fromJson(Map<String, dynamic> json) => _$BookshelfSettingStateFromJson(json);
+
+@override@JsonKey() final  int homePageIndex;
+@override@JsonKey() final  bool rememberFavoriteSort;
+@override@JsonKey() final  String favoriteSort;
+@override@JsonKey() final  bool rememberHistorySort;
+@override@JsonKey() final  String historySort;
+@override@JsonKey() final  bool rememberDownloadSort;
+@override@JsonKey() final  String downloadSort;
+
+/// Create a copy of BookshelfSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$BookshelfSettingStateCopyWith<_BookshelfSettingState> get copyWith => __$BookshelfSettingStateCopyWithImpl<_BookshelfSettingState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$BookshelfSettingStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BookshelfSettingState&&(identical(other.homePageIndex, homePageIndex) || other.homePageIndex == homePageIndex)&&(identical(other.rememberFavoriteSort, rememberFavoriteSort) || other.rememberFavoriteSort == rememberFavoriteSort)&&(identical(other.favoriteSort, favoriteSort) || other.favoriteSort == favoriteSort)&&(identical(other.rememberHistorySort, rememberHistorySort) || other.rememberHistorySort == rememberHistorySort)&&(identical(other.historySort, historySort) || other.historySort == historySort)&&(identical(other.rememberDownloadSort, rememberDownloadSort) || other.rememberDownloadSort == rememberDownloadSort)&&(identical(other.downloadSort, downloadSort) || other.downloadSort == downloadSort));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,homePageIndex,rememberFavoriteSort,favoriteSort,rememberHistorySort,historySort,rememberDownloadSort,downloadSort);
+
+@override
+String toString() {
+  return 'BookshelfSettingState(homePageIndex: $homePageIndex, rememberFavoriteSort: $rememberFavoriteSort, favoriteSort: $favoriteSort, rememberHistorySort: $rememberHistorySort, historySort: $historySort, rememberDownloadSort: $rememberDownloadSort, downloadSort: $downloadSort)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$BookshelfSettingStateCopyWith<$Res> implements $BookshelfSettingStateCopyWith<$Res> {
+  factory _$BookshelfSettingStateCopyWith(_BookshelfSettingState value, $Res Function(_BookshelfSettingState) _then) = __$BookshelfSettingStateCopyWithImpl;
+@override @useResult
+$Res call({
+ int homePageIndex, bool rememberFavoriteSort, String favoriteSort, bool rememberHistorySort, String historySort, bool rememberDownloadSort, String downloadSort
+});
+
+
+
+
+}
+/// @nodoc
+class __$BookshelfSettingStateCopyWithImpl<$Res>
+    implements _$BookshelfSettingStateCopyWith<$Res> {
+  __$BookshelfSettingStateCopyWithImpl(this._self, this._then);
+
+  final _BookshelfSettingState _self;
+  final $Res Function(_BookshelfSettingState) _then;
+
+/// Create a copy of BookshelfSettingState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? homePageIndex = null,Object? rememberFavoriteSort = null,Object? favoriteSort = null,Object? rememberHistorySort = null,Object? historySort = null,Object? rememberDownloadSort = null,Object? downloadSort = null,}) {
+  return _then(_BookshelfSettingState(
+homePageIndex: null == homePageIndex ? _self.homePageIndex : homePageIndex // ignore: cast_nullable_to_non_nullable
+as int,rememberFavoriteSort: null == rememberFavoriteSort ? _self.rememberFavoriteSort : rememberFavoriteSort // ignore: cast_nullable_to_non_nullable
+as bool,favoriteSort: null == favoriteSort ? _self.favoriteSort : favoriteSort // ignore: cast_nullable_to_non_nullable
+as String,rememberHistorySort: null == rememberHistorySort ? _self.rememberHistorySort : rememberHistorySort // ignore: cast_nullable_to_non_nullable
+as bool,historySort: null == historySort ? _self.historySort : historySort // ignore: cast_nullable_to_non_nullable
+as String,rememberDownloadSort: null == rememberDownloadSort ? _self.rememberDownloadSort : rememberDownloadSort // ignore: cast_nullable_to_non_nullable
+as bool,downloadSort: null == downloadSort ? _self.downloadSort : downloadSort // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on

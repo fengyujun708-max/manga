@@ -1,0 +1,560 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:toastification/toastification.dart';
+import 'package:mangaverse/config/global/global_setting.dart';
+import 'package:mangaverse/config/router/router.gr.dart';
+import 'package:mangaverse/i18n/strings.g.dart';
+import 'package:mangaverse/page/search/cubit/search_cubit.dart';
+import 'package:mangaverse/service/download/download_queue_manager.dart';
+import 'package:mangaverse/page/comic_follow/cubit/comic_follow_cubit.dart';
+import 'package:mangaverse/service/lifecycle/foreground_task/foreground_task_service.dart';
+import 'package:mangaverse/service/lifecycle/notification_service.dart';
+import 'package:mangaverse/service/update/check_update.dart';
+import 'package:mangaverse/util/context/context_extensions.dart';
+import 'package:mangaverse/util/error_filter.dart';
+import 'package:mangaverse/util/manage_cache.dart';
+import 'package:mangaverse/widgets/memory/memory_overlay_widget.dart';
+import 'package:mangaverse/widgets/toast.dart';
+
+import 'package:mangaverse/main.dart';
+import 'package:mangaverse/network/sync/sync_service.dart';
+import 'package:mangaverse/util/debouncer.dart';
+import 'package:mangaverse/util/event/event.dart';
+import 'package:mangaverse/widgets/dialog.dart';
+import 'package:mangaverse/page/bookshelf/bookshelf.dart';
+import 'package:mangaverse/page/discover/view/discover_page.dart';
+import 'package:mangaverse/page/more/view/more.dart';
+import 'package:mangaverse/page/old_page/old_home/old_home_page.dart';
+import 'package:mangaverse/page/old_page/old_ranking/old_ranking_page.dart';
+
+@RoutePage()
+class NavigationBar extends StatefulWidget {
+  const NavigationBar({super.key});
+
+  @override
+  State<NavigationBar> createState() => _NavigationBarState();
+}
+
+class _NavigationBarState extends State<NavigationBar> {
+  // _controller 用于控制手机底部导航栏和页面切换
+  late PersistentTabController _controller;
+  // _selectedIndex 用于控制平板侧边导航栏和页面切换
+  int _selectedIndex = 0;
+  final debouncer = Debouncer(milliseconds: 100);
+  DateTime? _lastLoginNavigateAt;
+  String? _lastLoginPluginId;
+  DateTime? _lastToastShownAt;
+  (ToastType, String?, String, Duration)? _lastToastEvent;
+  late HideOnScrollSettings hideOnScrollSettings;
+
+  static bool _notificationsInitialized = false; // ← 使用静态变量，跨实例共享
+  bool _isInitializingNotifications = false;
+  static bool _followUpdateChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      checkUpdate(context);
+      _autoSync();
+      manageCacheSize(context);
+      DownloadQueueManager.instance.resetStuckTasks();
+      DownloadQueueManager.instance.watchTasks();
+      if (Platform.isAndroid) {
+        await ForegroundTaskService.instance.syncOnAppStart();
+      }
+    });
+    final globalSetting = objectbox.userSettingBox.get(1)!.globalSetting;
+    final configuredIndex = globalSetting.welcomePageNum;
+    final initialIndex = _normalizeWelcomePageIndex(
+      configuredIndex,
+      _buildPageList(globalSetting.oldPageRollbackEnabled).length,
+    );
+    _controller = PersistentTabController(initialIndex: initialIndex);
+    _selectedIndex = initialIndex;
+    ForegroundTaskService.instance.init();
+
+    initializeNotificationsOnce();
+    _scheduleFollowUpdateCheck(context);
+
+    // 每隔 5 分钟执行一次
+    const duration = Duration(minutes: 5);
+    Timer.periodic(duration, (Timer timer) async {
+      await _autoSync();
+    });
+
+    // 用来手动触发同步
+    eventBus.on<NoticeSync>().listen((event) {
+      _autoSync(force: event.force);
+    });
+
+    eventBus.on<NeedLogin>().listen((event) {
+      _goToLoginPage(
+        event.from,
+        loginScheme: event.scheme,
+        loginData: event.data,
+        message: event.message,
+      );
+    });
+
+    eventBus.on<ToastEvent>().listen((event) {
+      _showToast(event);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final globalSettingState = context.watch<GlobalSettingCubit>().state;
+    // 开关仅在 Android 展示；同时限制实际行为，避免同步设置后影响其他平台。
+    final backPressExitEnabled =
+        Platform.isAndroid && globalSettingState.backPressExitEnabled;
+    final pageList = _buildPageList(globalSettingState.oldPageRollbackEnabled);
+    final navBarItems = _navBarItems(globalSettingState.oldPageRollbackEnabled);
+    final navRailDestinations = _navRailDestinations(
+      globalSettingState.oldPageRollbackEnabled,
+    );
+    final normalizedIndex = _normalizeWelcomePageIndex(
+      _selectedIndex,
+      pageList.length,
+    );
+    if (normalizedIndex != _selectedIndex) {
+      _selectedIndex = normalizedIndex;
+      _controller.index = normalizedIndex;
+    }
+    return MemoryOverlayWidget(
+      enabled: globalSettingState.enableMemoryDebug,
+      updateInterval: Duration(seconds: 1),
+      child: Builder(
+        builder: (context) {
+          if (isTablet(context) ||
+              Platform.isWindows ||
+              Platform.isLinux ||
+              Platform.isMacOS) {
+            return _buildTabletLayout(
+              pageList: pageList,
+              navRailDestinations: navRailDestinations,
+            );
+          } else {
+            return _buildMobileLayout(
+              pageList: pageList,
+              navBarItems: navBarItems,
+              backPressExitEnabled: backPressExitEnabled,
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout({
+    required List<Widget> pageList,
+    required List<PersistentBottomNavBarItem> navBarItems,
+    required bool backPressExitEnabled,
+  }) {
+    return PersistentTabView(
+      context,
+      controller: _controller,
+      screens: pageList,
+      items: navBarItems,
+      backgroundColor: context.backgroundColor,
+      // 由组件自身的 PopScope 接收返回事件。此前把 PopScope 包在组件外层，
+      // 容易被每个 tab 的内部 Navigator 先消费，导致开关看起来没有效果。
+      handleAndroidBackButtonPress: !backPressExitEnabled,
+      onWillPop: backPressExitEnabled ? _handleExitOnBack : null,
+      resizeToAvoidBottomInset: false,
+      hideNavigationBarWhenKeyboardAppears: false,
+      stateManagement: true,
+      navBarStyle: NavBarStyle.style3,
+      onItemSelected: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+    );
+  }
+
+  Future<bool> _handleExitOnBack(BuildContext? _) async {
+    // 子页面仍由 PersistentTabView 的内部 Navigator 正常返回；只有当前 tab
+    // 已无子页面时才会调用这里。
+    if (_controller.index != 0) {
+      setState(() {
+        _selectedIndex = 0;
+      });
+      _controller.jumpToTab(0);
+      return false;
+    }
+
+    await SystemNavigator.pop();
+    // 已由系统关闭 Activity，不再让组件继续 pop 根路由。
+    return false;
+  }
+
+  // 平板布局 (使用 NavigationRail)
+  Widget _buildTabletLayout({
+    required List<Widget> pageList,
+    required List<NavigationRailDestination> navRailDestinations,
+  }) {
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      body: Row(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: NavigationRail(
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: (int index) {
+                    setState(() {
+                      _selectedIndex = index;
+                      _controller.index = index;
+                    });
+                  },
+                  labelType: NavigationRailLabelType.all,
+                  backgroundColor: context.backgroundColor,
+                  destinations: navRailDestinations,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: IconButton(
+                  icon: Icon(Icons.search),
+                  tooltip: t.common.search,
+                  onPressed: () {
+                    context.pushRoute(
+                      SearchRoute(
+                        searchState: SearchStates.initial(),
+                        aggregateMode: true,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(
+            child: IndexedStack(index: _selectedIndex, children: pageList),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 底部导航栏的配置项
+  List<PersistentBottomNavBarItem> _navBarItems(bool oldPageRollbackEnabled) {
+    final activeColor = context.theme.colorScheme.primary;
+    final inactiveColor = context.textColor;
+
+    final items = <PersistentBottomNavBarItem>[
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.menu_book_sharp),
+        title: t.navigation.bookshelf,
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.explore_outlined),
+        title: t.navigation.discover,
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.apps_outlined),
+        title: t.navigation.more,
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+    ];
+    if (!oldPageRollbackEnabled) {
+      return items;
+    }
+
+    return [
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.home_outlined),
+        title: t.navigation.home,
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.leaderboard_outlined),
+        title: t.navigation.rank,
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      ...items,
+    ];
+  }
+
+  int _normalizeWelcomePageIndex(int rawIndex, int pageCount) {
+    if (pageCount <= 0) {
+      return 0;
+    }
+    return rawIndex.clamp(0, pageCount - 1);
+  }
+
+  // 为平板侧边导航栏生成 NavigationRailDestination
+  List<NavigationRailDestination> _navRailDestinations(
+    bool oldPageRollbackEnabled,
+  ) {
+    final destinations = <NavigationRailDestination>[
+      NavigationRailDestination(
+        icon: Icon(Icons.menu_book_outlined),
+        selectedIcon: Icon(Icons.menu_book_sharp),
+        label: Text(t.navigation.bookshelf),
+      ),
+      NavigationRailDestination(
+        icon: Icon(Icons.explore_outlined),
+        selectedIcon: Icon(Icons.explore),
+        label: Text(t.navigation.discover),
+      ),
+      NavigationRailDestination(
+        icon: Icon(Icons.apps_outlined),
+        selectedIcon: Icon(Icons.apps),
+        label: Text(t.navigation.more),
+      ),
+    ];
+    if (!oldPageRollbackEnabled) {
+      return destinations;
+    }
+    return [
+      NavigationRailDestination(
+        icon: Icon(Icons.home_outlined),
+        selectedIcon: Icon(Icons.home),
+        label: Text(t.navigation.home),
+      ),
+      NavigationRailDestination(
+        icon: Icon(Icons.leaderboard_outlined),
+        selectedIcon: Icon(Icons.leaderboard),
+        label: Text(t.navigation.rank),
+      ),
+      ...destinations,
+    ];
+  }
+
+  List<Widget> _buildPageList(bool oldPageRollbackEnabled) {
+    final pages = <Widget>[
+      const BookshelfPage(),
+      const DiscoverPage(),
+      const MorePage(),
+    ];
+    if (!oldPageRollbackEnabled) {
+      return pages;
+    }
+    return [const OldHomePage(), const OldRankingPage(), ...pages];
+  }
+
+  Future<void> _autoSync({bool force = false}) async {
+    final globalSettingCubit = context.read<GlobalSettingCubit>();
+    final globalState = globalSettingCubit.state;
+
+    if (!force && globalState.syncSetting.autoSync == false) {
+      return;
+    }
+
+    if (!isSyncServiceConfigured(globalState)) {
+      return;
+    }
+
+    try {
+      await autoSync(
+        globalState,
+        globalSettingCubit: globalSettingCubit,
+        comicFollowCubit: context.read<ComicFollowCubit>(),
+      );
+      if (globalState.syncSetting.syncNotify) {
+        showSuccessToast(
+          force ? t.navigation.syncSuccess : t.navigation.autoSyncSuccess,
+        );
+      }
+    } catch (e, stackTrace) {
+      logger.e(e.toString(), stackTrace: stackTrace);
+      showErrorToast(
+        t.navigation.syncFailedMessage(error: normalizeSearchErrorMessage(e)),
+        title: force ? t.navigation.syncFailed : t.navigation.autoSyncFailed,
+      );
+    }
+  }
+
+  void _goToLoginPage(
+    String from, {
+    Map<String, dynamic>? loginScheme,
+    Map<String, dynamic>? loginData,
+    String? message,
+  }) {
+    try {
+      final pluginId = from.trim();
+      if (pluginId.isEmpty) {
+        logger.w('Skip login navigation: empty plugin id');
+        return;
+      }
+
+      final navigator = Navigator.maybeOf(context);
+      if (navigator == null) {
+        logger.w('Navigator not available');
+        return;
+      }
+
+      debouncer.run(() {
+        if (!mounted) {
+          return;
+        }
+
+        final now = DateTime.now();
+        final recentDuplicate =
+            _lastLoginPluginId == pluginId &&
+            _lastLoginNavigateAt != null &&
+            now.difference(_lastLoginNavigateAt!).inMilliseconds < 1500;
+        if (recentDuplicate) {
+          return;
+        }
+
+        final hasLoginRoute = navigator.widget.pages.any(
+          (route) => (route.name ?? '').contains('LoginRoute'),
+        );
+        if (!hasLoginRoute) {
+          showErrorToast(message ?? t.navigation.loginExpired);
+
+          _lastLoginNavigateAt = now;
+          _lastLoginPluginId = pluginId;
+          context.navigateTo(
+            LoginRoute(
+              from: pluginId,
+              loginScheme: loginScheme,
+              loginData: loginData,
+            ),
+          );
+        }
+      });
+    } catch (e, stackTrace) {
+      logger.e('Failed to navigate to login', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  void _showToast(ToastEvent event) {
+    final now = DateTime.now();
+    final toastEvent = (event.type, event.title, event.message, event.duration);
+    if (_lastToastEvent == toastEvent &&
+        _lastToastShownAt != null &&
+        now.difference(_lastToastShownAt!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastToastEvent = toastEvent;
+    _lastToastShownAt = now;
+
+    ToastificationType type;
+    switch (event.type) {
+      case ToastType.success:
+        type = ToastificationType.success;
+        break;
+      case ToastType.error:
+        type = ToastificationType.error;
+        break;
+      case ToastType.warning:
+        type = ToastificationType.warning;
+        break;
+      case ToastType.info:
+        type = ToastificationType.info;
+        break;
+    }
+
+    if (event.message.runes.length < 30) {
+      toastification.show(
+        context: context,
+        title: event.title == null ? null : Text(event.title!),
+        description: Text(event.message),
+        type: type,
+        style: ToastificationStyle.flatColored,
+        autoCloseDuration: event.duration,
+        showProgressBar: true,
+      );
+    } else {
+      late String title;
+      if (event.title != null) {
+        title = event.title!;
+      } else {
+        switch (event.type) {
+          case ToastType.success:
+            title = t.common.success;
+            break;
+          case ToastType.error:
+            title = t.common.error;
+            break;
+          case ToastType.warning:
+            title = t.common.warning;
+            break;
+          case ToastType.info:
+            title = t.common.info;
+            break;
+        }
+      }
+      commonDialog(context, title, event.message);
+    }
+  }
+
+  void _scheduleFollowUpdateCheck(BuildContext context) {
+    if (_followUpdateChecked) {
+      return;
+    }
+    _followUpdateChecked = true;
+
+    Future.delayed(const Duration(minutes: 1), () async {
+      try {
+        if (!context.mounted) {
+          return;
+        }
+        await context.read<ComicFollowCubit>().checkUpdates();
+      } catch (e, stackTrace) {
+        logger.e('启动后追更检测失败', error: e, stackTrace: stackTrace);
+      }
+    });
+  }
+
+  Future<void> initializeNotificationsOnce() async {
+    // 应用级别检查
+    if (_notificationsInitialized) {
+      logger.d('Notifications already initialized globally');
+      return;
+    }
+
+    // 实例级别检查
+    if (_isInitializingNotifications) {
+      logger.w('Notification initialization already in progress');
+      return;
+    }
+
+    try {
+      _isInitializingNotifications = true;
+
+      // 延迟执行，避免与其他初始化冲突
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted) return;
+
+      await initializeNotifications();
+
+      _notificationsInitialized = true;
+      logger.d('Notifications initialized successfully');
+    } catch (e, stackTrace) {
+      logger.e(
+        'Failed to initialize notifications',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      _isInitializingNotifications = false;
+    }
+  }
+}
