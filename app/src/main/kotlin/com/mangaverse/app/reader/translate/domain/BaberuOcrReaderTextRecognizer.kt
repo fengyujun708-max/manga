@@ -1,6 +1,5 @@
 package com.mangaverse.app.reader.translate.domain
 
-const val BABERU_MODEL_ID = "baberu_ocr_2025_onnx"
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -23,6 +22,7 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+const val BABERU_MODEL_ID = "baberu_ocr_2025_onnx"
 
 /**
  * Baberu 识别器 —— 改为调用后端 /api/ocr。

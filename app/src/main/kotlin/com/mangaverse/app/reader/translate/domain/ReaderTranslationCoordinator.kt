@@ -290,22 +290,9 @@ internal class ReaderTranslationCoordinator(
 		return null
 	}
 
-			if (result == "und") {
-				log { "language detection undetermined for text=${oneLine(text, 100)}" }
-				null
-			} else {
-				log { "language detected: $result for text=${oneLine(text, 100)}" }
-				result
-			}
-		} catch (e: Exception) {
-			log { "language detection failed: ${e.message.orEmpty()}" }
-			null
-		} finally {
-			languageIdentifier.close()
-		}
-	}
-
 	private fun resolveMlKitLanguage(languageTag: String): String? {
 		return languageTag.trim().lowercase().substringBefore("-").ifBlank { null }
 	}
 
+
+}

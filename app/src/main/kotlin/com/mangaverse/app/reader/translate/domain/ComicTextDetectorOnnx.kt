@@ -1,6 +1,5 @@
 package com.mangaverse.app.reader.translate.domain
 
-const val CTD_MODEL_ID = "comictextdetector_2025_onnx"
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -20,6 +19,7 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+const val CTD_MODEL_ID = "comictextdetector_2025_onnx"
 
 /** 气泡文本检测器 —— 改为调用后端 /api/ocr。 */
 class ComicTextDetectorOnnx @Inject constructor() : ReaderTextDetector {

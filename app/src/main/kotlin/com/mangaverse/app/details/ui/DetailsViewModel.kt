@@ -153,6 +153,7 @@ import java.util.Locale
 import com.mangaverse.app.space.domain.SpaceContentPolicy
 import com.mangaverse.app.stats.data.StatsRepository
 import com.mangaverse.app.space.domain.SpaceId
+import okhttp3.MediaType.Companion.toMediaType
 
 private const val SYNTHETIC_ENTITY_GRAPH_SOURCE = "Entity Graph"
 private const val DETAILS_TRACE_TAG = "DetailsTrace"
@@ -3087,7 +3088,7 @@ class DetailsViewModel @Inject constructor(
 				.put("from_lang", from)
 				.put("to_lang", targetLang)
 				.toString()
-			val mediaType = okhttp3.MediaType.parse("application/json")
+			val mediaType = "application/json".toMediaType()
 			val body = okhttp3.RequestBody.create(mediaType, payload)
 			val request = okhttp3.Request.Builder()
 				.url("${com.mangaverse.app.BuildConfig.MANGAVERSE_API_BASE_URL}/api/translate")

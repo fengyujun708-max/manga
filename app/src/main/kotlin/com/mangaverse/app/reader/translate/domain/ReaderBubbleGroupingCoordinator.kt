@@ -291,6 +291,8 @@ internal class ReaderBubbleGroupingCoordinator(
 			OnnxBubbleDetectorEngine.AttemptStatus.RUNTIME_UNAVAILABLE -> "onnx_runtime_unavailable"
 			OnnxBubbleDetectorEngine.AttemptStatus.NO_BOXES -> "onnx_no_boxes"
 			OnnxBubbleDetectorEngine.AttemptStatus.SUCCESS -> "onnx_no_usable_groups"
+			OnnxBubbleDetectorEngine.AttemptStatus.MODEL_NOT_AVAILABLE -> "onnx_model_not_available"
+			OnnxBubbleDetectorEngine.AttemptStatus.INFERENCE_FAILED -> "onnx_inference_failed"
 			null -> "onnx_attempt_failed"
 		}
 		val attemptedModelId = onnxAttempt?.modelId.orEmpty()

@@ -1,6 +1,5 @@
 package com.mangaverse.app.reader.translate.domain
 
-const val DBNET_MODEL_ID = "dbnet_2025_onnx"
 
 import android.graphics.Bitmap
 import android.graphics.Rect
@@ -21,6 +20,7 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+const val DBNET_MODEL_ID = "dbnet_2025_onnx"
 
 /** DbNet 文本检测器 —— 改为调用后端 /api/ocr。 */
 class DefaultDbNetTextDetector @Inject constructor() : ReaderTextDetector {
