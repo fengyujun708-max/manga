@@ -9,6 +9,21 @@
 
 import 'package:flutter/material.dart';
 
+/// 动画时长常量
+class MangaVerseAnimations {
+  MangaVerseAnimations._();
+
+  static const Duration fast = Duration(milliseconds: 200);
+  static const Duration normal = Duration(milliseconds: 300);
+  static const Duration slow = Duration(milliseconds: 500);
+  static const Duration slower = Duration(milliseconds: 800);
+
+  // Cubic easing curves
+  static const Curve easeOutExpo = Cubic(0.16, 1, 0.3, 1);
+  static const Curve easeInOutExpo = Cubic(0.87, 0, 0.13, 1);
+  static const Curve easeOutBack = Cubic(0.34, 1.56, 0.64, 1);
+}
+
 class MangaVerseColors {
   MangaVerseColors._();
 
@@ -182,5 +197,48 @@ ThemeData buildMangaVerseDarkTheme({Color? seedColor}) {
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
     splashFactory: NoSplash.splashFactory,
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: _FadeSlideTransitionBuilder(),
+        TargetPlatform.iOS: _FadeSlideTransitionBuilder(),
+      },
+    ),
+    listTileTheme: const ListTileThemeData(
+      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: MangaVerseColors.surfaceVariant,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
   );
+}
+
+/// 自定义页面过渡: 淡入+轻微上滑
+class _FadeSlideTransitionBuilder extends PageTransitionsBuilder {
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return FadeTransition(
+      opacity: CurvedAnimation(
+        parent: animation,
+        curve: MangaVerseAnimations.easeOutExpo,
+      ),
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.03),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: MangaVerseAnimations.easeOutExpo,
+        )),
+        child: child,
+      ),
+    );
+  }
 }
