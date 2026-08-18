@@ -12,7 +12,7 @@ permissions:
 jobs:
   build-android-simple:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,6 +58,10 @@ jobs:
       - name: 获取依赖 (verbose)
         run: |
           fvm flutter pub get --verbose
+
+      - name: 运行代码生成
+        run: |
+          fvm flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Debug 构建 (仅 arm64)
         run: |
