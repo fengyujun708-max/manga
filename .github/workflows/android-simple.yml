@@ -28,12 +28,16 @@ jobs:
       - name: 设置 Android SDK
         uses: android-actions/setup-android@v4
 
-      - name: 设置 Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.24.3"
-          channel: "stable"
-          cache: true
+      - name: 设置 Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: 设置 Flutter (FVM)
+        run: |
+          dart pub global activate fvm
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          fvm install && fvm use --force
+          echo "$GITHUB_WORKSPACE/.fvm/flutter_sdk/bin" >> $GITHUB_PATH
 
       - name: 生成签名密钥
         run: |
@@ -49,19 +53,19 @@ jobs:
 
       - name: 验证 Flutter 环境
         run: |
-          flutter doctor -v
+          fvm flutter doctor -v
 
-      - name: 获取依赖
+      - name: 获取依赖 (verbose)
         run: |
-          flutter pub get
+          fvm flutter pub get --verbose
 
       - name: 分析代码
         run: |
-          flutter analyze --no-fatal-infos
+          fvm flutter analyze --no-fatal-infos
 
       - name: Debug 构建 (仅 arm64)
         run: |
-          flutter build apk --debug --target-platform=android-arm64
+          fvm flutter build apk --debug --target-platform=android-arm64
 
       - name: 上传 Debug APK
         uses: actions/upload-artifact@v6
