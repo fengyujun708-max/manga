@@ -30,6 +30,7 @@ import 'package:mangaverse/type/enum.dart';
 import 'package:mangaverse/util/json/json_value.dart';
 import 'package:mangaverse/service/recommend_client.dart';
 import 'package:mangaverse/widgets/recommend_row.dart';
+import 'package:mangaverse/widgets/mv_shimmer.dart';
 
 @RoutePage()
 class DiscoverPage extends StatelessWidget {
