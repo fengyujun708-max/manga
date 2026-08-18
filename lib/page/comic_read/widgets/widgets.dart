@@ -1,5 +1,8 @@
 export 'package:mangaverse/page/comic_read/widgets/chrome/app_bar.dart';
 export 'package:mangaverse/page/comic_read/widgets/chrome/bottom.dart';
+export 'package:mangaverse/page/comic_read/widgets/chrome/enhanced_bottom_bar.dart';
+export 'package:mangaverse/page/comic_read/widgets/chrome/enhanced_top_bar.dart';
+export 'package:mangaverse/page/comic_read/widgets/chrome/brightness_slider.dart';
 export 'package:mangaverse/page/comic_read/widgets/controls/slider.dart';
 export 'package:mangaverse/page/comic_read/widgets/dialogs/button_dialog.dart';
 export 'package:mangaverse/page/comic_read/widgets/feedback/error.dart';
