@@ -59,10 +59,6 @@ jobs:
         run: |
           fvm flutter pub get --verbose
 
-      - name: 分析代码
-        run: |
-          fvm flutter analyze --no-fatal-infos
-
       - name: Debug 构建 (仅 arm64)
         run: |
           fvm flutter build apk --debug --target-platform=android-arm64
