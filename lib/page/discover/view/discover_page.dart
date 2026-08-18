@@ -28,6 +28,8 @@ import 'package:mangaverse/object_box/objectbox.g.dart';
 import 'package:mangaverse/main.dart';
 import 'package:mangaverse/type/enum.dart';
 import 'package:mangaverse/util/json/json_value.dart';
+import 'package:mangaverse/service/recommend_client.dart';
+import 'package:mangaverse/widgets/recommend_row.dart';
 
 @RoutePage()
 class DiscoverPage extends StatelessWidget {
@@ -52,6 +54,8 @@ class _DiscoverView extends StatefulWidget {
 class _DiscoverViewState extends State<_DiscoverView> {
   late ScrollController _scrollController;
   double _scrollOffset = 0;
+  List<RecommendItem> _recommendations = [];
+  bool _isLoadingRecs = true;
 
   @override
   void initState() {
@@ -60,12 +64,22 @@ class _DiscoverViewState extends State<_DiscoverView> {
     _scrollController.addListener(() {
       setState(() => _scrollOffset = _scrollController.offset);
     });
+    _loadRecommendations();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadRecommendations() async {
+    try {
+      final items = await RecommendService.getHomeRecommendations(limit: 12);
+      if (mounted) setState(() { _recommendations = items; _isLoadingRecs = false; });
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingRecs = false);
+    }
   }
 
   void _search(BuildContext context) {
@@ -93,6 +107,9 @@ class _DiscoverViewState extends State<_DiscoverView> {
           slivers: [
             // Hero 轮播
             SliverToBoxAdapter(child: _buildHeroCarousel(context)),
+
+            // 推荐阅读
+            SliverToBoxAdapter(child: _buildRecommendations()),
 
             // 继续阅读
             SliverToBoxAdapter(child: _buildContinueReading(context)),
@@ -177,6 +194,26 @@ class _DiscoverViewState extends State<_DiscoverView> {
   }
 
   /// Hero 轮播 — 从插件数据提取精选
+  Widget _buildRecommendations() {
+    return RecommendedRow(
+      items: _recommendations,
+      title: '为你推荐',
+      subtitle: _isLoadingRecs ? '' : '基于阅读偏好',
+      isLoading: _isLoadingRecs,
+      onTap: (mangaId, source) {
+        if (mangaId.isNotEmpty) {
+          context.pushRoute(
+            ComicInfoRoute(
+              comicId: mangaId,
+              from: source,
+              type: ComicEntryType.comic,
+            ),
+          );
+        }
+      },
+    );
+  }
+
   Widget _buildHeroCarousel(BuildContext context) {
     return BlocBuilder<DiscoverCubit, DiscoverState>(
       buildWhen: (prev, curr) => prev.plugins != curr.plugins,
