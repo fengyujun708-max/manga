@@ -133,7 +133,7 @@ class _AboutPageState extends State<AboutPage> {
       _userSession = null;
     });
     if (mounted) {
-      context.router.replace(const app_router.LoginRoute());
+      context.router.replace(app_router.LoginRoute());
     }
   }
 
@@ -241,7 +241,7 @@ class _AboutPageState extends State<AboutPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 ElevatedButton(
-                                  onPressed: () => context.router.push(const app_router.LoginRoute()),
+                                  onPressed: () => context.router.push(app_router.LoginRoute()),
                                   style: ElevatedButton.styleFrom(
                                     minimumSize: const Size.fromHeight(36),
                                   ),

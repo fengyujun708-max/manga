@@ -1,27 +1,15 @@
 [toolchain]
-channel = "1.96.1"
+channel = "1.93.0"
 profile = "default"
 
+# [BUILD FIX] Trimmed to Android-only targets. The original file listed
+# iOS/macOS/Windows/Linux targets; `rustup show` auto-installs every target
+# in this list, which triggered downloads of non-Android rust-std components
+# (blocked network) during the Android APK build. Android builds only need
+# the four Android ABIs below, all already installed on the build host.
 targets = [
-  # Android
   "armv7-linux-androideabi",
   "aarch64-linux-android",
   "x86_64-linux-android",
-
-  # iOS (device + simulator)
-  "aarch64-apple-ios",
-  "aarch64-apple-ios-sim",
-  "x86_64-apple-ios",
-
-  # Windows
-  "aarch64-pc-windows-msvc",
-  "x86_64-pc-windows-msvc",
-
-  # Linux
-  "aarch64-unknown-linux-gnu",
-  "x86_64-unknown-linux-gnu",
-
-  # macOS
-  "aarch64-apple-darwin",
-  "x86_64-apple-darwin",
+  "i686-linux-android",
 ]

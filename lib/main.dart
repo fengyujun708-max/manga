@@ -125,7 +125,7 @@ Future<void> main(List<String> args) async {
 
   // 初始化全局错误处理器
   try {
-    await GlobalErrorHandler.instance.init();
+    GlobalErrorHandler.instance.init();
   } catch (e) {
     logger.e("GlobalErrorHandler init failed", error: e);
   }

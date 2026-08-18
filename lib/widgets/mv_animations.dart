@@ -11,7 +11,7 @@ class MVCardEntrance extends StatefulWidget {
     super.key,
     required this.child,
     this.index = 0,
-    this.delayPerItem = Duration(milliseconds: 40),
+    this.delayPerItem = const Duration(milliseconds: 40),
   });
 
   @override
@@ -31,7 +31,7 @@ class _MVCardEntranceState extends State<MVCardEntrance>
       duration: MangaVerseAnimations.normal,
       vsync: this,
     );
-    final delay = widget.index * widget.delayPerItem;
+    final delay = widget.delayPerItem * widget.index;
     final curve = MangaVerseAnimations.easeOutExpo;
 
     _fadeAnim = CurvedAnimation(

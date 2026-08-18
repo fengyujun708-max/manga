@@ -207,7 +207,7 @@ class _DiscoverViewState extends State<_DiscoverView> {
             ComicInfoRoute(
               comicId: mangaId,
               from: source,
-              type: ComicEntryType.comic,
+              type: ComicEntryType.normal,
             ),
           );
         }

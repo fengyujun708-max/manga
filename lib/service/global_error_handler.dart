@@ -9,7 +9,7 @@ class GlobalErrorHandler {
   void init() {
     FlutterError.onError = (details) {
       logger.e('FlutterError', error: details.exception, stackTrace: details.stack);
-      CrashReporter.instance.reportCrash(details.exceptionToString(), details.stack.toString());
+      CrashReporter.instance.reportCrash(details.exception.toString(), details.stack.toString());
     };
     PlatformDispatcher.instance.onError = (error, stack) {
       logger.e('PlatformError', error: error, stackTrace: stack);

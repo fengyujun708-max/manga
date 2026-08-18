@@ -12,7 +12,7 @@ class BookshelfSync {
     if (userId.isEmpty) return false;
     final items = [item];
     final ok = await userApiSyncBookshelf(userId, items);
-    if (ok) logger.d('书架同步成功: ${item.get("comicId", "?")}');
+    if (ok) logger.d('书架同步成功: ${item["comicId"]?.toString() ?? "?"}');
     return ok;
   }
 

@@ -23,9 +23,11 @@ import 'package:mangaverse/page/about/view/about_page.dart' as _i1;
 import 'package:mangaverse/page/app_bootstrap_page.dart' as _i3;
 import 'package:mangaverse/page/bookshelf/view/bookshelf_page.dart' as _i5;
 import 'package:mangaverse/page/change_log_page.dart' as _i8;
-import 'package:mangaverse/page/comic_follow/view/comic_follow_page.dart' as _i9;
+import 'package:mangaverse/page/comic_follow/view/comic_follow_page.dart'
+    as _i9;
 import 'package:mangaverse/page/comic_info/view/comic_info.dart' as _i10;
-import 'package:mangaverse/page/comic_list/models/comic_list_scene.dart' as _i47;
+import 'package:mangaverse/page/comic_list/models/comic_list_scene.dart'
+    as _i47;
 import 'package:mangaverse/page/comic_list/view/comic_list_page.dart' as _i11;
 import 'package:mangaverse/page/comic_read/type/chapter_extern.dart' as _i49;
 import 'package:mangaverse/page/comic_read/view/comic_read.dart' as _i12;
@@ -37,38 +39,46 @@ import 'package:mangaverse/page/donwload_task/view/download_task.dart' as _i20;
 import 'package:mangaverse/page/download/models/unified_comic_download.dart'
     as _i51;
 import 'package:mangaverse/page/download/view/download.dart' as _i19;
-import 'package:mangaverse/page/font_setting/view/font_setting_page.dart' as _i21;
+import 'package:mangaverse/page/font_setting/view/font_setting_page.dart'
+    as _i21;
 import 'package:mangaverse/page/login_page.dart' as _i24;
 import 'package:mangaverse/page/more/view/more.dart' as _i25;
 import 'package:mangaverse/page/navigation_bar.dart' as _i26;
 import 'package:mangaverse/page/old_page/old_home/old_home_page.dart' as _i27;
-import 'package:mangaverse/page/old_page/old_ranking/old_ranking_page.dart' as _i28;
+import 'package:mangaverse/page/old_page/old_ranking/old_ranking_page.dart'
+    as _i28;
 import 'package:mangaverse/page/plugin_function/view/plugin_function_page.dart'
     as _i30;
 import 'package:mangaverse/page/plugin_settings/view/plugin_settings_page.dart'
     as _i31;
-import 'package:mangaverse/page/plugin_store/view/plugin_store_page.dart' as _i32;
+import 'package:mangaverse/page/plugin_store/view/plugin_store_page.dart'
+    as _i32;
 import 'package:mangaverse/page/search/cubit/search_cubit.dart' as _i55;
 import 'package:mangaverse/page/search/view/search_page.dart' as _i36;
 import 'package:mangaverse/page/search_aggregate/view/search_aggregate_result_page.dart'
     as _i35;
 import 'package:mangaverse/page/search_result/bloc/search_bloc.dart' as _i54;
 import 'package:mangaverse/page/search_result/search_result.dart' as _i56;
-import 'package:mangaverse/page/search_result/view/search_result_page.dart' as _i37;
+import 'package:mangaverse/page/search_result/view/search_result_page.dart'
+    as _i37;
 import 'package:mangaverse/page/setting/bookshelf/bookshelf_setting_page.dart'
     as _i6;
 import 'package:mangaverse/page/setting/cache/cache_setting_page.dart' as _i7;
-import 'package:mangaverse/page/setting/data_backup/data_backup_page.dart' as _i16;
+import 'package:mangaverse/page/setting/data_backup/data_backup_page.dart'
+    as _i16;
 import 'package:mangaverse/page/setting/global/app_behavior_setting_page.dart'
     as _i2;
-import 'package:mangaverse/page/setting/global/appearance_setting_page.dart' as _i4;
+import 'package:mangaverse/page/setting/global/appearance_setting_page.dart'
+    as _i4;
 import 'package:mangaverse/page/setting/global/content_network_setting_page.dart'
     as _i14;
 import 'package:mangaverse/page/setting/global/debug_setting_page.dart' as _i17;
 import 'package:mangaverse/page/setting/global/global_setting.dart' as _i23;
-import 'package:mangaverse/page/setting/global/storage_setting_page.dart' as _i39;
+import 'package:mangaverse/page/setting/global/storage_setting_page.dart'
+    as _i39;
 import 'package:mangaverse/page/setting/global/sync_setting_page.dart' as _i40;
-import 'package:mangaverse/page/setting/real_sr/real_sr_setting_page.dart' as _i34;
+import 'package:mangaverse/page/setting/real_sr/real_sr_setting_page.dart'
+    as _i34;
 import 'package:mangaverse/page/theme_color/view/theme_color_page.dart' as _i41;
 import 'package:mangaverse/page/webdav_sync/view/webdav_sync_page.dart' as _i42;
 import 'package:mangaverse/page/webview_page.dart' as _i43;

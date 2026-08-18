@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
                     '终极漫画阅读体验',
                     style: TextStyle(
                       fontSize: 13,
-                      color: MangaVerseColors.secondary,
+                      color: MangaVerseColors.mutedForeground,
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -118,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
                       key: ValueKey(_status),
                       style: TextStyle(
                         fontSize: 12,
-                        color: MangaVerseColors.secondary,
+                        color: MangaVerseColors.mutedForeground,
                       ),
                     ),
                   ),

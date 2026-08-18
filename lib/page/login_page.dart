@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mangaverse/config/router/router.gr.dart' as app_router;
 import 'package:mangaverse/service/auth_manager.dart';
 import 'package:mangaverse/service/user_api.dart';
+import 'package:mangaverse/widgets/toast.dart';
 import 'package:mangaverse/main.dart';
 
 @RoutePage()
@@ -56,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
         if (result["success"] == true) {
           showSuccessToast(_isRegister ? "注册成功" : "登录成功");
           if (widget.from != null) {
-            context.router.replaceNamed(widget.from!);
+            context.router.replacePath(widget.from!);
           } else {
             context.router.replace(const app_router.NavigationBar());
           }

@@ -521,9 +521,9 @@ class _ComicInfoState extends State<_ComicInfo>
           padding: EdgeInsets.symmetric(vertical: 24),
           child: Column(
             children: [
-              Icon(Icons.chat_bubble_outline, color: MangaVerseColors.secondary, size: 32),
+              Icon(Icons.chat_bubble_outline, color: MangaVerseColors.mutedForeground, size: 32),
               SizedBox(height: 8),
-              Text('还没有评论，快来抢沙发', style: TextStyle(color: MangaVerseColors.secondary, fontSize: 13)),
+              Text('还没有评论，快来抢沙发', style: TextStyle(color: MangaVerseColors.mutedForeground, fontSize: 13)),
             ],
           ),
         ),
@@ -545,7 +545,7 @@ class _ComicInfoState extends State<_ComicInfo>
               ),
             ),
             title: Text(c['content'] ?? '', style: TextStyle(fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
-            subtitle: Text(c['user'] ?? '匿名用户', style: TextStyle(fontSize: 11, color: MangaVerseColors.secondary)),
+            subtitle: Text(c['user'] ?? '匿名用户', style: TextStyle(fontSize: 11, color: MangaVerseColors.mutedForeground)),
           );
         },
       ),
@@ -570,7 +570,7 @@ class _ComicInfoState extends State<_ComicInfo>
             children: [
               Container(
                 width: 40, height: 4,
-                decoration: BoxDecoration(color: MangaVerseColors.secondary.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: MangaVerseColors.mutedForeground.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
               ),
               SizedBox(height: 12),
               Row(
@@ -589,11 +589,11 @@ class _ComicInfoState extends State<_ComicInfo>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.forum_outlined, size: 48, color: MangaVerseColors.secondary),
+                      Icon(Icons.forum_outlined, size: 48, color: MangaVerseColors.mutedForeground),
                       SizedBox(height: 12),
-                      Text('评论功能开发中', style: TextStyle(color: MangaVerseColors.secondary, fontSize: 14)),
+                      Text('评论功能开发中', style: TextStyle(color: MangaVerseColors.mutedForeground, fontSize: 14)),
                       SizedBox(height: 4),
-                      Text('连接服务器评论系统后即可使用', style: TextStyle(color: MangaVerseColors.secondary.withOpacity(0.6), fontSize: 12)),
+                      Text('连接服务器评论系统后即可使用', style: TextStyle(color: MangaVerseColors.mutedForeground.withOpacity(0.6), fontSize: 12)),
                     ],
                   ),
                 ),

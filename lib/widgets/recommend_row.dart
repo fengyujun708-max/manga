@@ -53,7 +53,7 @@ class RecommendedRow extends StatelessWidget {
                   subtitle!,
                   style: TextStyle(
                     fontSize: 12,
-                    color: MangaVerseColors.secondary,
+                    color: MangaVerseColors.mutedForeground,
                   ),
                 ),
             ],
@@ -137,7 +137,7 @@ class _RecommendCard extends StatelessWidget {
                   height: 190,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: MangaVerseColors.card,
+                    color: MangaVerseColors.surface,
                     image: item.coverUrl.isNotEmpty
                         ? DecorationImage(
                             image: NetworkImage(item.coverUrl),
@@ -149,7 +149,7 @@ class _RecommendCard extends StatelessWidget {
                       ? Center(
                           child: Icon(
                             Icons.auto_stories,
-                            color: MangaVerseColors.secondary,
+                            color: MangaVerseColors.mutedForeground,
                             size: 32,
                           ),
                         )
