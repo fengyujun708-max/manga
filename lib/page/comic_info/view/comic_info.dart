@@ -109,6 +109,8 @@ class _ComicInfoState extends State<_ComicInfo>
   bool _isLocalCollected = false;
   String _localCollectSyncedFor = '';
   bool _followSyncedForCurrentInfo = false;
+  int _commentCount = 0;
+  List<Map<String, dynamic>> _sampleComments = [];
 
   @override
   void initState() {
@@ -479,6 +481,17 @@ class _ComicInfoState extends State<_ComicInfo>
                           ),
                         ),
                     ],
+                    _buildDivider(context),
+                    _SectionCard(
+                      title: '评论 (${_commentCount})',
+                      trailing: TextButton(
+                        onPressed: () => _openComments(context),
+                        child: Text('发表评论',
+                            style: TextStyle(
+                                color: MangaVerseColors.accent, fontSize: 13)),
+                      ),
+                      child: _buildCommentPreview(context),
+                    ),
                   ],
                 ),
               ),
@@ -496,6 +509,98 @@ class _ComicInfoState extends State<_ComicInfo>
         height: 1,
         thickness: 0.5,
         color: MangaVerseColors.border,
+      ),
+    );
+  }
+
+  Widget _buildCommentPreview(BuildContext context) {
+    if (_sampleComments.isEmpty) {
+      return GestureDetector(
+        onTap: () => _openComments(context),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            children: [
+              Icon(Icons.chat_bubble_outline, color: MangaVerseColors.secondary, size: 32),
+              SizedBox(height: 8),
+              Text('还没有评论，快来抢沙发', style: TextStyle(color: MangaVerseColors.secondary, fontSize: 13)),
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(
+      children: List.generate(
+        _sampleComments.take(3).length,
+        (i) {
+          final c = _sampleComments[i];
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: CircleAvatar(
+              radius: 16,
+              backgroundColor: MangaVerseColors.accent.withOpacity(0.2),
+              child: Text(
+                (c['user']?.toString().isNotEmpty == true ? c['user'][0] : 'U').toUpperCase(),
+                style: TextStyle(color: MangaVerseColors.accent, fontSize: 12),
+              ),
+            ),
+            title: Text(c['content'] ?? '', style: TextStyle(fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+            subtitle: Text(c['user'] ?? '匿名用户', style: TextStyle(fontSize: 11, color: MangaVerseColors.secondary)),
+          );
+        },
+      ),
+    );
+  }
+
+  void _openComments(BuildContext context) {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, controller) => Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: MangaVerseColors.secondary.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
+              ),
+              SizedBox(height: 12),
+              Row(
+                children: [
+                  Text('评论', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.forum_outlined, size: 48, color: MangaVerseColors.secondary),
+                      SizedBox(height: 12),
+                      Text('评论功能开发中', style: TextStyle(color: MangaVerseColors.secondary, fontSize: 14)),
+                      SizedBox(height: 4),
+                      Text('连接服务器评论系统后即可使用', style: TextStyle(color: MangaVerseColors.secondary.withOpacity(0.6), fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
