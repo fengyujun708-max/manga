@@ -106,14 +106,14 @@ jobs:
         id: build
         continue-on-error: true
         run: |
-          fvm flutter build apk --debug --target-platform=android-arm64 -v 2>&1 | tee build.log && echo "BUILD_SUCCESS=true" >> $GITHUB_ENV
+          fvm flutter build apk --debug --target-platform=android-arm64 --no-watch-file -v 2>&1 | tee build.log && echo "BUILD_SUCCESS=true" >> $GITHUB_ENV
 
       - name: 重试构建 (如首次失败)
         if: env.BUILD_SUCCESS != 'true'
         run: |
           echo "首次构建失败，执行 flutter clean 后重试..."
           fvm flutter clean
-          fvm flutter build apk --debug --target-platform=android-arm64 -v 2>&1 | tee -a build.log
+          fvm flutter build apk --debug --target-platform=android-arm64 --no-watch-file -v 2>&1 | tee -a build.log
 
       - name: 上传构建日志
         if: always()
