@@ -50,7 +50,11 @@ class MainActivity: FlutterFragmentActivity() {
     private var pendingFilePickerDestPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        initRustlsPlatformVerifier(applicationContext)
+        try {
+            initRustlsPlatformVerifier(applicationContext)
+        } catch (e: UnsatisfiedLinkError) {
+            Log.w(TAG, "rustls-platform-verifier not available: ${e.message}")
+        }
         super.onCreate(savedInstanceState)
     }
 
