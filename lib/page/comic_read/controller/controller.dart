@@ -3,5 +3,6 @@ export 'package:mangaverse/page/comic_read/controller/reader_auto_read_controlle
 export 'package:mangaverse/page/comic_read/controller/reader_history_controller.dart';
 export 'package:mangaverse/page/comic_read/controller/reader_input_controller.dart';
 export 'package:mangaverse/page/comic_read/controller/reader_lifecycle_controller.dart';
+export 'package:mangaverse/page/comic_read/controller/reader_smart_prefetch.dart';
 export 'package:mangaverse/page/comic_read/controller/reader_system_ui_controller.dart';
 export 'package:mangaverse/page/comic_read/controller/reader_volume_controller.dart';
