@@ -16,9 +16,9 @@ class RecommendService {
         'uid': uid,
         'limit': limit.toString(),
       });
-      final response = await fetch(uri.toString());
-      if (response.status == 200) {
-        final data = jsonDecode(response.text);
+      final response = await windHttp.get(uri.toString());
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         final list = data['recommendations'] as List? ?? [];
         return list.map((e) => RecommendItem.fromJson(e)).toList();
       }
@@ -38,9 +38,9 @@ class RecommendService {
         'limit': limit.toString(),
         'page': page.toString(),
       });
-      final response = await fetch(uri.toString());
-      if (response.status == 200) {
-        final data = jsonDecode(response.text);
+      final response = await windHttp.get(uri.toString());
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         final list = data['hot'] as List? ?? [];
         return list.map((e) => RecommendItem.fromJson(e)).toList();
       }
@@ -57,9 +57,9 @@ class RecommendService {
         'comic_id': comicId,
         'limit': limit.toString(),
       });
-      final response = await fetch(uri.toString());
-      if (response.status == 200) {
-        final data = jsonDecode(response.text);
+      final response = await windHttp.get(uri.toString());
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         final list = data['related'] as List? ?? [];
         return list.map((e) => RecommendItem.fromJson(e)).toList();
       }
@@ -77,7 +77,7 @@ class RecommendService {
         'comic_id': comicId,
         'action': action,
       });
-      await fetch(uri.toString(), method: 'POST');
+      await windHttp.post(uri.toString());
     } catch (e) {
       // 静默失败
     }
