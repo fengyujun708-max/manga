@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
-const bcrypt = require('bcryptjs');
+import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 import { User, UserRole, UserStatus, UserSession, VerificationCode, LoginSession } from '../user/entities/user.entity';
@@ -87,11 +87,7 @@ export class AuthService {
     const existing = await this.userRepo.findOneBy({ phone });
     if (existing) throw new ConflictException('手机号已注册');
 
-    const passwordHash = await bcrypt.hash(password, {
-      memoryCost: 19456,
-      timeCost: 2,
-      parallelism: 1,
-    });
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await this.userRepo.save({
       phone,
@@ -170,7 +166,7 @@ export class AuthService {
 
     await this.sessionRepo.save({
       userId: user.id,
-      refreshToken: await argon2.hash(refreshToken),
+      refreshToken: await bcrypt.hash(refreshToken, 10),
       deviceId: 'default',
       expiresAt,
     });
@@ -228,7 +224,7 @@ export class AuthService {
     const valid = await this.verifyCode(phone, code, 'reset_password');
     if (!valid) throw new BadRequestException('验证码错误');
 
-    const passwordHash = await bcrypt.hash(newPassword, { type: argon2.argon2id });
+    const passwordHash = await bcrypt.hash(newPassword, 10);
     await this.userRepo.update({ phone }, { passwordHash });
     // 踢出所有设备
     const user = await this.userRepo.findOneBy({ phone });
@@ -245,7 +241,7 @@ export class AuthService {
     const valid = await bcrypt.compare(user.passwordHash, oldPassword);
     if (!valid) throw new BadRequestException('旧密码错误');
 
-    const passwordHash = await bcrypt.hash(newPassword, { type: argon2.argon2id });
+    const passwordHash = await bcrypt.hash(newPassword, 10);
     await this.userRepo.update(userId, { passwordHash });
   }
 

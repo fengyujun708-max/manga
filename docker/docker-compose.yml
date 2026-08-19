@@ -5,10 +5,9 @@ services:
     image: nginx:alpine
     ports:
       - '80:80'
-      - '443:443'
     volumes:
       - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - api
     networks:
@@ -76,19 +75,6 @@ services:
     volumes:
       - redisdata:/data
     command: redis-server --appendonly yes
-    networks:
-      - manjie-net
-    restart: unless-stopped
-
-  source-sync:
-    build:
-      context: ./apps/worker
-      dockerfile: Dockerfile
-    env_file: .env
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - postgres
     networks:
       - manjie-net
     restart: unless-stopped

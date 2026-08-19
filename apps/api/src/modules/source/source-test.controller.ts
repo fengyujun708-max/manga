@@ -5,7 +5,7 @@ import { RolesGuard } from '../../common/guards/auth.guard';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SourceRegistry } from '../community/entities/community.entity';
+import { SourceRegistry } from '../community/entities/source-registry.entity';
 
 @Injectable()
 export class SourceTestService {

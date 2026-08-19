@@ -56,31 +56,3 @@ class AppTheme {
     ),
   );
 }
-
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'theme.dart';
-
-class AppShell extends StatelessWidget {
-  final Widget child;
-  const AppShell({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: _buildBottomNav(context),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    final int currentIndex = switch (location) {
-      '/home' => 0,
-      '/discover' => 1,
-      '/library' => 2,
-      '/community' => 3,
-      '/profile' => 4,
-      _ => 0,
-    };
-

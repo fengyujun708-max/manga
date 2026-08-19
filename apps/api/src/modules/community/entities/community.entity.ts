@@ -221,51 +221,6 @@ export class SourceRequest {
 // ====== 源注册表 ======
 
 @Entity('source_registry')
-export class SourceRegistry {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ type: 'varchar', length: 100, unique: true })
-  sourceId: string;
-
-  @Column({ type: 'varchar', length: 200 })
-  name: string;
-
-  @Column({ type: 'text', nullable: true })
-  description: string;
-
-  @Column({ type: 'varchar', length: 100 })
-  version: string;
-
-  @Column({ type: 'varchar', length: 500 })
-  downloadUrl: string;
-
-  @Column({ type: 'varchar', length: 64 })
-  sha256: string;
-
-  @Column({ type: 'varchar', length: 20, default: 'active' })
-  status: string; // 'active' | 'inactive' | 'deprecated' | 'blocked'
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  minAppVersion: string;
-
-  @Column({ type: 'int', default: 0 })
-  downloadCount: number;
-
-  @Column({ type: 'json', nullable: true })
-  metadata: Record<string, any>;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-}
-
-// ====== 通知 ======
-
-@Entity('notifications')
-@Index(['userId', 'isRead'])
 export class Notification {
   @PrimaryGeneratedColumn('uuid')
   id: string;

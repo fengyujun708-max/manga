@@ -4,7 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SourceController } from './source.controller';
 import { SourceService } from './source.service';
-import { SourceRegistry } from '../community/entities/community.entity';
+import { SourceRegistry } from '../community/entities/source-registry.entity';
 import { SourceSyncLog } from '../community/entities/source-sync-log.entity';
 
 @Module({

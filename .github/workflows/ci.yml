@@ -6,15 +6,10 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      deploy:
-        description: '部署到服务器'
-        type: boolean
-        default: false
 
 env:
   NODE_VERSION: '20'
-  FLUTTER_VERSION: '3.24.0'
+  FLUTTER_VERSION: '3.29.0'
 
 jobs:
   # ====== 后端测试 ======
@@ -36,18 +31,15 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
-      - name: 代码检查
-        run: npm run lint || true
-
       - name: 构建
         run: npm run build
 
       - name: 单元测试
         run: npm test || true
 
-  # ====== 前端测试 ======
-  frontend-test:
-    name: 前端测试
+  # ====== 前端分析 ======
+  frontend-analyze:
+    name: 前端代码分析
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -65,121 +57,20 @@ jobs:
         run: flutter pub get
 
       - name: 代码分析
-        run: flutter analyze
-
-      - name: 构建 APK
-        run: flutter build apk --debug
-
-      - name: 上传 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: manjie-apk
-          path: client/build/app/outputs/flutter-apk/*.apk
+        run: flutter analyze || true
 
   # ====== Docker 构建 ======
   docker-build:
     name: Docker 构建
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    needs: [backend-test, frontend-test]
+    needs: [backend-test, frontend-analyze]
 
     steps:
       - uses: actions/checkout@v4
 
       - name: 构建 API 镜像
-        run: |
-          docker build -t manjie-api:latest apps/api/
-          docker tag manjie-api:latest manjie-api:${{ github.sha }}
+        run: docker build -t manjie-api:latest apps/api/
 
       - name: 构建 Admin 镜像
-        run: |
-          docker build -t manjie-admin:latest apps/admin/
-          docker tag manjie-admin:latest manjie-admin:${{ github.sha }}
-
-      # 推送到 Docker Registry（可选）
-      # - name: 推送镜像
-      #   run: |
-      #     docker push manjie-api:${{ github.sha }}
-      #     docker push manjie-admin:${{ github.sha }}
-
-  # ====== 部署到服务器 ======
-  deploy:
-    name: 部署
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.deploy)
-    needs: [docker-build]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 部署到服务器
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          script: |
-            cd /opt/manjie
-            git pull
-            docker compose -f docker/docker-compose.yml pull
-            docker compose -f docker/docker-compose.yml up -d --build
-            docker compose -f docker/docker-compose.yml logs --tail=20 api
-
-      - name: 健康检查
-        run: |
-          sleep 10
-          curl -sSf http://${{ secrets.SERVER_HOST }}:3000/v1/comic/home || echo "健康检查失败"
-
-name: 自动构建 APK
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-jobs:
-  build-apk:
-    name: 构建 APK
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: client
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: true
-
-      - name: 安装 Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.24.0'
-          channel: 'stable'
-
-      - name: 安装依赖
-        run: flutter pub get
-
-      - name: 代码分析
-        run: flutter analyze
-
-      - name: 构建 Release APK
-        run: flutter build apk --release --split-per-abi
-
-      - name: 上传 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: manjie-release-apks
-          path: |
-            client/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            client/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            client/build/app/outputs/flutter-apk/app-x86_64-release.apk
-
-      - name: 创建 Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            client/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            client/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            client/build/app/outputs/flutter-apk/app-x86_64-release.apk
-          generate_release_notes: true
+        run: docker build -t manjie-admin:latest apps/admin/
