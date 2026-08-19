@@ -98,7 +98,7 @@ class _ManjieTextFieldState extends State<ManjieTextField> {
               borderSide: const BorderSide(color: Colors.red),
             ),
             labelStyle: const TextStyle(color: AppTheme.textSecondary),
-            hintStyle: const TextStyle(color: AppTheme.textSecondary.withOpacity(0.5)),
+            hintStyle: TextStyle(color: AppTheme.textSecondary.withOpacity(0.5)),
           ),
         ),
         if (widget.validator != null)

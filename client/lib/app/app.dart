@@ -13,7 +13,6 @@ import '../features/sources/view/source_market_page.dart';
 import '../features/search/view/search_page.dart';
 import '../features/comic/view/comic_detail_page.dart';
 import '../features/settings/view/settings_page.dart';
-import '../features/community/view/community_page.dart';
 import '../features/request/view/request_page.dart';
 import 'router/app_shell.dart';
 import 'theme/theme.dart';

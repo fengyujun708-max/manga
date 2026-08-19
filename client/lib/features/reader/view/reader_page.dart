@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter/services.dart';
 import '../models/reader_models.dart';
 import '../widgets/modes/reader_modes.dart';

@@ -206,8 +206,6 @@ class _SliderRow extends StatelessWidget {
   }
 }
 
-import 'package:flutter/material.dart';
-import '../models/reader_models.dart';
 
 class ReaderOverlay extends StatelessWidget {
   final int currentPage;

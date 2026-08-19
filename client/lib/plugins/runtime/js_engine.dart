@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 class QuickJSEngine {
   bool _initialized = false;
   final Map<String, dynamic> _globals = {};
-  final Map<String, Function> _hostFunctions = {};
+  final Map<String, dynamic> _hostFunctions = {};
 
   /// 初始化 JS 运行时
   Future<void> initialize() async {
@@ -132,7 +132,7 @@ class QuickJSEngine {
       'setItem': (String key, String value) => storage[key] = value,
       'removeItem': (String key) => storage.remove(key),
       'clear': () => storage.clear(),
-      'get length' => storage.length,
+      'length': storage.length,
       'key': (int index) => storage.keys.elementAt(index),
     };
   }

@@ -185,8 +185,8 @@ class _SourceMarketTab extends StatelessWidget {
               const SizedBox(height: 16),
               TextButton(onPressed: () => context.read<SourceBloc>().add(SourceMarketLoadRequested()), child: const Text('加载源市场')),
             ],
-          );
-        }
+          ),
+        );
       },
     );
   }

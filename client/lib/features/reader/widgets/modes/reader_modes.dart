@@ -164,9 +164,6 @@ class _PageImageState extends State<_PageImage> {
   }
 }
 
-import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../../models/reader_models.dart';
 
 class SinglePageMode extends StatefulWidget {
   final List<String> pageUrls;

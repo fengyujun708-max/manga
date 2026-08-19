@@ -209,7 +209,7 @@ class _ComicGridItem extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(comic.title.substring(0, 1),
-                      style: const TextStyle(fontSize: 32, color: AppTheme.textSecondary.withOpacity(0.3))),
+                      style: TextStyle(fontSize: 32, color: AppTheme.textSecondary.withOpacity(0.3))),
                   ),
                 ),
                 if (comic.hasUpdate)
@@ -272,7 +272,7 @@ class _ComicListItem extends StatelessWidget {
               border: Border.all(color: AppTheme.divider.withOpacity(0.3)),
             ),
             child: Center(child: Text(comic.title.substring(0, 1),
-              style: const TextStyle(fontSize: 24, color: AppTheme.textSecondary.withOpacity(0.3)))),
+              style: TextStyle(fontSize: 24, color: AppTheme.textSecondary.withOpacity(0.3)))),
           ),
           const SizedBox(width: 12),
           // 信息

@@ -174,7 +174,7 @@ class SourceManager {
   /// 测试源
   Future<SourceTestResult> testSource(String sourceId) async {
     if (!_manifests.containsKey(sourceId)) {
-      return SourceTestResult.failed('源不存在');
+      return SourceTestResult.failed('源不存在', Duration.zero);
     }
 
     final manifest = _manifests[sourceId]!;
@@ -229,9 +229,7 @@ class SourceManager {
   /// 获取源测试缓存
   SourceTestResult? getTestCache(String sourceId) => _testCache[sourceId];
 
-  void _eventController.add(SourceManagerEvent event) {
-    // 事件分发
-  }
+
 
   void dispose() {
     _jsEngine.dispose();

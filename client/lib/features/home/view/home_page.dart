@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/theme.dart';
 import '../../../app/components/manjie_comic_card.dart';
-import '../../../app/components/manjie_section_header.dart';
+import '../../../core/network/api_client.dart';
 import '../bloc/home_bloc.dart';
 
 class HomePage extends StatelessWidget {
@@ -49,9 +49,10 @@ class HomePage extends StatelessWidget {
                 else
                   const SliverToBoxAdapter(child: SizedBox()),
               ],
-            ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -59,13 +60,9 @@ class HomePage extends StatelessWidget {
     final homeData = state.homeData;
     return SliverList(
       delegate: SliverChildListDelegate([
-        // Hero Banner
         if (homeData.banner.isNotEmpty)
           _HeroBanner(banner: homeData.banner.first),
-
-        // Sections
         ...homeData.sections.map((section) => _buildSection(context, section)).toList(),
-
         const SizedBox(height: 80),
       ]),
     );
@@ -96,6 +93,35 @@ class HomePage extends StatelessWidget {
   }
 }
 
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final VoidCallback? onSeeAll;
+  const _SectionHeader({required this.title, this.onSeeAll});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+      child: Row(
+        children: [
+          Container(
+            width: 4, height: 20,
+            decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(width: 8),
+          Text(title, style: Theme.of(context).textTheme.titleLarge),
+          const Spacer(),
+          if (onSeeAll != null)
+            TextButton(
+              onPressed: onSeeAll,
+              child: Text('查看全部 →', style: TextStyle(color: AppTheme.primary)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _HeroBanner extends StatelessWidget {
   final BannerItem banner;
   const _HeroBanner({required this.banner});
@@ -117,7 +143,8 @@ class _HeroBanner extends StatelessWidget {
         children: [
           Positioned(
             right: -40, top: -40,
-            child: Container(width: 200, height: 200,
+            child: Container(
+              width: 200, height: 200,
               decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.05)),
             ),
           ),
@@ -155,12 +182,22 @@ class _HeroBanner extends StatelessWidget {
                 ],
                 const SizedBox(height: 16),
                 Row(children: [
-                  ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.play_arrow), label: const Text('开始阅读'),
-                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  ElevatedButton.icon(
+                    onPressed: () {}, icon: const Icon(Icons.play_arrow), label: const Text('开始阅读'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.bookmark_border), label: const Text('收藏'),
-                    style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54), padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  OutlinedButton.icon(
+                    onPressed: () {}, icon: const Icon(Icons.bookmark_border), label: const Text('收藏'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white54),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                 ]),
               ],

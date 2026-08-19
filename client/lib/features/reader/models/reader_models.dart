@@ -116,7 +116,6 @@ class ReaderState {
   }
 }
 
-import 'package:flutter/material.dart';
 
 class ReaderTheme {
   static const bgColors = [
