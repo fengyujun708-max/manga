@@ -5,7 +5,7 @@ import '../../../app/theme/theme.dart';
 import '../../../app/components/manjie_button.dart';
 import '../../../app/components/manjie_card.dart';
 import '../../../app/components/manjie_toast.dart';
-import '../../../plugins/manga_source.dart';
+import '../../../plugins/manga_source.dart' hide SourceManager;
 import '../../../plugins/runtime/js_engine.dart';
 import '../bloc/source_bloc.dart';
 import '../bloc/source_event.dart';
