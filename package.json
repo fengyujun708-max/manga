@@ -1,0 +1,28 @@
+{
+  "name": "manjie",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "client"
+  ],
+  "scripts": {
+    "dev:api": "cd apps/api && npm run start:dev",
+    "dev:worker": "cd apps/worker && npm run start:dev",
+    "dev:admin": "cd apps/admin && npm run dev",
+    "dev:client": "cd client && flutter run",
+    "build:api": "cd apps/api && npm run build",
+    "build:worker": "cd apps/worker && npm run build",
+    "build:admin": "cd apps/admin && npm run build",
+    "build:client": "cd client && flutter build apk",
+    "docker:build": "docker compose -f docker/docker-compose.yml build",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "db:migrate": "cd apps/api && npm run migration:run",
+    "db:seed": "cd apps/api && npm run seed"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}
