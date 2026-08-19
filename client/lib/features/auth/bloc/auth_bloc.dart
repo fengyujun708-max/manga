@@ -19,24 +19,23 @@ class AuthLoginRequested extends AuthEvent {
 
 class AuthRegisterRequested extends AuthEvent {
   final String phone;
-  final String code;
   final String password;
+  final String confirmPassword;
   final String nickname;
-  const AuthRegisterRequested(this.phone, this.code, this.password, this.nickname);
-  @override List<Object?> get props => [phone, code, password, nickname];
+  final String captchaId;
+  final String captchaAnswer;
+  const AuthRegisterRequested({
+    required this.phone,
+    required this.password,
+    required this.confirmPassword,
+    required this.nickname,
+    required this.captchaId,
+    required this.captchaAnswer,
+  });
+  @override List<Object?> get props => [phone, password, confirmPassword, nickname, captchaId, captchaAnswer];
 }
 
-class AuthSmsLoginRequested extends AuthEvent {
-  final String phone;
-  final String code;
-  const AuthSmsLoginRequested(this.phone, this.code);
-  @override List<Object?> get props => [phone, code];
-}
 
-class AuthSendCodeRequested extends AuthEvent {
-  final String phone;
-  const AuthSendCodeRequested(this.phone);
-  @override List<Object?> get props => [phone];
 }
 
 class AuthLogoutRequested extends AuthEvent {}
@@ -73,8 +72,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCheckRequested>(_onCheck);
     on<AuthLoginRequested>(_onLogin);
     on<AuthRegisterRequested>(_onRegister);
-    on<AuthSmsLoginRequested>(_onSmsLogin);
-    on<AuthSendCodeRequested>(_onSendCode);
     on<AuthLogoutRequested>(_onLogout);
   }
 
@@ -114,48 +111,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final res = await apiClient.post('/auth/register', data: {
         'phone': event.phone,
-        'code': event.code,
         'password': event.password,
+        'confirmPassword': event.confirmPassword,
         'nickname': event.nickname,
+        'captchaId': event.captchaId,
+        'captchaAnswer': event.captchaAnswer,
       });
       final data = res.data;
       await apiClient.setTokens(data['accessToken'], data['refreshToken']);
+      await storage.write('user_id', data['user']['id']);
       emit(AuthAuthenticated(
         userId: data['user']['id'],
         phone: data['user']['phone'],
         nickname: data['user']['nickname'],
       ));
     } catch (e) {
-      emit(AuthError('注册失败'));
+      final msg = e.toString();
+      if (msg.contains('密码不一致')) {
+        emit(AuthError('两次密码输入不一致'));
+      } else if (msg.contains('验证码错误')) {
+        emit(AuthError('验证码错误，请重新输入'));
+      } else {
+        emit(AuthError('注册失败，请检查信息'));
+      }
     }
   }
 
-  Future<void> _onSmsLogin(AuthSmsLoginRequested event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-    try {
-      final res = await apiClient.post('/auth/sms-login', data: {
-        'phone': event.phone,
-        'code': event.code,
-      });
-      final data = res.data;
-      await apiClient.setTokens(data['accessToken'], data['refreshToken']);
-      emit(AuthAuthenticated(
-        userId: data['user']['id'],
-        phone: data['user']['phone'],
-        nickname: data['user']['nickname'],
-      ));
-    } catch (e) {
-      emit(AuthError('验证码登录失败'));
-    }
-  }
-
-  Future<void> _onSendCode(AuthSendCodeRequested event, Emitter<AuthState> emit) async {
-    try {
-      await apiClient.post('/auth/send-code', data: {'phone': event.phone});
-    } catch (e) {
-      emit(AuthError('发送验证码失败'));
-    }
-  }
 
   Future<void> _onLogout(AuthLogoutRequested event, Emitter<AuthState> emit) async {
     await apiClient.clearTokens();

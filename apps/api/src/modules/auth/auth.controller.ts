@@ -1,33 +1,60 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Ip, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, Ip, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { CaptchaService } from './captcha.service';
 import { Public, CurrentUser } from '../../common/guards/auth.guard';
 import { JwtAuthGuard } from '../../common/guards/auth.guard';
-import {
-  SendCodeDto, VerifyCodeDto, RegisterDto, LoginDto,
-  SmsLoginDto, RefreshTokenDto, ResetPasswordDto, ChangePasswordDto,
-} from './dto/auth.dto';
+import { IsString, MinLength, MaxLength, Length, Matches } from 'class-validator';
+
+class RegisterDto {
+  @IsString()
+  @Matches(/^1[3-9]\d{9}$/, { message: '手机号格式不正确' })
+  phone: string;
+
+  @IsString() @MinLength(8) @MaxLength(32) password: string;
+  @IsString() confirmPassword: string;
+  @IsString() @MinLength(1) @MaxLength(50) nickname: string;
+
+  @IsString() captchaId: string;
+  @IsString() @Length(4, 4) captchaAnswer: string;
+}
+
+class LoginDto {
+  @IsString() phone: string;
+  @IsString() password: string;
+}
+
+class RefreshTokenDto {
+  @IsString() refreshToken: string;
+}
+
+class ChangePasswordDto {
+  @IsString() oldPassword: string;
+  @IsString() @MinLength(8) @MaxLength(32) newPassword: string;
+}
 
 @ApiTags('认证')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private captchaService: CaptchaService,
+  ) {}
 
   @Public()
-  @Post('send-code')
-  @ApiOperation({ summary: '发送验证码' })
-  @HttpCode(HttpStatus.OK)
-  async sendCode(@Body() dto: SendCodeDto) {
-    await this.authService.sendCode(dto.phone);
-    return { message: '验证码已发送' };
+  @Get('captcha')
+  @ApiOperation({ summary: '获取图片验证码' })
+  async getCaptcha() {
+    const captcha = await this.captchaService.generate();
+    return { id: captcha.id, svg: captcha.svg };
   }
 
   @Public()
   @Post('register')
-  @ApiOperation({ summary: '注册' })
+  @ApiOperation({ summary: '注册（需图片验证码）' })
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: RegisterDto, @Ip() ip: string) {
-    return this.authService.register(dto.phone, dto.code, dto.password, dto.nickname);
+    return this.authService.register(dto.phone, dto.password, dto.confirmPassword, dto.nickname, dto.captchaId, dto.captchaAnswer);
   }
 
   @Public()
@@ -36,14 +63,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto, @Ip() ip: string) {
     return this.authService.login(dto.phone, dto.password, ip);
-  }
-
-  @Public()
-  @Post('sms-login')
-  @ApiOperation({ summary: '验证码登录' })
-  @HttpCode(HttpStatus.OK)
-  async smsLogin(@Body() dto: SmsLoginDto, @Ip() ip: string) {
-    return this.authService.smsLogin(dto.phone, dto.code, ip);
   }
 
   @Public()
@@ -72,15 +91,6 @@ export class AuthController {
   async logoutAll(@CurrentUser('id') userId: string) {
     await this.authService.logoutAllDevices(userId);
     return { message: '已退出所有设备' };
-  }
-
-  @Public()
-  @Post('reset-password')
-  @ApiOperation({ summary: '重置密码' })
-  @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body() dto: ResetPasswordDto) {
-    await this.authService.resetPassword(dto.phone, dto.code, dto.newPassword);
-    return { message: '密码已重置' };
   }
 
   @UseGuards(JwtAuthGuard)

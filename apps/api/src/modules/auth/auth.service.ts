@@ -1,6 +1,6 @@
 import {
   Injectable, UnauthorizedException, BadRequestException,
-  ConflictException, Inject, Logger,
+  ConflictException, Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -10,7 +10,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
-import { User, UserRole, UserStatus, UserSession, VerificationCode, LoginSession } from '../user/entities/user.entity';
+import { User, UserRole, UserStatus, UserSession, LoginSession } from '../user/entities/user.entity';
+import { CaptchaService } from './captcha.service';
 
 @Injectable()
 export class AuthService {
@@ -21,67 +22,28 @@ export class AuthService {
     private userRepo: Repository<User>,
     @InjectRepository(UserSession)
     private sessionRepo: Repository<UserSession>,
-    @InjectRepository(VerificationCode)
-    private verifyCodeRepo: Repository<VerificationCode>,
     @InjectRepository(LoginSession)
     private loginSessionRepo: Repository<LoginSession>,
     private jwtService: JwtService,
     private config: ConfigService,
+    private captchaService: CaptchaService,
   ) {}
 
-  // ====== 验证码 ======
+  // ====== 注册（图片验证码） ======
 
-  async sendCode(phone: string): Promise<void> {
-    // 频率限制检查 (简化：实际应使用 Redis)
-    const recent = await this.verifyCodeRepo.findOne({
-      where: { phone, purpose: 'register' },
-      order: { createdAt: 'DESC' },
-    });
-    if (recent) {
-      const elapsed = (Date.now() - recent.createdAt.getTime()) / 1000;
-      if (elapsed < 60) {
-        throw new BadRequestException('请 60 秒后再试');
-      }
+  async register(phone: string, password: string, confirmPassword: string, nickname: string, captchaId: string, captchaAnswer: string) {
+    // 密码一致性校验
+    if (password !== confirmPassword) {
+      throw new BadRequestException('两次密码输入不一致');
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-    await this.verifyCodeRepo.save({
-      phone,
-      code,
-      purpose: 'register',
-      expiresAt,
-    });
-
-    // TODO: 接入阿里云 SMS
-    this.logger.log(`[DEV] 验证码 ${code} 发送到 ${phone}`);
-  }
-
-  async verifyCode(phone: string, code: string, purpose: string): Promise<boolean> {
-    const record = await this.verifyCodeRepo.findOne({
-      where: { phone, code, purpose, isUsed: false },
-      order: { createdAt: 'DESC' },
-    });
-
-    if (!record) return false;
-    if (record.expiresAt < new Date()) {
-      throw new BadRequestException('验证码已过期');
-    }
-    if (record.attemptCount >= 5) {
-      throw new BadRequestException('验证码错误次数过多');
+    // 手机号格式校验
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
+      throw new BadRequestException('手机号格式不正确（需要11位手机号）');
     }
 
-    record.attemptCount += 1;
-    record.isUsed = true;
-    await this.verifyCodeRepo.save(record);
-    return true;
-  }
-
-  // ====== 注册 ======
-
-  async register(phone: string, code: string, password: string, nickname: string) {
-    const valid = await this.verifyCode(phone, code, 'register');
+    // 验证码校验
+    const valid = await this.captchaService.verify(captchaId, captchaAnswer);
     if (!valid) throw new BadRequestException('验证码错误');
 
     const existing = await this.userRepo.findOneBy({ phone });

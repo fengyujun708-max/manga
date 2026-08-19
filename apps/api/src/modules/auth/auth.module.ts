@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { CaptchaService } from './captcha.service';
 import { JwtStrategy, JwtRefreshStrategy } from './strategies/jwt.strategy';
 import { User } from '../user/entities/user.entity';
 import { UserSession, VerificationCode, LoginSession } from '../user/entities/user.entity';
@@ -24,7 +25,7 @@ import { UserSession, VerificationCode, LoginSession } from '../user/entities/us
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
-  exports: [AuthService, JwtModule],
+  providers: [AuthService, CaptchaService, JwtStrategy, JwtRefreshStrategy],
+  exports: [AuthService, CaptchaService, JwtModule],
 })
 export class AuthModule {}
