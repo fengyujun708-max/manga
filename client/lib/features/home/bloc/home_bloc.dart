@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../core/network/api_client.dart';
-import '../../models/comic_model.dart';
+import '../../../core/network/api_client.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../app/theme/theme.dart';
-import '../../app/components/manjie_chip.dart';
-import '../../app/components/manjie_shimmer.dart';
+import '../../../app/theme/theme.dart';
+import '../../../app/components/manjie_chip.dart';
+import '../../../app/components/manjie_shimmer.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../app/theme/theme.dart';
-import '../../app/components/manjie_card.dart';
-import '../../app/components/manjie_avatar.dart';
-import '../../app/components/manjie_button.dart';
-import '../../app/components/manjie_toast.dart';
+import '../../../app/theme/theme.dart';
+import '../../../app/components/manjie_card.dart';
+import '../../../app/components/manjie_avatar.dart';
+import '../../../app/components/manjie_button.dart';
+import '../../../app/components/manjie_toast.dart';
 
 class CommunityPage extends StatefulWidget {
   const CommunityPage({super.key});

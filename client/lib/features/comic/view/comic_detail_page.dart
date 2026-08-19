@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../app/theme/theme.dart';
-import '../../app/components/manjie_button.dart';
-import '../../app/components/manjie_toast.dart';
-import '../reader/view/reader_page.dart';
-import '../reader/models/reader_models.dart';
+import '../../../app/theme/theme.dart';
+import '../../../app/components/manjie_button.dart';
+import '../../../app/components/manjie_toast.dart';
+import '../../reader/view/reader_page.dart';
+import '../../reader/models/reader_models.dart';
 
 class ComicDetailPage extends StatefulWidget {
   final String comicId;

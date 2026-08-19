@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../core/network/api_client.dart';
-import '../../core/storage/secure_storage.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/storage/secure_storage.dart';
 
 // Events
 abstract class AuthEvent extends Equatable {

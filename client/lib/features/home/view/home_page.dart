@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../app/theme/theme.dart';
-import '../../app/components/manjie_comic_card.dart';
-import '../../app/components/manjie_section_header.dart';
+import '../../../app/theme/theme.dart';
+import '../../../app/components/manjie_comic_card.dart';
+import '../../../app/components/manjie_section_header.dart';
 import '../bloc/home_bloc.dart';
 
 class HomePage extends StatelessWidget {

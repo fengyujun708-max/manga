@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../plugins/manga_source.dart';
+import '../../../plugins/manga_source.dart';
 
 abstract class SourceEvent extends Equatable {
   const SourceEvent();

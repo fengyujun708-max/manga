@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/theme.dart';
-import '../../app/components/manjie_card.dart';
-import '../../app/components/manjie_comic_card.dart';
-import '../../app/components/manjie_section_header.dart';
+import '../../../app/theme/theme.dart';
+import '../../../app/components/manjie_card.dart';
+import '../../../app/components/manjie_comic_card.dart';
+import '../../../app/components/manjie_section_header.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'models/reader_models.dart';
-import 'widgets/modes/reader_modes.dart';
-import 'widgets/reader_settings.dart';
+import '../models/reader_models.dart';
+import '../widgets/modes/reader_modes.dart';
+import '../widgets/reader_settings.dart';
 
 class ReaderPage extends StatefulWidget {
   final String comicId;

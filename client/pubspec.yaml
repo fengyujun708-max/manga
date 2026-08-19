@@ -21,6 +21,7 @@ dependencies:
 
   # 网络
   dio: ^5.4.0
+  http: ^1.2.0
 
   # 本地存储
   shared_preferences: ^2.3.0

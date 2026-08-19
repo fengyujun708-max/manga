@@ -28,7 +28,7 @@ class SourceManager {
   Future<void> initialize() async {
     await _jsEngine.initialize();
     await _loadLocalSources();
-    await _checkUpdates();
+    await checkUpdates();
   }
 
   /// 加载本地已安装的源
@@ -84,86 +84,6 @@ class SourceManager {
   }
 
   /// 安装新源
-  Future<MangaSource> installSource(String sourceId, String sourceUrl) async {
-    // 1. 下载源代码
-    final response = await http.get(Uri.parse(sourceUrl));
-    if (response.statusCode != 200) {
-      throw Exception('下载源失败: ${response.statusCode}');
-    }
-    
-    final sourceCode = response.body;
-    
-    // 2. 下载 manifest（如果有单独的 manifest 文件）
-    SourceManifest manifest;
-    try {
-      final manifestUrl = sourceUrl.replaceAll('.js', '_manifest.json');
-      final manifestResp = await http.get(Uri.parse(manifestUrl));
-      if (manifestResp.statusCode == 200) {
-        final manifestJson = jsonDecode(manifestResp.body);
-        // 确保 ID 一致
-        manifest = SourceManifest.fromJson(manifestJson).copyWith(id: manifest.id);
-      } else {
-        throw Exception('无法下载 manifest');
-      }
-    } catch (e) {
-      // 从源代码中提取 manifest
-      manifest = _extractManifestFromCode(sourceCode);
-    }
-    
-    // 3. 验证源代码
-    await _validateSourceCode(sourceCode);
-    
-    // 4. 加载到 JS 引擎
-    final source = await _jsEngine.loadSource(sourceCode, _manifests[sourceId]!);
-    
-    // 5. 保存到本地
-    _manifests[manifest.id] = manifest;
-    _enabled[manifest.id] = true;
-    await _saveLocalSources();
-    
-    return _jsEngine.loadSource('', _manifests[sourceId]!);
-  }
-
-  SourceManifest _extractManifestFromCode(String code) {
-    // 尝试从代码中提取 manifest
-    // 格式：const source = { id: 'xxx', name: 'xxx', ... }
-    final manifestRegex = RegExp(r'const\s+source\s*=\s*({[\s\S]*?});');
-    final match = manifestRegex.firstMatch(code);
-    if (match != null) {
-      try {
-        final json = jsonDecode(match.group(1)!);
-        return SourceManifest.fromJson(json);
-      } catch (e) {
-        // 尝试提取基本信息
-        return SourceManifest(
-          id: 'unknown',
-          name: '未知源',
-          version: '1.0.0',
-          author: 'Unknown',
-          description: '',
-          icon: '📚',
-          repositoryUrl: '',
-          downloadUrl: '',
-          minAppVersion: '1.0.0',
-          capabilities: ['search', 'detail', 'chapters', 'pages'],
-        );
-      }
-    }
-    return SourceManifest(
-      id: 'unknown',
-      name: '未知源',
-      version: '1.0.0',
-      author: 'Unknown',
-      description: '',
-      icon: '📚',
-      repositoryUrl: '',
-      downloadUrl: '',
-      minAppVersion: '1.0.0',
-      capabilities: ['search', 'detail', 'chapters', 'pages'],
-    );
-  }
-
-  /// 验证源代码安全性
   Future<void> _validateSourceCode(String code) async {
     // 检查危险代码
     final dangerousPatterns = [
@@ -190,7 +110,7 @@ class SourceManager {
   }
 
   /// 检查更新
-  Future<void> _checkUpdates() async {
+  Future<void> checkUpdates() async {
     try {
       final response = await _apiClient.get('/sources');
       if (response.statusCode == 200) {
@@ -206,9 +126,37 @@ class SourceManager {
             }
           }
         }
+      }
     } catch (e) {
       debugPrint('检查更新失败: $e');
     }
+  }
+
+  /// 安装新源
+  Future<void> installSource(String sourceId, String sourceUrl) async {
+    // 简单实现：下载 JS 源，验证后保存 manifest
+    final response = await http.get(Uri.parse(sourceUrl));
+    if (response.statusCode != 200) {
+      throw Exception('下载源失败: ${response.statusCode}');
+    }
+    await _validateSourceCode(response.body);
+
+    // 提取简单 manifest
+    final manifest = SourceManifest(
+      id: sourceId,
+      name: sourceId,
+      version: '1.0.0',
+      author: 'Unknown',
+      description: '',
+      icon: '📚',
+      repositoryUrl: '',
+      downloadUrl: sourceUrl,
+      minAppVersion: '1.0.0',
+      capabilities: ['search', 'detail', 'chapters', 'pages'],
+    );
+    _manifests[sourceId] = manifest;
+    _enabled[sourceId] = true;
+    await _saveLocalSources();
   }
 
   int _compareVersion(String local, String remote) {

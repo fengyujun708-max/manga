@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../app/components/manjie_toast.dart';
+import '../../app/components/manjie_toast.dart';
 
 /// 全局错误处理器
 class ErrorHandler {

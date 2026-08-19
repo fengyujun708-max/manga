@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../plugins/manga_source.dart';
-import '../../plugins/runtime/js_engine.dart';
-import '../../core/network/api_client.dart';
+import '../../../plugins/manga_source.dart';
+import '../../../plugins/runtime/js_engine.dart';
+import '../../../core/network/api_client.dart';
 
 part 'source_event.dart';
 part 'source_state.dart';
@@ -71,7 +71,7 @@ class SourceBloc extends Bloc<SourceEvent, SourceState> {
     emit(SourceTesting(sourceId: event.sourceId));
     try {
       final result = await _sourceManager.testSource(event.sourceId);
-      emit(SourceTestResult(sourceId: event.sourceId, result: result));
+      emit(SourceTestResultState(sourceId: event.sourceId, result: result));
     } catch (e) {
       emit(SourceTestError(sourceId: event.sourceId, message: '测试失败: $e'));
     }

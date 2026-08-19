@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../app/theme/theme.dart';
-import '../../app/components/manjie_card.dart';
-import '../../app/components/manjie_empty_state.dart';
+import '../../../app/theme/theme.dart';
+import '../../../app/components/manjie_card.dart';
+import '../../../app/components/manjie_empty_state.dart';
 
 class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key});
