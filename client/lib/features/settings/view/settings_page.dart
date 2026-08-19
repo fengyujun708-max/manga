@@ -271,11 +271,11 @@ class _Divider extends StatelessWidget {
 class _SwitchTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const _SwitchTile({required this.icon, required this.title, required this.subtitle, required this.value, required this.onChanged});
+  const _SwitchTile({required this.icon, required this.title, this.subtitle, required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -284,7 +284,7 @@ class _SwitchTile extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: AppTheme.primary, size: 22),
         title: Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15)),
-        subtitle: Text(subtitle, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+        subtitle: subtitle != null ? Text(subtitle!, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)) : null,
         trailing: Switch(value: value, onChanged: onChanged, activeColor: AppTheme.primary),
       ),
     );

@@ -4,15 +4,15 @@ import '../../../plugins/manga_source.dart';
 import '../../../plugins/runtime/js_engine.dart';
 import '../../../core/network/api_client.dart';
 
-part 'source_event.dart';
-part 'source_state.dart';
+import 'source_event.dart';
+import 'source_state.dart';
 
 class SourceBloc extends Bloc<SourceEvent, SourceState> {
   final ApiClient apiClient;
   final SourceManager _sourceManager;
 
   SourceBloc({required this.apiClient})
-      : _sourceManager = SourceManager(apiClient: apiClient, jsRuntime: QuickJSEngine()),
+      : _sourceManager = SourceManager(apiClient: apiClient, jsEngine: QuickJSEngine()),
         super(SourceInitial()) {
     on<SourceLoadRequested>(_onLoad);
     on<SourceRefreshRequested>(_onRefresh);
@@ -90,8 +90,9 @@ class SourceBloc extends Bloc<SourceEvent, SourceState> {
   Future<void> _onMarketLoad(SourceMarketLoadRequested event, Emitter<SourceState> emit) async {
     emit(SourceMarketLoading());
     try {
-      final sources = await apiClient.get('/sources');
-      final marketSources = (sources['sources'] as List).map((e) => SourceManifest.fromJson(e)).toList();
+      final response = await apiClient.get<Map<String, dynamic>>('/sources');
+      final data = response.data;
+      final marketSources = ((data?['sources'] as List?) ?? []).map((e) => SourceManifest.fromJson(e as Map<String, dynamic>)).toList();
       emit(SourceMarketLoaded(sources: marketSources));
     } catch (e) {
       emit(SourceMarketError(message: '加载市场失败: $e'));

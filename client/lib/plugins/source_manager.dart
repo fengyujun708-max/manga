@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/material.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../plugins/manga_source.dart';
-import '../plugins/runtime/js_engine.dart';
+import 'manga_source.dart';
+import 'runtime/js_engine.dart';
+import '../core/network/api_client.dart';
 
 /// 源管理器
 class SourceManager {
@@ -153,6 +156,8 @@ class SourceManager {
       downloadUrl: sourceUrl,
       minAppVersion: '1.0.0',
       capabilities: ['search', 'detail', 'chapters', 'pages'],
+      downloads: 0,
+      rating: 0.0,
     );
     _manifests[sourceId] = manifest;
     _enabled[sourceId] = true;

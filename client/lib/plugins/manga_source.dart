@@ -236,8 +236,13 @@ class SearchResult {
 /// 统一漫画源接口
 abstract class MangaSource {
   final SourceManifest manifest;
+  bool enabled = true;
 
   MangaSource(this.manifest);
+
+  String get id => manifest.id;
+  String get name => manifest.name;
+  String get version => manifest.version;
 
   // 核心方法
   Future<SearchResult> search(String keyword, {int page = 1, int pageSize = 20});

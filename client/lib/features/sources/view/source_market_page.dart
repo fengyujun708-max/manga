@@ -184,9 +184,9 @@ class _MarketSourceCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Icon(Icons.star, size: 14, color: Colors.amber.shade400),
+                    Icon(Icons.star, size: 14, color: Color(0xFFFFC107)),
                     const SizedBox(width: 2),
-                    Text('${source.rating}', style: const TextStyle(color: Colors.amber.shade400, fontSize: 12)),
+                    Text('${source.rating}', style: TextStyle(color: Color(0xFFFFC107), fontSize: 12)),
                     const SizedBox(width: 12),
                     Icon(Icons.download, size: 14, color: AppTheme.textSecondary),
                     const SizedBox(width: 2),
