@@ -36,7 +36,7 @@ class SourceUpdatingSuccess extends SourceState {
 
 class SourceTesting extends SourceState {
   final String sourceId;
-  const SourceTesting(this.sourceId);
+  const SourceTesting({required this.sourceId});
   @override List<Object?> get props => [sourceId];
 }
 
@@ -56,13 +56,13 @@ class SourceTestError extends SourceState {
 
 class SourceDeleting extends SourceState {
   final String sourceId;
-  const SourceDeleting(this.sourceId);
+  const SourceDeleting({required this.sourceId});
   @override List<Object?> get props => [sourceId];
 }
 
 class SourceInstalling extends SourceState {
   final String sourceId;
-  const SourceInstalling(this.sourceId);
+  const SourceInstalling({required this.sourceId});
   @override List<Object?> get props => [sourceId];
 }
 
@@ -76,6 +76,6 @@ class SourceMarketLoaded extends SourceState {
 
 class SourceMarketError extends SourceState {
   final String message;
-  const SourceMarketError(this.message);
+  const SourceMarketError({required this.message});
   @override List<Object?> get props => [message];
 }

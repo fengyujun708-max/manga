@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'manga_source.dart';
+import '../manga_source.dart';
 
 /// QuickJS 运行时引擎
 /// 使用 flutter_quickjs 或 quickjs_dart 运行漫画源 JS 代码

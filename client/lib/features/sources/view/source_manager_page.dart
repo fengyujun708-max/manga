@@ -8,6 +8,8 @@ import '../../../app/components/manjie_toast.dart';
 import '../../../plugins/manga_source.dart';
 import '../../../plugins/runtime/js_engine.dart';
 import '../bloc/source_bloc.dart';
+import '../bloc/source_event.dart';
+import '../bloc/source_state.dart';
 
 class SourceManagerPage extends StatefulWidget {
   const SourceManagerPage({super.key});
