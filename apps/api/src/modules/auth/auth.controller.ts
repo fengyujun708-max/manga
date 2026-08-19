@@ -4,11 +4,40 @@ import { AuthService } from './auth.service';
 import { CaptchaService } from './captcha.service';
 import { Public, CurrentUser } from '../../common/guards/auth.guard';
 import { JwtAuthGuard } from '../../common/guards/auth.guard';
-import { IsString, MinLength, MaxLength, Length, Matches } from 'class-validator';
+import { IsString, MinLength, MaxLength, Length, Matches, ValidateBy, ValidationArguments } from 'class-validator';
+
+// 自定义手机号验证器
+function IsValidPhone(): PropertyDecorator {
+  return ValidateBy({
+    name: 'IsValidPhone',
+    validator: {
+      validate(value: string) {
+        if (typeof value !== 'string') return false;
+        // 1. 基本格式：1开头11位
+        if (!/^1\d{10}$/.test(value)) return false;
+        // 2. 运营商号段校验
+        if (!/^1[3-9]\d{9}$/.test(value)) return false;
+        // 3. 不能全是相同数字
+        if (/^(\d)\1{10}$/.test(value)) return false;
+        // 4. 不能是连续递增/递减
+        const inc = '01234567890123456789';
+        const dec = '98765432109876543210';
+        const last6 = value.slice(-6);
+        if (inc.includes(last6) || dec.includes(last6)) return false;
+        // 5. 常见假号黑名单
+        const blacklist = ['13800138000', '13900139000', '10000000000', '12345678901', '11111111111', '00000000000', '12312312345'];
+        if (blacklist.includes(value)) return false;
+        return true;
+      },
+      defaultMessage(args: ValidationArguments) {
+        return '手机号格式不正确或为无效号码';
+      },
+    },
+  });
+}
 
 class RegisterDto {
-  @IsString()
-  @Matches(/^1[3-9]\d{9}$/, { message: '手机号格式不正确' })
+  @IsValidPhone()
   phone: string;
 
   @IsString() @MinLength(8) @MaxLength(32) password: string;

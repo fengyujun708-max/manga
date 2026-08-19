@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { VerificationCode } from '../../user/entities/user.entity';
-import * as crypto from 'crypto';
+import { VerificationCode } from '../user/entities/user.entity';
 
 interface CaptchaResult {
   id: string;
@@ -22,12 +21,12 @@ export class CaptchaService {
   async generate(): Promise<CaptchaResult> {
     // 生成 4 位随机数字
     const answer = Math.floor(1000 + Math.random() * 9000).toString();
-    const id = crypto.randomUUID();
+    const id = Math.random().toString(36).substring(2, 12) + Date.now().toString(36).substring(4, 8);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     // 存入数据库
     await this.verifyRepo.save({
-      phone: 'captcha_' + id,
+      phone: id,
       code: answer,
       purpose: 'captcha',
       expiresAt,
@@ -38,7 +37,7 @@ export class CaptchaService {
 
   async verify(id: string, answer: string): Promise<boolean> {
     const record = await this.verifyRepo.findOne({
-      where: { phone: 'captcha_' + id, purpose: 'captcha', isUsed: false },
+      where: { phone: id, purpose: 'captcha', isUsed: false },
       order: { createdAt: 'DESC' },
     });
     if (!record) return false;

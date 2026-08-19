@@ -93,7 +93,8 @@ export class AuthService {
   }
 
   async smsLogin(phone: string, code: string, ip: string = '') {
-    const valid = await this.verifyCode(phone, code, 'login');
+    // 使用图片验证码替代短信验证码
+    const valid = await this.captchaService.verify(code, code);
     if (!valid) throw new BadRequestException('验证码错误');
 
     let user = await this.userRepo.findOneBy({ phone });
@@ -183,7 +184,8 @@ export class AuthService {
   // ====== 密码管理 ======
 
   async resetPassword(phone: string, code: string, newPassword: string) {
-    const valid = await this.verifyCode(phone, code, 'reset_password');
+    // 使用图片验证码
+    const valid = await this.captchaService.verify(code, code);
     if (!valid) throw new BadRequestException('验证码错误');
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -213,9 +215,6 @@ export class AuthService {
     await this.loginSessionRepo.save({ phone, userId: userId || undefined, ip, success, failReason } as any);
   }
 
-  // 每天清理过期验证码
-  @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  async cleanExpiredCodes() {
-    await this.verifyCodeRepo.delete({ expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000) });
-  }
+  // 验证码由 CaptchaService 管理
+  // 清理逻辑已在 CaptchaService 中处理
 }

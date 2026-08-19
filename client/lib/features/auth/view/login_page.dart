@@ -5,6 +5,8 @@ import '../../../app/theme/theme.dart';
 import '../../../app/components/manjie_button.dart';
 import '../../../app/config/app_config.dart';
 import '../bloc/auth_bloc.dart';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -63,7 +65,21 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   bool _validatePhone(String phone) {
-    return RegExp(r'^1[3-9]\d{9}$').hasMatch(phone);
+    // 1. 基本格式
+    if (!RegExp(r'^1\d{10}$').hasMatch(phone)) return false;
+    // 2. 运营商号段
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) return false;
+    // 3. 不能全是相同数字
+    if (RegExp(r'^(\d)\1{10}$').hasMatch(phone)) return false;
+    // 4. 不能是连续数字
+    const inc = '01234567890123456789';
+    const dec = '98765432109876543210';
+    final last6 = phone.substring(5);
+    if (inc.contains(last6) || dec.contains(last6)) return false;
+    // 5. 常见假号黑名单
+    const blacklist = ['13800138000', '13900139000', '10000000000', '12345678901', '11111111111', '00000000000', '12312312345'];
+    if (blacklist.contains(phone)) return false;
+    return true;
   }
 
   bool _validate() {
@@ -77,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
 
     final phone = _phoneController.text.trim();
     if (!_validatePhone(phone)) {
-      _phoneError = '手机号格式不正确（需要11位手机号）';
+      _phoneError = '手机号无效（需11位有效手机号，不能是假号/连号/重号）';
       valid = false;
     }
 
@@ -317,6 +333,3 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 }
-
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
