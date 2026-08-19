@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../plugins/manga_source.dart';
 import '../../../plugins/runtime/js_engine.dart';
+import '../../../plugins/source_manager.dart';
 import '../../../core/network/api_client.dart';
 
 import 'source_event.dart';
