@@ -1,0 +1,14 @@
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="zh-CN">
+      <body>
+        <ConfigProvider locale={zhCN} theme={{ token: { colorPrimary: '#6C5CE7', borderRadius: 8 } }}>
+          {children}
+        </ConfigProvider>
+      </body>
+    </html>
+  );
+}
