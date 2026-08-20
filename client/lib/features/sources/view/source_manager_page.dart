@@ -175,12 +175,12 @@ class _SourceCard extends StatelessWidget {
           ]),
           const SizedBox(height: 4),
           Text(source.manifest.description, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+          Switch(
+            value: source.enabled,
+            onChanged: (v) => context.read<SourceBloc>().add(SourceToggleEnabled(source.id, v)),
+            activeColor: AppTheme.primary,
+          ),
         ]),
-        Switch(
-          value: source.enabled,
-          onChanged: (v) => context.read<SourceBloc>().add(SourceToggleEnabled(source.id, v)),
-          activeColor: AppTheme.primary,
-        ),
       ]),
     );
   }
