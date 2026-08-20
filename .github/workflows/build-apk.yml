@@ -36,18 +36,22 @@ jobs:
               </domain-config>
           </network-security-config>
           EOF
-          # 用 Python 修改 AndroidManifest.xml 添加 networkSecurityConfig（处理命名空间）
+          # 用 Python 修改 AndroidManifest.xml 添加 networkSecurityConfig 和 usesCleartextTraffic
           python3 << 'PYEOF'
           import xml.etree.ElementTree as ET
-          # 注册命名空间
           ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
           tree = ET.parse('android/app/src/main/AndroidManifest.xml')
           root = tree.getroot()
           ns = {'android': 'http://schemas.android.com/apk/res/android'}
           for app in root.findall('application'):
               app.set('{http://schemas.android.com/apk/res/android}networkSecurityConfig', '@xml/network_security_config')
+              app.set('{http://schemas.android.com/apk/res/android}usesCleartextTraffic', 'true')
           tree.write('android/app/src/main/AndroidManifest.xml', encoding='utf-8', xml_declaration=True)
           PYEOF
+          # 验证 xml 文件存在
+          ls -la android/app/src/main/res/xml/
+          # 验证 manifest 修改
+          grep -i "networkSecurityConfig\|usesCleartextTraffic" android/app/src/main/AndroidManifest.xml || true
 
       - name: 安装依赖
         run: flutter pub get
