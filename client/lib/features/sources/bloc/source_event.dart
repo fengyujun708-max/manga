@@ -36,3 +36,8 @@ class SourceInstallRequested extends SourceEvent {
   const SourceInstallRequested({required this.sourceId, required this.sourceUrl});
   @override List<Object?> get props => [sourceId, sourceUrl];
 }
+class SourceInstallFromServerRequested extends SourceEvent {
+  final String sourceId;
+  const SourceInstallFromServerRequested(this.sourceId);
+  @override List<Object?> get props => [sourceId];
+}

@@ -7,6 +7,7 @@ import '../../../app/theme/theme.dart';
 import '../../../core/network/api_client.dart';
 
 /// 发现页 — 漫画源浏览模式（类似 Breeze/Venera）
+/// 源列表由服务器自动下发，用户不可手动添加
 /// 展示所有可用漫画源 → 点击进入源详情（分类+漫画列表）
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
