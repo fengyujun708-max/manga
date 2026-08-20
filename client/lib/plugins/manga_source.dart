@@ -15,6 +15,7 @@ class SourceManifest {
   final List<String> capabilities;
   final int downloads;
   final double rating;
+  final String networkType; // 'direct' | 'proxy'
   final Map<String, dynamic> metadata;
 
   SourceManifest({
@@ -30,6 +31,7 @@ class SourceManifest {
     required this.capabilities,
     required this.downloads,
     required this.rating,
+    required this.networkType,
     this.metadata = const {},
   });
 
@@ -48,6 +50,7 @@ class SourceManifest {
           ['search', 'detail', 'chapters', 'pages'],
       downloads: json['downloads'] as int? ?? 0,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      networkType: json['networkType'] as String? ?? 'direct',
       metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
     );
   }
@@ -65,6 +68,7 @@ class SourceManifest {
     'capabilities': capabilities,
     'downloads': downloads,
     'rating': rating,
+    'networkType': networkType,
     'metadata': metadata,
   };
 }

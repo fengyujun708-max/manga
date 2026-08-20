@@ -110,8 +110,12 @@ class SourceManager {
     return [];
   }
 
-  /// 从服务器安装源
-  Future<void> installFromServer(String sourceId) async {
+  /// 从服务器安装源（已安装则跳过）
+  Future<bool> installFromServer(String sourceId) async {
+    // 去重：已安装则跳过
+    if (_manifests.containsKey(sourceId)) {
+      return false; // 已安装，无需重复
+    }
     final response = await _apiClient.get('/sources/$sourceId');
     if (response.statusCode != 200) {
       throw Exception('获取源信息失败: ${response.statusCode}');
@@ -121,6 +125,7 @@ class SourceManager {
     _manifests[manifest.id] = manifest;
     _enabled[manifest.id] = true;
     await _saveLocalSources();
+    return true; // 新安装成功
   }
 
   /// 通过 URL 安装源

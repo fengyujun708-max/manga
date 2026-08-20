@@ -73,8 +73,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onCheck(AuthCheckRequested event, Emitter<AuthState> emit) async {
     final token = await storage.read('access_token');
-    if (token != null) {
-      // 已登录，恢复会话
+    if (token == null || token.isEmpty) {
+      emit(AuthUnauthenticated());
+      return;
+    }
+    // 验证 token 有效性：调一个需要 auth 的轻量端点
+    try {
+      await apiClient.get('/auth/me');
+      // token 有效，恢复会话
       final userId = await storage.read('user_id') ?? '';
       final phone = await storage.read('user_phone') ?? '';
       final nickname = await storage.read('user_nickname') ?? '';
@@ -85,7 +91,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         nickname: nickname,
         avatar: avatar,
       ));
-    } else {
+    } catch (e) {
+      // token 失效 → 清除登录态，回登录页
+      await apiClient.clearTokens();
+      await storage.clear();
       emit(AuthUnauthenticated());
     }
   }

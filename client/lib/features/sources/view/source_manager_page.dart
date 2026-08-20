@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/theme/theme.dart';
 import '../../../plugins/manga_source.dart';
+import '../../../core/network/api_client.dart';
 import '../bloc/source_bloc.dart';
 import '../bloc/source_event.dart';
 import '../bloc/source_state.dart';
@@ -259,6 +263,81 @@ class _MarketSourceCard extends StatefulWidget {
 
 class _MarketSourceCardState extends State<_MarketSourceCard> {
   bool _installing = false;
+  bool _installed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInstalled();
+  }
+
+  Future<void> _checkInstalled() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('installed_sources') ?? '[]';
+    final list = jsonDecode(json) as List;
+    final installed = list.any((e) {
+      try {
+        return SourceManifest.fromJson(e as Map<String, dynamic>).id == widget.manifest.id;
+      } catch (_) { return false; }
+    });
+    if (mounted) setState(() => _installed = installed);
+  }
+
+  Future<void> _install() async {
+    if (_installed || _installing) return;
+    setState(() => _installing = true);
+    try {
+      final api = GetIt.instance<ApiClient>();
+      // 从服务器获取源详情并存入本地
+      final res = await api.get('/sources/${widget.manifest.id}');
+      if (res.statusCode == 200 && res.data != null) {
+        final manifest = SourceManifest.fromJson(res.data as Map<String, dynamic>);
+        // 写入 SharedPreferences（去重追加）
+        final prefs = await SharedPreferences.getInstance();
+        final json = prefs.getString('installed_sources') ?? '[]';
+        final list = jsonDecode(json) as List;
+        // 去重检查
+        if (!list.any((e) {
+          try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == manifest.id; }
+          catch (_) { return false; }
+        })) {
+          list.add(manifest.toJson());
+          await prefs.setString('installed_sources', jsonEncode(list));
+        }
+        if (!mounted) return;
+        setState(() { _installed = true; _installing = false; });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppTheme.surface,
+            content: Row(children: [
+              const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('「${manifest.name}」安装成功',
+                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
+              ),
+            ]),
+            action: SnackBarAction(
+              label: '去发现页',
+              textColor: AppTheme.primary,
+              onPressed: () => GoRouter.of(context).go('/discover'),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _installing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.destructive,
+          content: Text('安装失败: $e', style: const TextStyle(color: Colors.white, fontSize: 13)),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -327,45 +406,27 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
           const SizedBox(width: 8),
           SizedBox(
             width: 72, height: 36,
-            child: ElevatedButton(
-              onPressed: _installing
-                  ? null
-                  : () async {
-                      setState(() => _installing = true);
-                      context.read<SourceBloc>().add(SourceInstallFromServerRequested(m.id));
-                      await Future.delayed(const Duration(seconds: 2));
-                      if (!mounted) return;
-                      setState(() => _installing = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: AppTheme.surface,
-                          content: Row(children: [
-                            const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text('「${m.name}」安装成功',
-                                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
-                            ),
-                          ]),
-                          action: SnackBarAction(
-                            label: '去发现页',
-                            textColor: AppTheme.primary,
-                            onPressed: () => GoRouter.of(context).go('/discover'),
-                          ),
-                        ),
-                      );
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: EdgeInsets.zero,
-              ),
-              child: _installing
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('安装', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-            ),
+            child: _installed
+                ? Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppTheme.success.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text('已安装', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.success)),
+                  )
+                : ElevatedButton(
+                    onPressed: _installing ? null : _install,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: _installing
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('安装', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  ),
           ),
         ],
       ),

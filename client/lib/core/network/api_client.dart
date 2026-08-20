@@ -6,20 +6,28 @@ class ApiClient {
   late final Dio _dio;
   final _storage = const FlutterSecureStorage();
 
-  static const String _baseUrlKey = 'api_base_url';
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
+
+  // Public 端点不需要 Authorization
+  static const _publicPaths = [
+    '/auth/login',
+    '/auth/register',
+    '/auth/guest',
+    '/auth/captcha',
+    '/auth/refresh',
+    '/sources',
+  ];
 
   ApiClient({String? baseUrl}) {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl ?? AppConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ));
 
     _dio.interceptors.add(AuthInterceptor(this));
-    _dio.interceptors.add(LogInterceptor(responseBody: true));
   }
 
   Future<String?> get accessToken => _storage.read(key: _accessTokenKey);
@@ -35,6 +43,13 @@ class ApiClient {
     await _storage.delete(key: _refreshTokenKey);
   }
 
+  bool _isPublicPath(String path) {
+    for (final p in _publicPaths) {
+      if (path.startsWith(p)) return true;
+    }
+    return false;
+  }
+
   Future<Response<T>> get<T>(String path, {Map<String, dynamic>? params}) =>
       _dio.get(path, queryParameters: params);
 
@@ -46,41 +61,67 @@ class ApiClient {
 
   Future<Response<T>> delete<T>(String path) =>
       _dio.delete(path);
+
+  /// 直接用 Dio 发请求（绕过 AuthInterceptor），用于 refresh token
+  Future<Response<T>> rawPost<T>(String path, {dynamic data}) async {
+    final tempDio = Dio(BaseOptions(
+      baseUrl: AppConfig.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 15),
+      headers: {'Content-Type': 'application/json'},
+    ));
+    return tempDio.post<T>(path, data: data);
+  }
 }
 
 class AuthInterceptor extends Interceptor {
   final ApiClient client;
+  bool _isRefreshing = false;
+
   AuthInterceptor(this.client);
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final token = await client.accessToken;
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    // Public 端点不加 token（避免过期 token 干扰登录/注册）
+    if (!client._isPublicPath(options.path)) {
+      final token = await client.accessToken;
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
-      // 尝试刷新 token
+    // 只处理 401 且不在 refresh 中
+    if (err.response?.statusCode == 401 && !_isRefreshing) {
+      _isRefreshing = true;
       final refreshToken = await client.refreshToken;
       if (refreshToken != null) {
         try {
-          final res = await client.post('/auth/refresh', data: {'refreshToken': refreshToken});
-          final newAccess = res.data['accessToken'];
-          final newRefresh = res.data['refreshToken'];
-          await client.setTokens(newAccess, newRefresh);
-
-          // 重试原请求
-          err.requestOptions.headers['Authorization'] = 'Bearer $newAccess';
-          final retry = await client._dio.fetch(err.requestOptions);
-          return handler.resolve(retry);
+          // 用独立 Dio 发 refresh 请求，绕过拦截器，避免递归
+          final res = await client.rawPost<Map<String, dynamic>>(
+            '/auth/refresh',
+            data: {'refreshToken': refreshToken},
+          );
+          final newAccess = res.data?['accessToken'] as String?;
+          final newRefresh = res.data?['refreshToken'] as String?;
+          if (newAccess != null && newRefresh != null) {
+            await client.setTokens(newAccess, newRefresh);
+            _isRefreshing = false;
+            // 重试原请求
+            err.requestOptions.headers['Authorization'] = 'Bearer $newAccess';
+            final retry = await client._dio.fetch(err.requestOptions);
+            return handler.resolve(retry);
+          }
         } catch (_) {
-          await client.clearTokens();
+          // refresh 失败 → 清 token，不重试
         }
       }
+      // refresh 失败或无 refresh token → 清除登录态
+      await client.clearTokens();
+      _isRefreshing = false;
     }
     handler.next(err);
   }
