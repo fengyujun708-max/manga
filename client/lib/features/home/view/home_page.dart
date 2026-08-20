@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/theme.dart';
-import '../../../app/components/manjie_comic_card.dart';
-import '../../../core/network/api_client.dart';
 import '../bloc/home_bloc.dart';
 
 class HomePage extends StatelessWidget {
@@ -12,38 +10,44 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => HomeBloc(apiClient: ApiClient())..add(HomeLoadRequested()),
+      create: (context) => HomeBloc(apiClient: BlocProvider.of<AuthBloc>(context).apiClient)..add(HomeLoadRequested()),
       child: Scaffold(
         body: BlocBuilder<HomeBloc, HomeState>(
           builder: (context, state) {
             return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
               slivers: [
-                // App Bar
+                // 顶部栏 — 透明渐变
                 SliverAppBar(
                   floating: true,
-                  pinned: true,
+                  snap: true,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  expandedHeight: 0,
                   title: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text('漫界', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      ShaderMask(
+                        shaderCallback: (bounds) => AppTheme.primaryGradient.createShader(bounds),
+                        child: const Text('漫界', style: TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white, letterSpacing: 1)),
                       ),
                       const Spacer(),
-                      IconButton(icon: const Icon(Icons.search), onPressed: () => context.push('/search')),
-                      IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
+                      _buildIconBtn(context, Icons.search_rounded, () => context.push('/search')),
+                      const SizedBox(width: 8),
+                      _buildIconBtn(context, Icons.notifications_none_rounded, () {}),
                     ],
                   ),
                 ),
 
-                // Content
+                // 内容
                 if (state is HomeLoading)
-                  const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+                  const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2)),
+                  )
                 else if (state is HomeError)
-                  SliverFillRemaining(child: Center(child: Text('加载失败: ${(state as HomeError).message}')))
+                  SliverFillRemaining(
+                    child: _buildErrorState(context, state.message),
+                  )
                 else if (state is HomeLoaded)
                   _buildContent(context, state)
                 else
@@ -56,14 +60,46 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  Widget _buildIconBtn(BuildContext context, IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40, height: 40,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceLight.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, size: 20, color: AppTheme.textPrimary),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.cloud_off_rounded, size: 48, color: AppTheme.textTertiary),
+          const SizedBox(height: 12),
+          Text(message, style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+          const SizedBox(height: 16),
+          GlowButton(
+            width: 160, height: 42,
+            onPressed: () => context.read<HomeBloc>().add(HomeRefreshRequested()),
+            child: const Text('重试', style: TextStyle(fontSize: 14, color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildContent(BuildContext context, HomeLoaded state) {
     final homeData = state.homeData;
     return SliverList(
       delegate: SliverChildListDelegate([
-        if (homeData.banner.isNotEmpty)
-          _HeroBanner(banner: homeData.banner.first),
-        ...homeData.sections.map((section) => _buildSection(context, section)).toList(),
-        const SizedBox(height: 80),
+        if (homeData.banner.isNotEmpty) _HeroBanner(banner: homeData.banner.first),
+        ...homeData.sections.map((s) => _buildSection(context, s)).toList(),
+        const SizedBox(height: 100),
       ]),
     );
   }
@@ -74,18 +110,22 @@ class HomePage extends StatelessWidget {
       children: [
         _SectionHeader(title: section.title, onSeeAll: () => context.push('/discover')),
         SizedBox(
-          height: 220,
+          height: 240,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
+            physics: const BouncingScrollPhysics(),
             itemCount: section.items.length,
-            itemBuilder: (_, i) => ManjieComicCard(
-              title: section.items[i].title,
-              subtitle: section.items[i].author,
-              imageUrl: section.items[i].coverUrl,
-              badge: section.items[i].chapter,
-              onTap: () => GoRouter.of(context).push('/comic/${section.items[i].id}'),
-            ),
+            itemBuilder: (_, i) {
+              final item = section.items[i];
+              return _ComicCard(
+                title: item.title,
+                author: item.author,
+                rating: item.rating,
+                chapter: item.chapter,
+                onTap: () => GoRouter.of(context).push('/comic/${item.id}'),
+              );
+            },
           ),
         ),
       ],
@@ -101,20 +141,30 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 28, 16, 12),
       child: Row(
         children: [
           Container(
-            width: 4, height: 20,
-            decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(2)),
+            width: 3, height: 18,
+            decoration: BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-          const SizedBox(width: 8),
-          Text(title, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(width: 10),
+          Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
           const Spacer(),
           if (onSeeAll != null)
-            TextButton(
-              onPressed: onSeeAll,
-              child: Text('查看全部 →', style: TextStyle(color: AppTheme.primary)),
+            GestureDetector(
+              onTap: onSeeAll,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('查看全部', style: TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.w500)),
+              ),
             ),
         ],
       ),
@@ -129,81 +179,174 @@ class _HeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 400,
-      margin: const EdgeInsets.all(16),
+      height: 380,
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Theme.of(context).colorScheme.primary, const Color(0xFF0F3460)],
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF6366F1), Color(0xFF1B1B30), Color(0xFF0F0F23)],
         ),
+        boxShadow: AppTheme.cardShadow,
       ),
       child: Stack(
         children: [
-          Positioned(
-            right: -40, top: -40,
-            child: Container(
-              width: 200, height: 200,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.05)),
-            ),
-          ),
+          // 装饰圆
+          Positioned(right: -60, top: -60, child: _decorCircle(200, 0.06)),
+          Positioned(left: -40, bottom: -40, child: _decorCircle(160, 0.04)),
+
           Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (banner.badge.isNotEmpty)
+                if (banner.badge.isNotEmpty) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
-                    child: Text(banner.badge, style: const TextStyle(fontSize: 12, color: Colors.white)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.accentGradient,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(banner.badge, style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
                   ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 14),
+                ],
                 Text(banner.title, style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  shadows: [Shadow(blurRadius: 10, color: Colors.black.withOpacity(0.5))],
+                  fontWeight: FontWeight.w800,
+                  fontSize: 26,
+                  shadows: [const Shadow(blurRadius: 12, color: Colors.black54)],
                 )),
                 if (banner.description.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(banner.description, style: const TextStyle(color: Colors.white70, fontSize: 14), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 10),
+                  Text(banner.description,
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.5),
+                    maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
-                if (banner.tags.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Row(children: banner.tags.map((t) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.3), borderRadius: BorderRadius.circular(12)),
-                      child: Text(t, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    GlowButton(
+                      width: null,
+                      height: 44,
+                      gradient: AppTheme.accentGradient,
+                      onPressed: () {},
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.play_arrow_rounded, size: 20, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text('开始阅读', style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
                     ),
-                  )).toList()),
-                ],
-                const SizedBox(height: 16),
-                Row(children: [
-                  ElevatedButton.icon(
-                    onPressed: () {}, icon: const Icon(Icons.play_arrow), label: const Text('开始阅读'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(
+                          color: AppTheme.glassFill,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                          border: Border.all(color: AppTheme.glassBorder, width: 0.5),
+                        ),
+                        child: const Icon(Icons.bookmark_border_rounded, color: AppTheme.textPrimary, size: 20),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: () {}, icon: const Icon(Icons.bookmark_border), label: const Text('收藏'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white54),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ]),
+                  ],
+                ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _decorCircle(double size, double alpha) {
+    return Container(
+      width: size, height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: alpha)),
+    );
+  }
+}
+
+class _ComicCard extends StatelessWidget {
+  final String title;
+  final String author;
+  final double rating;
+  final String chapter;
+  final VoidCallback onTap;
+
+  const _ComicCard({
+    required this.title,
+    required this.author,
+    this.rating = 0,
+    this.chapter = '',
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 140,
+        margin: const EdgeInsets.only(right: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 封面
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF27273B), Color(0xFF1B1B30)],
+                  ),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  boxShadow: AppTheme.cardShadow,
+                ),
+                child: Stack(
+                  children: [
+                    Center(child: Icon(Icons.menu_book_rounded, size: 36, color: AppTheme.textTertiary)),
+                    // 评分
+                    if (rating > 0)
+                      Positioned(
+                        top: 8, right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star_rounded, size: 12, color: AppTheme.accent),
+                              const SizedBox(width: 2),
+                              Text(rating.toStringAsFixed(1),
+                                style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(title,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 2),
+            Text(author,
+              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+        ),
       ),
     );
   }
