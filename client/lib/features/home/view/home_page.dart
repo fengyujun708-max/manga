@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 import '../../../app/theme/theme.dart';
+import '../../../core/network/api_client.dart';
+import '../../auth/bloc/auth_bloc.dart';
 import '../bloc/home_bloc.dart';
 
 class HomePage extends StatelessWidget {
@@ -10,7 +13,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => HomeBloc(apiClient: BlocProvider.of<AuthBloc>(context).apiClient)..add(HomeLoadRequested()),
+      create: (context) => HomeBloc(apiClient: GetIt.instance<ApiClient>())..add(HomeLoadRequested()),
       child: Scaffold(
         body: BlocBuilder<HomeBloc, HomeState>(
           builder: (context, state) {
