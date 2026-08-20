@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../app/config/app_config.dart';
 
 class ApiClient {
   late final Dio _dio;
@@ -11,7 +12,7 @@ class ApiClient {
 
   ApiClient({String? baseUrl}) {
     _dio = Dio(BaseOptions(
-      baseUrl: baseUrl ?? 'http://39.106.192.137:3000/v1',
+      baseUrl: baseUrl ?? AppConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
       headers: {'Content-Type': 'application/json'},
