@@ -25,6 +25,20 @@ jobs:
       - name: 生成 Android 平台目录
         run: flutter create --platforms=android --org com.manjie --project-name manjie .
 
+      - name: 配置网络安全（允许 HTTP 明文流量到服务器 IP）
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          cat > android/app/src/main/res/xml/network_security_config.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <network-security-config>
+              <domain-config cleartextTrafficPermitted="true">
+                  <domain includeSubdomains="false">39.106.192.137</domain>
+              </domain-config>
+          </network-security-config>
+          EOF
+          # 在 AndroidManifest.xml 的 application 标签添加 networkSecurityConfig
+          sed -i 's/<application /<application android:networkSecurityConfig="@xml\/network_security_config" /' android/app/src/main/AndroidManifest.xml
+
       - name: 安装依赖
         run: flutter pub get
 

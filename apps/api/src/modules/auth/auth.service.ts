@@ -31,7 +31,7 @@ export class AuthService {
 
   // ====== 注册（图片验证码） ======
 
-  async register(phone: string, password: string, confirmPassword: string, nickname: string, captchaId: string, captchaAnswer: string) {
+  async register(phone: string, password: string, confirmPassword: string, nickname: string) {
     // 密码一致性校验
     if (password !== confirmPassword) {
       throw new BadRequestException('两次密码输入不一致');
@@ -41,10 +41,6 @@ export class AuthService {
     if (!/^1[3-9]\d{9}$/.test(phone)) {
       throw new BadRequestException('手机号格式不正确（需要11位手机号）');
     }
-
-    // 验证码校验
-    const valid = await this.captchaService.verify(captchaId, captchaAnswer);
-    if (!valid) throw new BadRequestException('验证码错误');
 
     const existing = await this.userRepo.findOneBy({ phone });
     if (existing) throw new ConflictException('手机号已注册');

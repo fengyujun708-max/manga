@@ -43,9 +43,6 @@ class RegisterDto {
   @IsString() @MinLength(8) @MaxLength(32) password: string;
   @IsString() confirmPassword: string;
   @IsString() @MinLength(1) @MaxLength(50) nickname: string;
-
-  @IsString() captchaId: string;
-  @IsString() @Length(4, 4) captchaAnswer: string;
 }
 
 class LoginDto {
@@ -83,7 +80,7 @@ export class AuthController {
   @ApiOperation({ summary: '注册（需图片验证码）' })
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: RegisterDto, @Ip() ip: string) {
-    return this.authService.register(dto.phone, dto.password, dto.confirmPassword, dto.nickname, dto.captchaId, dto.captchaAnswer);
+    return this.authService.register(dto.phone, dto.password, dto.confirmPassword, dto.nickname);
   }
 
   @Public()
