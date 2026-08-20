@@ -334,7 +334,7 @@ class _ShimmerBoxState extends State<ShimmerBox> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _ctrl = AnimationController(duration: const Duration(milliseconds: 1400), vsync: this)..repeat();
-    _anim = Tween<double>(begin: -1, end: 2).animate(CurvedAnimation(parent: _ctrl, curve: Curves.sineInOut));
+    _anim = Tween<double>(begin: -1, end: 2).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override

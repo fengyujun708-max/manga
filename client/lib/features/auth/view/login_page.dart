@@ -148,7 +148,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (ctx, s) {
                           final loading = s is AuthLoading;
-                          return GlowButton(
+                          return SpringButton(
                             onPressed: loading ? null : _onSubmit,
                             child: loading
                               ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
