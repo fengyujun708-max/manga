@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:go_router/go_router.dart';
 import '../../../app/theme/theme.dart';
 import '../../../app/components/manjie_button.dart';
 import '../../../app/config/app_config.dart';
@@ -233,6 +234,21 @@ class _LoginPageState extends State<LoginPage> {
                   }),
                   child: Text(_isRegister ? '已有账号？去登录' : '没有账号？去注册'),
                 ),
+              ),
+
+              // 全局监听登录状态
+              BlocListener<AuthBloc, AuthState>(
+                listenWhen: (prev, curr) => curr is AuthAuthenticated || curr is AuthError,
+                listener: (context, state) {
+                  if (state is AuthAuthenticated) {
+                    context.go('/home');
+                  } else if (state is AuthError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message), backgroundColor: Colors.red[700]),
+                    );
+                  }
+                },
+                child: const SizedBox.shrink(),
               ),
             ],
           ),
