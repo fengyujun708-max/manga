@@ -36,8 +36,15 @@ jobs:
               </domain-config>
           </network-security-config>
           EOF
-          # 修改 AndroidManifest.xml 添加 networkSecurityConfig
-          sed -i 's|<application |<application android:networkSecurityConfig="@xml/network_security_config" |' android/app/src/main/AndroidManifest.xml
+          # 用 Python 修改 AndroidManifest.xml 添加 networkSecurityConfig
+          python3 << 'PYEOF'
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('android/app/src/main/AndroidManifest.xml')
+          root = tree.getroot()
+          for app in root.findall('application'):
+              app.set('android:networkSecurityConfig', '@xml/network_security_config')
+          tree.write('android/app/src/main/AndroidManifest.xml', encoding='utf-8', xml_declaration=True)
+          PYEOF
 
       - name: 安装依赖
         run: flutter pub get
