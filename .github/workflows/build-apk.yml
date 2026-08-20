@@ -36,13 +36,16 @@ jobs:
               </domain-config>
           </network-security-config>
           EOF
-          # 用 Python 修改 AndroidManifest.xml 添加 networkSecurityConfig
+          # 用 Python 修改 AndroidManifest.xml 添加 networkSecurityConfig（处理命名空间）
           python3 << 'PYEOF'
           import xml.etree.ElementTree as ET
+          # 注册命名空间
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
           tree = ET.parse('android/app/src/main/AndroidManifest.xml')
           root = tree.getroot()
+          ns = {'android': 'http://schemas.android.com/apk/res/android'}
           for app in root.findall('application'):
-              app.set('android:networkSecurityConfig', '@xml/network_security_config')
+              app.set('{http://schemas.android.com/apk/res/android}networkSecurityConfig', '@xml/network_security_config')
           tree.write('android/app/src/main/AndroidManifest.xml', encoding='utf-8', xml_declaration=True)
           PYEOF
 
