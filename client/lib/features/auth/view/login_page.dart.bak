@@ -20,17 +20,24 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _nicknameController = TextEditingController();
+  final _captchaController = TextEditingController();
   bool _showPassword = false;
   bool _isRegister = false;
+
+  // 图片验证码
+  String _captchaId = '';
+  String _captchaSvg = '';
 
   // 表单错误
   String? _phoneError;
   String? _passwordError;
   String? _confirmError;
+  String? _captchaError;
 
   @override
   void initState() {
     super.initState();
+    _loadCaptcha();
   }
 
   @override
@@ -39,7 +46,22 @@ class _LoginPageState extends State<LoginPage> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _nicknameController.dispose();
+    _captchaController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCaptcha() async {
+    try {
+      final dio = Dio(BaseOptions(baseUrl: AppConfig.apiBaseUrl));
+      final res = await dio.get('/auth/captcha');
+      setState(() {
+        _captchaId = res.data['id'];
+        _captchaSvg = res.data['svg'];
+      });
+    } catch (e) {
+      // 使用默认验证码
+      _captchaId = 'default';
+    }
   }
 
   bool _validatePhone(String phone) {
@@ -66,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
       _phoneError = null;
       _passwordError = null;
       _confirmError = null;
+      _captchaError = null;
     });
 
     final phone = _phoneController.text.trim();
@@ -82,6 +105,10 @@ class _LoginPageState extends State<LoginPage> {
       }
       if (_passwordController.text != _confirmPasswordController.text) {
         _confirmError = '两次密码输入不一致';
+        valid = false;
+      }
+      if (_captchaController.text.trim().length != 4) {
+        _captchaError = '请输入4位验证码';
         valid = false;
       }
       if (_nicknameController.text.trim().isEmpty) {
@@ -189,6 +216,59 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // 图片验证码
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _captchaController,
+                        maxLength: 4,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: '验证码',
+                          prefixIcon: const Icon(Icons.security),
+                          border: const OutlineInputBorder(),
+                          errorText: _captchaError,
+                          hintText: '输入图片中的数字',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: _loadCaptcha,
+                      child: Container(
+                        width: 120,
+                        height: 56,
+                        margin: const EdgeInsets.only(top: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppTheme.divider),
+                          color: Colors.white,
+                        ),
+                        child: _captchaSvg.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: SizedBox(
+                                width: 120, height: 56,
+                                child: Image.network(
+                                  'data:image/svg+xml;base64,${base64Encode(utf8.encode(_captchaSvg))}',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Text('点击刷新', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : const Center(
+                              child: Text('点击加载', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
               ],
 
               // 登录按钮
@@ -210,16 +290,7 @@ class _LoginPageState extends State<LoginPage> {
                   );
                 },
               ),
-              const SizedBox(height: 8),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    context.read<AuthBloc>().add(AuthGuestLoginRequested());
-                  },
-                  child: const Text('游客登录', style: TextStyle(color: AppTheme.textSecondary)),
-                ),
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
               // 切换注册/登录
               Center(
@@ -229,7 +300,8 @@ class _LoginPageState extends State<LoginPage> {
                     _phoneError = null;
                     _passwordError = null;
                     _confirmError = null;
-                    if (_isRegister) {}
+                    _captchaError = null;
+                    if (_isRegister) _loadCaptcha();
                   }),
                   child: Text(_isRegister ? '已有账号？去登录' : '没有账号？去注册'),
                 ),
@@ -253,6 +325,8 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
         confirmPassword: _confirmPasswordController.text.trim(),
         nickname: _nicknameController.text.trim().isNotEmpty ? _nicknameController.text.trim() : '用户$phone',
+        captchaId: _captchaId,
+        captchaAnswer: _captchaController.text.trim(),
       ));
     } else {
       context.read<AuthBloc>().add(AuthLoginRequested(phone, password));

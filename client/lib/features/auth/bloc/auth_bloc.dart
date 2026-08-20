@@ -22,20 +22,16 @@ class AuthRegisterRequested extends AuthEvent {
   final String password;
   final String confirmPassword;
   final String nickname;
-  final String captchaId;
-  final String captchaAnswer;
   const AuthRegisterRequested({
     required this.phone,
     required this.password,
     required this.confirmPassword,
     required this.nickname,
-    required this.captchaId,
-    required this.captchaAnswer,
   });
-  @override List<Object?> get props => [phone, password, confirmPassword, nickname, captchaId, captchaAnswer];
+  @override List<Object?> get props => [phone, password, confirmPassword, nickname];
 }
 
-
+class AuthGuestLoginRequested extends AuthEvent {}
 
 class AuthLogoutRequested extends AuthEvent {}
 
@@ -71,6 +67,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCheckRequested>(_onCheck);
     on<AuthLoginRequested>(_onLogin);
     on<AuthRegisterRequested>(_onRegister);
+    on<AuthGuestLoginRequested>(_onGuestLogin);
     on<AuthLogoutRequested>(_onLogout);
   }
 
@@ -113,8 +110,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         'password': event.password,
         'confirmPassword': event.confirmPassword,
         'nickname': event.nickname,
-        'captchaId': event.captchaId,
-        'captchaAnswer': event.captchaAnswer,
       });
       final data = res.data;
       await apiClient.setTokens(data['accessToken'], data['refreshToken']);
@@ -128,14 +123,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final msg = e.toString();
       if (msg.contains('密码不一致')) {
         emit(AuthError('两次密码输入不一致'));
-      } else if (msg.contains('验证码错误')) {
-        emit(AuthError('验证码错误，请重新输入'));
       } else {
         emit(AuthError('注册失败，请检查信息'));
       }
     }
   }
 
+  Future<void> _onGuestLogin(AuthGuestLoginRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      final res = await apiClient.post('/auth/guest');
+      final data = res.data;
+      await apiClient.setTokens(data['accessToken'], data['refreshToken']);
+      await storage.write('user_id', data['user']['id']);
+      await storage.write('is_guest', 'true');
+      emit(AuthAuthenticated(
+        userId: data['user']['id'],
+        phone: data['user']['phone'] ?? 'guest',
+        nickname: data['user']['nickname'] ?? '游客',
+        avatar: data['user']['avatar'],
+      ));
+    } catch (e) {
+      emit(AuthError('游客登录失败，请稍后重试'));
+    }
+  }
 
   Future<void> _onLogout(AuthLogoutRequested event, Emitter<AuthState> emit) async {
     await apiClient.clearTokens();
