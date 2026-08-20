@@ -7,6 +7,8 @@ import '../features/auth/view/login_page.dart';
 import '../features/home/view/home_page.dart';
 import '../features/library/view/library_page.dart';
 import '../features/discover/view/source_detail_page.dart';
+import '../features/discover/view/source_comic_page.dart';
+import '../features/discover/view/source_reader_page.dart';
 import '../features/discover/view/discover_page.dart';
 import '../features/community/view/community_page.dart';
 import '../features/profile/view/profile_page.dart';
@@ -42,9 +44,9 @@ class ManjieApp extends StatelessWidget {
         GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
         GoRoute(
           path: '/source-manager',
-          builder: (_, __) => BlocProvider(
+          builder: (_, state) => BlocProvider(
             create: (_) => SourceBloc(apiClient: GetIt.instance<ApiClient>())..add(SourceLoadRequested()),
-            child: const SourceManagerPage(),
+            child: SourceManagerPage(initialTab: state.uri.queryParameters['tab'] == 'market' ? 1 : 0),
           ),
         ),
         GoRoute(
@@ -55,6 +57,21 @@ class ManjieApp extends StatelessWidget {
           ),
         ),
         GoRoute(path: '/discover/source/:id', builder: (_, state) => SourceDetailPage(sourceId: state.pathParameters['id']!)),
+        GoRoute(
+          path: '/source/:sourceId/comic/:comicId',
+          builder: (_, state) => SourceComicPage(
+            sourceId: state.pathParameters['sourceId']!,
+            comicId: state.pathParameters['comicId']!,
+          ),
+        ),
+        GoRoute(
+          path: '/source/:sourceId/reader/:comicId/:epId',
+          builder: (_, state) => SourceReaderPage(
+            sourceId: state.pathParameters['sourceId']!,
+            comicId: state.pathParameters['comicId']!,
+            epId: state.pathParameters['epId']!,
+          ),
+        ),
             GoRoute(path: '/search', builder: (_, __) => const SearchPage()),
         GoRoute(path: '/comic/:id', builder: (_, state) => ComicDetailPage(comicId: state.pathParameters['id']!)),
         GoRoute(path: '/settings', builder: (_, __) => const SettingsPage()),

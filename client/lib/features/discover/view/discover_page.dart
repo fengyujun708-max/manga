@@ -64,7 +64,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
               _iconBtn(Icons.search_rounded, () => GoRouter.of(context).push('/search')),
               const SizedBox(width: 8),
               _iconBtn(Icons.extension_rounded, () async {
-                await GoRouter.of(context).push('/source-manager');
+                await GoRouter.of(context).push('/source-manager?tab=market');
                 _loadInstalledSources(); // 返回后刷新
               }),
             ]),
@@ -140,7 +140,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () async {
-              await GoRouter.of(context).push('/source-market');
+              await GoRouter.of(context).push('/source-manager?tab=market');
               _loadInstalledSources();
             },
             icon: const Icon(Icons.shop_rounded),

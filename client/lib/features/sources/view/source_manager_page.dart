@@ -8,7 +8,8 @@ import '../bloc/source_event.dart';
 import '../bloc/source_state.dart';
 
 class SourceManagerPage extends StatefulWidget {
-  const SourceManagerPage({super.key});
+  final int initialTab;
+  const SourceManagerPage({super.key, this.initialTab = 0});
   @override
   State<SourceManagerPage> createState() => _SourceManagerPageState();
 }
@@ -20,7 +21,7 @@ class _SourceManagerPageState extends State<SourceManagerPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTab);
   }
 
   @override
@@ -333,7 +334,27 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
                       setState(() => _installing = true);
                       context.read<SourceBloc>().add(SourceInstallFromServerRequested(m.id));
                       await Future.delayed(const Duration(seconds: 2));
-                      if (mounted) setState(() => _installing = false);
+                      if (!mounted) return;
+                      setState(() => _installing = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: AppTheme.surface,
+                          content: Row(children: [
+                            const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text('「${m.name}」安装成功',
+                                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
+                            ),
+                          ]),
+                          action: SnackBarAction(
+                            label: '去发现页',
+                            textColor: AppTheme.primary,
+                            onPressed: () => GoRouter.of(context).go('/discover'),
+                          ),
+                        ),
+                      );
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
