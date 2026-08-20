@@ -1,10 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../plugins/manga_source.dart' hide SourceManager;
-import '../../../plugins/runtime/js_engine.dart';
+import '../../../plugins/manga_source.dart';
 import '../../../plugins/source_manager.dart';
 import '../../../core/network/api_client.dart';
-
 import 'source_event.dart';
 import 'source_state.dart';
 
@@ -13,7 +11,7 @@ class SourceBloc extends Bloc<SourceEvent, SourceState> {
   final SourceManager _sourceManager;
 
   SourceBloc({required this.apiClient})
-      : _sourceManager = SourceManager(apiClient: apiClient, jsEngine: QuickJSEngine()),
+      : _sourceManager = SourceManager(apiClient: apiClient),
         super(SourceInitial()) {
     on<SourceLoadRequested>(_onLoad);
     on<SourceRefreshRequested>(_onRefresh);
@@ -23,6 +21,7 @@ class SourceBloc extends Bloc<SourceEvent, SourceState> {
     on<SourceDeleteRequested>(_onDelete);
     on<SourceMarketLoadRequested>(_onMarketLoad);
     on<SourceInstallRequested>(_onInstall);
+    on<SourceInstallFromServerRequested>(_onInstallFromServer);
   }
 
   Future<void> _onLoad(SourceLoadRequested event, Emitter<SourceState> emit) async {
@@ -91,9 +90,11 @@ class SourceBloc extends Bloc<SourceEvent, SourceState> {
   Future<void> _onMarketLoad(SourceMarketLoadRequested event, Emitter<SourceState> emit) async {
     emit(SourceMarketLoading());
     try {
-      final response = await apiClient.get<Map<String, dynamic>>('/sources');
+      final response = await apiClient.get('/sources');
       final data = response.data;
-      final marketSources = ((data?['sources'] as List?) ?? []).map((e) => SourceManifest.fromJson(e as Map<String, dynamic>)).toList();
+      final marketSources = ((data?['sources'] as List?) ?? [])
+          .map((e) => SourceManifest.fromJson(e as Map<String, dynamic>))
+          .toList();
       emit(SourceMarketLoaded(sources: marketSources));
     } catch (e) {
       emit(SourceMarketError(message: '加载市场失败: $e'));
@@ -104,6 +105,17 @@ class SourceBloc extends Bloc<SourceEvent, SourceState> {
     emit(SourceInstalling(sourceId: event.sourceId));
     try {
       await _sourceManager.installSource(event.sourceId, event.sourceUrl);
+      final sources = _sourceManager.getInstalledSources();
+      emit(SourceLoaded(sources: sources));
+    } catch (e) {
+      emit(SourceError(message: '安装失败: $e'));
+    }
+  }
+
+  Future<void> _onInstallFromServer(SourceInstallFromServerRequested event, Emitter<SourceState> emit) async {
+    emit(SourceInstalling(sourceId: event.sourceId));
+    try {
+      await _sourceManager.installFromServer(event.sourceId);
       final sources = _sourceManager.getInstalledSources();
       emit(SourceLoaded(sources: sources));
     } catch (e) {

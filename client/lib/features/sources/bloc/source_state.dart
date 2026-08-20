@@ -11,7 +11,7 @@ class SourceInitial extends SourceState {}
 class SourceLoading extends SourceState {}
 
 class SourceLoaded extends SourceState {
-  final List<MangaSource> sources;
+  final List<SourceManifest> sources;
   const SourceLoaded({required this.sources});
   @override List<Object?> get props => [sources];
 }
@@ -25,12 +25,6 @@ class SourceError extends SourceState {
 class SourceUpdating extends SourceState {
   final String sourceId;
   const SourceUpdating({required this.sourceId});
-  @override List<Object?> get props => [sourceId];
-}
-
-class SourceUpdatingSuccess extends SourceState {
-  final String sourceId;
-  const SourceUpdatingSuccess(this.sourceId);
   @override List<Object?> get props => [sourceId];
 }
 
@@ -52,12 +46,6 @@ class SourceTestError extends SourceState {
   final String message;
   const SourceTestError({required this.sourceId, required this.message});
   @override List<Object?> get props => [sourceId, message];
-}
-
-class SourceDeleting extends SourceState {
-  final String sourceId;
-  const SourceDeleting({required this.sourceId});
-  @override List<Object?> get props => [sourceId];
 }
 
 class SourceInstalling extends SourceState {

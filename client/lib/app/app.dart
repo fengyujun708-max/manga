@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/auth/view/login_page.dart';
 import '../features/home/view/home_page.dart';
@@ -11,6 +12,7 @@ import '../features/community/view/community_page.dart';
 import '../features/profile/view/profile_page.dart';
 import '../features/sources/view/source_manager_page.dart';
 import '../features/sources/view/source_market_page.dart';
+import '../features/sources/bloc/source_bloc.dart';
 import '../features/search/view/search_page.dart';
 import '../features/comic/view/comic_detail_page.dart';
 import '../features/settings/view/settings_page.dart';
@@ -36,8 +38,20 @@ class ManjieApp extends StatelessWidget {
       },
       routes: [
         GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
-        GoRoute(path: '/source-manager', builder: (_, __) => const SourceManagerPage()),
-        GoRoute(path: '/source-market', builder: (_, __) => const SourceMarketPage()),
+        GoRoute(
+          path: '/source-manager',
+          builder: (_, __) => BlocProvider(
+            create: (_) => SourceBloc(apiClient: GetIt.instance<ApiClient>())..add(SourceLoadRequested()),
+            child: const SourceManagerPage(),
+          ),
+        ),
+        GoRoute(
+          path: '/source-market',
+          builder: (_, __) => BlocProvider(
+            create: (_) => SourceBloc(apiClient: GetIt.instance<ApiClient>())..add(SourceMarketLoadRequested()),
+            child: const SourceMarketPage(),
+          ),
+        ),
         GoRoute(path: '/discover/source/:id', builder: (_, state) => SourceDetailPage(sourceId: state.pathParameters['id']!)),
             GoRoute(path: '/search', builder: (_, __) => const SearchPage()),
         GoRoute(path: '/comic/:id', builder: (_, state) => ComicDetailPage(comicId: state.pathParameters['id']!)),
