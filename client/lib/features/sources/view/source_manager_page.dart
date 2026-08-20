@@ -113,7 +113,11 @@ class _InstalledSourcesTab extends StatelessWidget {
       itemCount: 4,
       itemBuilder: (_, i) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: ShimmerBox(width: double.infinity, height: 72, radius: BorderRadius.circular(AppTheme.radiusMd)),
+        child: ShimmerBox(
+          width: double.infinity,
+          height: 72,
+          radius: BorderRadius.circular(AppTheme.radiusMd),
+        ),
       ),
     );
   }
@@ -193,7 +197,11 @@ class _SourceMarketTab extends StatelessWidget {
             itemCount: 4,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: ShimmerBox(width: double.infinity, height: 88, radius: BorderRadius.circular(AppTheme.radiusLg)),
+              child: ShimmerBox(
+                width: double.infinity,
+                height: 88,
+                radius: BorderRadius.circular(AppTheme.radiusLg),
+              ),
             ),
           );
         }
