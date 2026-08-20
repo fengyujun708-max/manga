@@ -85,7 +85,7 @@ class HomePage extends StatelessWidget {
   Widget _section(BuildContext ctx, HomeSection s) {
     if (s.items.isEmpty) return const SizedBox.shrink();
     return Column(children: [
-      _SectionHeader(title: s.title, onSeeAll: () => context.push('/discover')),
+      _SectionHeader(title: s.title, onSeeAll: () => GoRouter.of(ctx).push('/discover')),
       SizedBox(
         height: 250,
         child: ListView.builder(
