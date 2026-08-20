@@ -22,6 +22,23 @@ jobs:
           flutter-version: '3.29.0'
           channel: 'stable'
 
+      - name: 生成 Android 平台目录
+        run: flutter create --platforms=android --org com.manjie --project-name manjie .
+
+      - name: 应用网络安全配置
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          cat > android/app/src/main/res/xml/network_security_config.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <network-security-config>
+              <domain-config cleartextTrafficPermitted="true">
+                  <domain includeSubdomains="false">39.106.192.137</domain>
+              </domain-config>
+          </network-security-config>
+          EOF
+          # 修改 AndroidManifest.xml 添加 networkSecurityConfig
+          sed -i 's|<application |<application android:networkSecurityConfig="@xml/network_security_config" |' android/app/src/main/AndroidManifest.xml
+
       - name: 安装依赖
         run: flutter pub get
 
