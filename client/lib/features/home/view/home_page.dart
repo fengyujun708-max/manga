@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
@@ -19,23 +21,26 @@ class HomePage extends StatelessWidget {
             return CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // 顶部 — 渐变透明
+                // 顶部栏 — 透明 + 渐变 Logo
                 SliverAppBar(
                   floating: true, snap: true,
                   backgroundColor: Colors.transparent, elevation: 0,
                   title: Row(children: [
                     ShaderMask(
                       shaderCallback: (b) => AppTheme.primaryGradient.createShader(b),
-                      child: const Text('漫界', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white, letterSpacing: 1)),
+                      child: const Text('漫界',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white, letterSpacing: 1.5)),
                     ),
                     const Spacer(),
-                    _iconBtn(ctx, Icons.search_rounded, () => context.push('/search')),
+                    _iconBtn(ctx, Icons.search_rounded, () => GoRouter.of(ctx).push('/search')),
                     const SizedBox(width: 8),
                     _iconBtn(ctx, Icons.notifications_none_rounded, () {}),
                   ]),
                 ),
+
+                // 内容
                 if (state is HomeLoading)
-                  const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2)))
+                  SliverList(delegate: SliverChildListDelegate(_buildSkeleton()))
                 else if (state is HomeError)
                   SliverFillRemaining(child: _error(ctx, state.message))
                 else if (state is HomeLoaded)
@@ -50,12 +55,49 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // 骨架屏
+  List<Widget> _buildSkeleton() {
+    return [
+      const SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ShimmerBox(width: double.infinity, height: 380, radius: BorderRadius.circular(AppTheme.radiusXl)),
+      ),
+      const SizedBox(height: 28),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(children: [
+          ShimmerBox(width: 100, height: 20, radius: BorderRadius.circular(4)),
+          const Spacer(),
+          ShimmerBox(width: 70, height: 16, radius: BorderRadius.circular(20)),
+        ]),
+      ),
+      const SizedBox(height: 14),
+      SizedBox(
+        height: 250,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: 4,
+          itemBuilder: (_, i) => Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: ShimmerBox(width: 150, height: 220, radius: BorderRadius.circular(AppTheme.radiusMd)),
+          ),
+        ),
+      ),
+      const SizedBox(height: 80),
+    ];
+  }
+
   Widget _iconBtn(BuildContext ctx, IconData icon, VoidCallback tap) {
     return GestureDetector(
       onTap: tap,
       child: Container(
         width: 40, height: 40,
-        decoration: BoxDecoration(color: AppTheme.surfaceLight.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(14)),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceLight.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(14),
+        ),
         child: Icon(icon, size: 20, color: AppTheme.textPrimary),
       ),
     );
@@ -67,9 +109,11 @@ class HomePage extends StatelessWidget {
       const SizedBox(height: 12),
       Text(msg, style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
       const SizedBox(height: 16),
-      GlowButton(width: 160, height: 42,
+      SpringButton(
+        width: 160, height: 42,
         onPressed: () => ctx.read<HomeBloc>().add(HomeRefreshRequested()),
-        child: const Text('重试', style: TextStyle(fontSize: 14, color: Colors.white))),
+        child: const Text('重试', style: TextStyle(fontSize: 14, color: Colors.white)),
+      ),
     ]));
   }
 
@@ -77,7 +121,10 @@ class HomePage extends StatelessWidget {
     final d = state.homeData;
     return SliverList(delegate: SliverChildListDelegate([
       if (d.banner.isNotEmpty) _Hero(banner: d.banner.first),
-      ...d.sections.map((s) => _section(ctx, s)).toList(),
+      ...d.sections.asMap().entries.map((e) => FadeSlideIn(
+        delay: Duration(milliseconds: e.key * 80),
+        child: _section(ctx, e.value),
+      )),
       const SizedBox(height: 100),
     ]));
   }
@@ -89,13 +136,15 @@ class HomePage extends StatelessWidget {
       SizedBox(
         height: 250,
         child: ListView.builder(
-          scrollDirection: Axis.horizontal, physics: const BouncingScrollPhysics(),
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: s.items.length,
           itemBuilder: (_, i) {
             final item = s.items[i];
             return _ComicCard(
-              title: item.title, author: item.author, rating: item.rating, chapter: item.chapter,
+              title: item.title, author: item.author,
+              rating: item.rating, chapter: item.chapter,
               onTap: () => GoRouter.of(ctx).push('/comic/${item.id}'),
             );
           },
@@ -113,7 +162,10 @@ class _SectionHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 28, 16, 12),
       child: Row(children: [
-        Container(width: 3, height: 18, decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: BorderRadius.circular(2))),
+        Container(
+          width: 3, height: 18,
+          decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: BorderRadius.circular(2)),
+        ),
         const SizedBox(width: 10),
         Text(title, style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
         const Spacer(),
@@ -122,7 +174,10 @@ class _SectionHeader extends StatelessWidget {
             onTap: onSeeAll,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Text('查看全部', style: TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.w600)),
             ),
           ),
@@ -147,9 +202,12 @@ class _Hero extends StatelessWidget {
         boxShadow: AppTheme.cardShadow,
       ),
       child: Stack(children: [
+        // 装饰光球
         Positioned(right: -60, top: -60, child: _circle(200, 0.05)),
         Positioned(left: -40, bottom: -40, child: _circle(160, 0.03)),
         Positioned(right: 30, top: 40, child: _circle(80, 0.06)),
+        // 渐变光晕
+        Positioned(left: -50, top: 100, child: _circle(120, 0.04)),
         Padding(
           padding: const EdgeInsets.all(24),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -166,11 +224,13 @@ class _Hero extends StatelessWidget {
               shadows: [const Shadow(blurRadius: 12, color: Colors.black54)])),
             if (banner.description.isNotEmpty) ...[
               const SizedBox(height: 10),
-              Text(banner.description, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.5), maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(banner.description,
+                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.5),
+                maxLines: 2, overflow: TextOverflow.ellipsis),
             ],
             const SizedBox(height: 20),
             Row(children: [
-              GlowButton(
+              SpringButton(
                 width: null, height: 46, gradient: AppTheme.accentGradient,
                 onPressed: () {},
                 child: const Row(mainAxisSize: MainAxisSize.min, children: [
@@ -180,17 +240,7 @@ class _Hero extends StatelessWidget {
                 ]),
               ),
               const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {},
-                child: Container(
-                  width: 46, height: 46,
-                  decoration: BoxDecoration(
-                    color: AppTheme.glassFill, borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                    border: Border.all(color: AppTheme.glassBorder, width: 0.5),
-                  ),
-                  child: const Icon(Icons.bookmark_border_rounded, color: AppTheme.textPrimary, size: 20),
-                ),
-              ),
+              _GlassIcon(icon: Icons.bookmark_border_rounded, onTap: () {}),
             ]),
           ]),
         ),
@@ -201,56 +251,113 @@ class _Hero extends StatelessWidget {
     Container(width: s, height: s, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: a)));
 }
 
-class _ComicCard extends StatelessWidget {
-  final String title, author, chapter; final double rating; final VoidCallback onTap;
-  const _ComicCard({required this.title, required this.author, this.rating = 0, this.chapter = '', required this.onTap});
+class _GlassIcon extends StatelessWidget {
+  final IconData icon; final VoidCallback onTap;
+  const _GlassIcon({required this.icon, required this.onTap});
   @override
   Widget build(BuildContext ctx) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 150, margin: const EdgeInsets.only(right: 14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: AppTheme.cardGradient,
-                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                boxShadow: AppTheme.cardShadow,
-              ),
-              child: Stack(children: [
-                Center(child: Icon(Icons.menu_book_rounded, size: 40, color: AppTheme.textTertiary)),
-                if (rating > 0)
-                  Positioned(top: 8, right: 8,
+      child: LiquidGlass(
+        radius: BorderRadius.circular(AppTheme.radiusMd), padding: EdgeInsets.zero,
+        child: SizedBox(
+          width: 46, height: 46,
+          child: Icon(icon, color: AppTheme.textPrimary, size: 20),
+        ),
+      ),
+    );
+  }
+}
+
+class _ComicCard extends StatefulWidget {
+  final String title, author, chapter; final double rating; final VoidCallback onTap;
+  const _ComicCard({required this.title, required this.author, this.rating = 0, this.chapter = '', required this.onTap});
+  @override
+  State<_ComicCard> createState() => _ComicCardState();
+}
+
+class _ComicCardState extends State<_ComicCard> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(duration: AppTheme.durFast, vsync: this);
+    _scale = Tween<double>(begin: 1, end: 0.95).animate(CurvedAnimation(parent: _ctrl, curve: AppTheme.smoothOut));
+  }
+
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext ctx) {
+    return GestureDetector(
+      onTapDown: (_) { _ctrl.forward(); HapticFeedback.selectionClick(); },
+      onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
+      onTapCancel: () => _ctrl.reverse(),
+      child: AnimatedBuilder(
+        animation: _scale,
+        builder: (ctx, child) => Transform.scale(scale: _scale.value, child: child),
+        child: Container(
+          width: 150, margin: const EdgeInsets.only(right: 14),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: AppTheme.cardGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  boxShadow: AppTheme.cardShadow,
+                ),
+                child: Stack(children: [
+                  Center(child: Icon(Icons.menu_book_rounded, size: 40, color: AppTheme.textTertiary)),
+                  // 评分胶囊
+                  if (widget.rating > 0)
+                    Positioned(top: 8, right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.star_rounded, size: 13, color: AppTheme.accent),
+                          const SizedBox(width: 3),
+                          Text(widget.rating.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
+                        ]),
+                      )),
+                  // 底部渐变遮罩
+                  Positioned(bottom: 0, left: 0, right: 0, height: 60,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.55), borderRadius: BorderRadius.circular(10)),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Icons.star_rounded, size: 13, color: AppTheme.accent),
-                        const SizedBox(width: 3),
-                        Text(rating.toStringAsFixed(1), style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
-                      ]),
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(AppTheme.radiusMd),
+                          bottomRight: Radius.circular(AppTheme.radiusMd),
+                        ),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.4)],
+                        ),
+                      ),
                     )),
-                // 渐变遮罩
-                Positioned(bottom: 0, left: 0, right: 0, height: 60,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(AppTheme.radiusMd), bottomRight: Radius.circular(AppTheme.radiusMd)),
-                      gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withValues(alpha: 0.4)]),
-                    ),
-                  )),
-              ]),
+                ]),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 2),
-          Row(children: [
-            Expanded(child: Text(author, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            if (chapter.isNotEmpty)
-              Text(chapter, style: const TextStyle(fontSize: 10, color: AppTheme.textTertiary)),
+            const SizedBox(height: 8),
+            Text(widget.title,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 2),
+            Row(children: [
+              Expanded(child: Text(widget.author,
+                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                maxLines: 1, overflow: TextOverflow.ellipsis)),
+              if (widget.chapter.isNotEmpty)
+                Text(widget.chapter, style: const TextStyle(fontSize: 10, color: AppTheme.textTertiary)),
+            ]),
           ]),
-        ]),
+        ),
       ),
     );
   }

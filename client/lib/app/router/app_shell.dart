@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/theme.dart';
 
 /// 液态玻璃底栏 — 滚动下滑隐藏，上滑/停止显示
-/// 仿 iOS Safari / Twitter 底栏行为
+/// 弹簧曲线 + 真实 BackdropFilter + 内发光边框
 class AppShell extends StatefulWidget {
   final Widget child;
   const AppShell({super.key, required this.child});
@@ -14,14 +15,17 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  late Animation<double> _barAnimation;
+    with TickerProviderStateMixin {
+  // 底栏显隐动画
+  late AnimationController _barCtrl;
   late Animation<double> _barOffset;
+  late Animation<double> _barOpacity;
 
   bool _isBarVisible = true;
-  double _lastScrollOffset = 0;
+  double _lastOffset = 0;
+  int _currentIndex = 0;
 
+  // 路由配置
   static const _routes = ['/home', '/discover', '/library', '/community', '/profile'];
   static const _labels = ['首页', '发现', '书架', '社区', '我的'];
   static const _icons = [
@@ -42,109 +46,108 @@ class _AppShellState extends State<AppShell>
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      duration: const Duration(milliseconds: 350),
+    _barCtrl = AnimationController(
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _barAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic);
-    _barOffset = Tween<double>(begin: 0, end: 1).animate(_barAnimation);
+    _barOffset = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _barCtrl, curve: Curves.easeInOutCubic),
+    );
+    _barOpacity = Tween<double>(begin: 1, end: 0).animate(
+      CurvedAnimation(parent: _barCtrl, curve: Curves.easeOut),
+    );
   }
 
   @override
   void dispose() {
-    _animController.dispose();
+    _barCtrl.dispose();
     super.dispose();
   }
 
-  void _onScroll(ScrollNotification notification) {
-    if (notification is ScrollUpdateNotification) {
-      final metrics = notification.metrics;
-      final currentScroll = metrics.pixels;
-      final delta = currentScroll - _lastScrollOffset;
-
-      // 滚动方向判断
-      if (delta > 3 && currentScroll > 50) {
+  void _onScroll(ScrollNotification n) {
+    if (n is ScrollUpdateNotification) {
+      final current = n.metrics.pixels;
+      final delta = current - _lastOffset;
+      if (delta > 4 && current > 60) {
         // 下滑 → 隐藏
         if (_isBarVisible) {
           _isBarVisible = false;
-          _animController.forward();
+          _barCtrl.forward();
         }
-      } else if (delta < -3) {
+      } else if (delta < -4) {
         // 上滑 → 显示
         if (!_isBarVisible) {
           _isBarVisible = true;
-          _animController.reverse();
+          _barCtrl.reverse();
         }
       }
-      _lastScrollOffset = currentScroll.clamp(0, double.infinity);
-    } else if (notification is ScrollEndNotification) {
-      // 停止滚动 → 显示
+      _lastOffset = current;
+    } else if (n is ScrollEndNotification) {
+      // 停止 → 显示
       if (!_isBarVisible) {
         _isBarVisible = true;
-        _animController.reverse();
+        _barCtrl.reverse();
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    int currentIndex = _routes.indexWhere((r) => location.startsWith(r));
-    if (currentIndex < 0) currentIndex = 0;
+    final loc = GoRouterState.of(context).matchedLocation;
+    _currentIndex = _routes.indexWhere((r) => loc.startsWith(r));
+    if (_currentIndex < 0) _currentIndex = 0;
 
     return Scaffold(
       body: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          _onScroll(notification);
-          return false;
-        },
+        onNotification: (n) { _onScroll(n); return false; },
         child: widget.child,
       ),
       extendBody: true,
       bottomNavigationBar: AnimatedBuilder(
-        animation: _barOffset,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0, _barOffset.value * 120),
-            child: Opacity(opacity: 1 - _barOffset.value * 0.3, child: child),
+        animation: _barCtrl,
+        builder: (ctx, child) {
+          return Opacity(
+            opacity: _barOpacity.value,
+            child: Transform.translate(
+              offset: Offset(0, _barOffset.value * 100),
+              child: child,
+            ),
           );
         },
-        child: _buildLiquidGlassBar(currentIndex),
+        child: _buildBar(),
       ),
     );
   }
 
-  Widget _buildLiquidGlassBar(int currentIndex) {
+  Widget _buildBar() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(28),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.surface.withValues(alpha: 0.55),
+              color: AppTheme.surface.withValues(alpha: 0.5),
               border: Border.all(color: AppTheme.glassBorder, width: 0.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.35),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
+                  blurRadius: 28, offset: const Offset(0, 12),
                 ),
                 BoxShadow(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
-                  blurRadius: 40,
-                  offset: const Offset(0, 0),
+                  color: AppTheme.primary.withValues(alpha: 0.06),
+                  blurRadius: 50, offset: const Offset(0, 0),
                 ),
               ],
             ),
             child: SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: List.generate(5, (i) => _buildNavItem(i, currentIndex)),
+                  children: List.generate(5, (i) => _buildItem(i)),
                 ),
               ),
             ),
@@ -154,74 +157,73 @@ class _AppShellState extends State<AppShell>
     );
   }
 
-  Widget _buildNavItem(int index, int currentIndex) {
-    final isActive = index == currentIndex;
+  Widget _buildItem(int i) {
+    final active = i == _currentIndex;
+    final color = active ? AppTheme.primary : AppTheme.textTertiary;
 
     return GestureDetector(
       onTap: () {
-        if (index != currentIndex) {
-          context.go(_routes[index]);
+        if (i != _currentIndex) {
+          HapticFeedback.selectionClick();
+          context.go(_routes[i]);
         }
       },
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeOutCubic,
+        duration: AppTheme.durNormal,
+        curve: AppTheme.smoothOut,
         padding: EdgeInsets.symmetric(
-          horizontal: isActive ? 18 : 14,
+          horizontal: active ? 20 : 14,
           vertical: 10,
         ),
         decoration: BoxDecoration(
-          color: isActive
-              ? AppTheme.primary.withValues(alpha: 0.12)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          color: active
+            ? AppTheme.primary.withValues(alpha: 0.1)
+            : Colors.transparent,
+          borderRadius: BorderRadius.circular(22),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 图标 — 选中时发光
+            // 图标 — 弹性缩放 + 发光
             TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: isActive ? 1 : 0),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              builder: (context, val, child) {
+              tween: Tween(begin: 0, end: active ? 1 : 0),
+              duration: AppTheme.durNormal,
+              curve: Curves.easeOutBack,
+              builder: (ctx, v, child) {
                 return Transform.scale(
-                  scale: 1 + val * 0.15,
+                  scale: 1 + v * 0.18,
                   child: Container(
-                    decoration: isActive && val > 0.5
-                        ? BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primary.withValues(alpha: val * 0.4),
-                                blurRadius: 12,
-                                spreadRadius: -2,
-                              ),
-                            ],
-                          )
-                        : null,
+                    decoration: active && v > 0.5
+                      ? BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primary.withValues(alpha: v * 0.45),
+                              blurRadius: 14,
+                              spreadRadius: -3,
+                            ),
+                          ],
+                        )
+                      : null,
                     child: Icon(
-                      isActive ? _activeIcons[index] : _icons[index],
+                      active ? _activeIcons[i] : _icons[i],
                       size: 24,
-                      color: isActive
-                          ? AppTheme.primary
-                          : AppTheme.textTertiary,
+                      color: color,
                     ),
                   ),
                 );
               },
             ),
             const SizedBox(height: 5),
-            // 文字
             AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 250),
+              duration: AppTheme.durNormal,
               style: TextStyle(
                 fontSize: 10.5,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                color: isActive ? AppTheme.primary : AppTheme.textTertiary,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                color: color,
                 letterSpacing: 0.3,
               ),
-              child: Text(_labels[index]),
+              child: Text(_labels[i]),
             ),
           ],
         ),
