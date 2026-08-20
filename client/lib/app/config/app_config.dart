@@ -1,7 +1,7 @@
 /// 漫界 API 配置
 class AppConfig {
   /// 服务器地址
-  static const String apiBaseUrl = 'http://39.106.192.137:3000/v1';
+  static const String apiBaseUrl = 'http://39.106.192.137/v1';
 
   /// 源注册表地址
   static const String sourceRegistryUrl = 'https://source.manjie.xxx/registry/index.json';
