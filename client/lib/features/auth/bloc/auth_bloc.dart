@@ -74,8 +74,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onCheck(AuthCheckRequested event, Emitter<AuthState> emit) async {
     final token = await storage.read('access_token');
     if (token != null) {
-      // TODO: validate token with server
-      emit(AuthUnauthenticated());
+      // 已登录，恢复会话
+      final userId = await storage.read('user_id') ?? '';
+      final phone = await storage.read('user_phone') ?? '';
+      final nickname = await storage.read('user_nickname') ?? '';
+      final avatar = await storage.read('user_avatar');
+      emit(AuthAuthenticated(
+        userId: userId,
+        phone: phone,
+        nickname: nickname,
+        avatar: avatar,
+      ));
     } else {
       emit(AuthUnauthenticated());
     }
@@ -89,8 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         'password': event.password,
       });
       final data = res.data;
-      await apiClient.setTokens(data['accessToken'], data['refreshToken']);
-      await storage.write('user_id', data['user']['id']);
+      await _saveUserSession(data);
       emit(AuthAuthenticated(
         userId: data['user']['id'],
         phone: data['user']['phone'],
@@ -98,7 +106,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         avatar: data['user']['avatar'],
       ));
     } catch (e) {
-      emit(AuthError('登录失败，请检查手机号和密码'));
+      final msg = e.toString();
+      if (msg.contains('已被禁用')) {
+        emit(AuthError('账号已被禁用'));
+      } else if (msg.contains('手机号或密码错误')) {
+        emit(AuthError('手机号或密码错误'));
+      } else {
+        emit(AuthError('登录失败，请检查手机号和密码'));
+      }
     }
   }
 
@@ -112,8 +127,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         'nickname': event.nickname,
       });
       final data = res.data;
-      await apiClient.setTokens(data['accessToken'], data['refreshToken']);
-      await storage.write('user_id', data['user']['id']);
+      await _saveUserSession(data);
       emit(AuthAuthenticated(
         userId: data['user']['id'],
         phone: data['user']['phone'],
@@ -123,6 +137,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final msg = e.toString();
       if (msg.contains('密码不一致')) {
         emit(AuthError('两次密码输入不一致'));
+      } else if (msg.contains('手机号已注册')) {
+        emit(AuthError('该手机号已注册，请直接登录'));
+      } else if (msg.contains('验证码')) {
+        emit(AuthError('注册失败，请稍后重试'));
       } else {
         emit(AuthError('注册失败，请检查信息'));
       }
@@ -134,9 +152,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final res = await apiClient.post('/auth/guest');
       final data = res.data;
-      await apiClient.setTokens(data['accessToken'], data['refreshToken']);
-      await storage.write('user_id', data['user']['id']);
-      await storage.write('is_guest', 'true');
+      await _saveUserSession(data, isGuest: true);
       emit(AuthAuthenticated(
         userId: data['user']['id'],
         phone: data['user']['phone'] ?? 'guest',
@@ -145,6 +161,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
     } catch (e) {
       emit(AuthError('游客登录失败，请稍后重试'));
+    }
+  }
+
+  /// 保存用户登录会话（token + 用户信息）到本地，供下次启动恢复
+  Future<void> _saveUserSession(Map<String, dynamic> data, {bool isGuest = false}) async {
+    final user = data['user'] as Map<String, dynamic>? ?? {};
+    await apiClient.setTokens(data['accessToken'] ?? '', data['refreshToken'] ?? '');
+    await storage.write('user_id', user['id']?.toString() ?? '');
+    await storage.write('user_phone', user['phone']?.toString() ?? (isGuest ? 'guest' : ''));
+    await storage.write('user_nickname', user['nickname']?.toString() ?? (isGuest ? '游客' : ''));
+    if (user['avatar'] != null) {
+      await storage.write('user_avatar', user['avatar'].toString());
+    }
+    if (isGuest) {
+      await storage.write('is_guest', 'true');
+    } else {
+      await storage.delete('is_guest');
     }
   }
 
