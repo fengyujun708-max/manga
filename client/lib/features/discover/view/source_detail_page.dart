@@ -123,7 +123,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
                   leading: Icon(ok ? Icons.check_circle_rounded : Icons.cancel_rounded,
                       color: ok ? AppTheme.success : AppTheme.textTertiary),
                   title: Text(url, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(ok ? '延迟 ${latency}ms' : '不可达', style: TextStyle(fontSize: 11, color: ok ? AppTheme.textSecondary : AppTheme.error)),
+                  subtitle: Text(ok ? '延迟 ${latency}ms' : '不可达', style: TextStyle(fontSize: 11, color: ok ? AppTheme.textSecondary : AppTheme.destructive)),
                   trailing: active ? const Icon(Icons.radio_button_checked_rounded, color: AppTheme.primary, size: 18)
                       : const Icon(Icons.radio_button_off_rounded, color: AppTheme.textTertiary, size: 18),
                   onTap: ok ? () {

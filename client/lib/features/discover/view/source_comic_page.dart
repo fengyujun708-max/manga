@@ -34,7 +34,7 @@ class _SourceComicPageState extends State<SourceComicPage> {
       final data = res.data;
       if (data is Map) {
         setState(() {
-          _info = data;
+          _info = Map<String, dynamic>.from(data);
           _chapters = (data['chapters'] as List?) ?? [];
           _loading = false;
         });
