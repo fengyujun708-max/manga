@@ -2,50 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
-import 'dart:convert';
 import '../../../app/theme/theme.dart';
+import '../../../app/widgets/comic_widgets.dart';
 import '../../../core/network/api_client.dart';
 import '../../../plugins/source_data_service.dart';
 
-/// 漫画源详情页 — 优先本地执行源 JS（Venera 模式），无本地 JS 时服务器代理
+/// 漫画源详情页 — 杂志式沉浸布局
+/// 板块横滑 + 搜索 + 分类入口 + 液态玻璃
 class SourceDetailPage extends StatefulWidget {
   final String sourceId;
   final String sourceName;
   const SourceDetailPage({super.key, required this.sourceId, this.sourceName = ''});
-
   @override
   State<SourceDetailPage> createState() => _SourceDetailPageState();
 }
 
 class _SourceDetailPageState extends State<SourceDetailPage> with TickerProviderStateMixin {
   bool _loading = true;
-  bool _routesLoading = false;
   String? _error;
-  List<dynamic> _sections = []; // explore 板块
+  List<dynamic> _sections = [];
   List<dynamic> _searchResults = [];
   bool _searching = false;
   String _searchQuery = '';
-  String _mode = ''; // local / server
-
-  // 线路
-  List<dynamic> _routes = [];
-  String _currentRoute = '';
-  int _activeSectionIndex = 0;
-
+  String _mode = '';
   final _searchCtrl = TextEditingController();
+  late TabController _tabCtrl;
+  bool _showSearch = false;
 
   @override
   void initState() {
     super.initState();
+    _tabCtrl = TabController(length: 2, vsync: this);
     _loadExplore();
-    _loadRoutes();
   }
 
   @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _searchCtrl.dispose(); _tabCtrl.dispose(); super.dispose(); }
 
   Future<void> _loadExplore() async {
     setState(() { _loading = true; _error = null; });
@@ -55,114 +47,62 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
       _sections = result['sections'] ?? [];
       _mode = result['mode'] ?? '';
       _loading = false;
-      _activeSectionIndex = 0;
       if ((result['error'] ?? '').isNotEmpty) _error = result['error'];
     });
   }
 
-  Future<void> _loadRoutes() async {
-    setState(() => _routesLoading = true);
-    try {
-      final api = GetIt.instance<ApiClient>();
-      final res = await api.get('/source/${widget.sourceId}/routes');
-      final data = res.data;
-      if (data is Map && data['routes'] is List) {
-        setState(() {
-          _routes = data['routes'] ?? [];
-          final ok = _routes.where((r) => r['ok'] == true).toList();
-          if (ok.isNotEmpty) _currentRoute = ok.first['url'] ?? '';
-        });
-      }
-    } catch (_) {}
-    setState(() => _routesLoading = false);
-  }
-
   Future<void> _search(String q) async {
-    if (q.trim().isEmpty) {
-      setState(() { _searching = false; _searchResults = []; });
-      return;
-    }
+    if (q.trim().isEmpty) { setState(() { _searching = false; _searchResults = []; }); return; }
     setState(() { _searching = true; _searchQuery = q.trim(); });
     final result = await SourceDataService.instance.search(widget.sourceId, q.trim(), 1);
     if (!mounted) return;
-    setState(() {
-      _searchResults = result['items'] ?? [];
-      _mode = result['mode'] ?? _mode;
-      _searching = false;
-    });
+    setState(() { _searchResults = result['items'] ?? []; _searching = false; });
   }
 
-  void _showRoutePicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('API 线路', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppTheme.textPrimary)),
-            ),
-            if (_routesLoading)
-              const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
-            else
-              ..._routes.map((r) {
-                final ok = r['ok'] == true;
-                final url = r['url']?.toString() ?? '';
-                final latency = r['latencyMs'] ?? 0;
-                final active = url == _currentRoute;
-                return ListTile(
-                  leading: Icon(ok ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                      color: ok ? AppTheme.success : AppTheme.textTertiary),
-                  title: Text(url, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(ok ? '延迟 ${latency}ms' : '不可达', style: TextStyle(fontSize: 11, color: ok ? AppTheme.textSecondary : AppTheme.destructive)),
-                  trailing: active ? const Icon(Icons.radio_button_checked_rounded, color: AppTheme.primary, size: 18)
-                      : const Icon(Icons.radio_button_off_rounded, color: AppTheme.textTertiary, size: 18),
-                  onTap: ok ? () {
-                    setState(() => _currentRoute = url);
-                    // 保存选择的线路（本地记住，后续请求服务器用）
-                    // 此处简单提示，服务器 fallback 自动选择最优
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('已选择线路: $url'), duration: const Duration(seconds: 1)),
-                    );
-                  } : null,
-                );
-              }),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
+  void _enterComic(String id) {
+    GoRouter.of(context).push('/source/${widget.sourceId}/comic/$id');
   }
 
   @override
   Widget build(BuildContext context) {
-    final sections = _searching || _searchQuery.isNotEmpty ? null : _sections;
-    final showSearch = _searching || _searchQuery.isNotEmpty;
-    
+    final name = widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId;
+    final isSearch = _searching || _searchQuery.isNotEmpty;
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
+          // ── 沉浸式头部（液态玻璃）──
           SliverAppBar(
+            expandedHeight: 100,
             pinned: true,
-            backgroundColor: AppTheme.surface.withValues(alpha: 0.9),
+            stretch: true,
+            backgroundColor: Colors.transparent,
             elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                    colors: [AppTheme.primary.withValues(alpha: 0.15), AppTheme.background],
+                  ),
+                ),
+              ),
+            ),
             leading: GestureDetector(
               onTap: () => context.pop(),
               child: Container(
                 margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: AppTheme.surfaceLight.withValues(alpha: 0.6), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                  color: AppTheme.glassFillLight,
+                  shape: BoxShape.circle,
+                ),
                 child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.textPrimary),
               ),
             ),
-            title: Text(widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.textPrimary)),
+            title: Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
             actions: [
-              // 执行模式标签（本地/服务器）
+              // 模式标签
               if (_mode.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.only(right: 8),
@@ -171,317 +111,111 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
                     color: _mode == 'local' ? AppTheme.success.withValues(alpha: 0.15) : AppTheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(_mode == 'local' ? '本地执行' : '服务器代理',
+                  child: Text(_mode == 'local' ? '本地' : '代理',
                       style: TextStyle(fontSize: 10, color: _mode == 'local' ? AppTheme.success : AppTheme.primary)),
                 ),
+              // 搜索按钮
               GestureDetector(
-                onTap: _showRoutePicker,
+                onTap: () => setState(() => _showSearch = !_showSearch),
                 child: Container(
                   margin: const EdgeInsets.only(right: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(children: [
-                    Icon(Icons.swap_vert_rounded, size: 14, color: _currentRoute.isNotEmpty ? AppTheme.primary : AppTheme.textTertiary),
-                    const SizedBox(width: 4),
-                    Text(_currentRoute.isEmpty ? '线路' : '线路${_routes.length}条',
-                        style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-                  ]),
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: AppTheme.glassFillLight, shape: BoxShape.circle),
+                  child: Icon(_showSearch ? Icons.close_rounded : Icons.search_rounded, size: 20, color: AppTheme.textPrimary),
                 ),
               ),
             ],
-          ),
-
-          // 搜索框
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(children: [
-                  const Icon(Icons.search_rounded, size: 20, color: AppTheme.textTertiary),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
+            bottom: _showSearch ? PreferredSize(
+              preferredSize: const Size.fromHeight(60),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: LiquidGlass(
+                  radius: BorderRadius.circular(14),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                  fillColor: AppTheme.glassFillRegular,
+                  child: Row(children: [
+                    const Icon(Icons.search_rounded, size: 20, color: AppTheme.textTertiary),
+                    const SizedBox(width: 10),
+                    Expanded(child: TextField(
                       controller: _searchCtrl,
+                      autofocus: true,
                       style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
-                      decoration: const InputDecoration(
-                        hintText: '搜索漫画',
-                        hintStyle: TextStyle(color: AppTheme.textTertiary, fontSize: 14),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12),
-                      ),
+                      decoration: const InputDecoration(hintText: '搜索漫画', hintStyle: TextStyle(color: AppTheme.textTertiary, fontSize: 14), border: InputBorder.none, isDense: true),
                       onSubmitted: _search,
                       textInputAction: TextInputAction.search,
-                    ),
-                  ),
-                  if (_searching)
-                    GestureDetector(onTap: () { _searchCtrl.clear(); setState(() { _searchResults = []; _searching = false; _searchQuery = ''; }); },
-                      child: const Icon(Icons.close_rounded, size: 18, color: AppTheme.textTertiary)),
-                ]),
+                    )),
+                    if (_searching) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.5, color: AppTheme.primary)),
+                  ]),
+                ),
               ),
-            ),
+            ) : null,
           ),
 
-          // 分类标签栏（explore 板块作为 Tab）+ 全部分类入口
-          if (!showSearch && sections != null && sections.isNotEmpty)
+          // ── 内容区 ──
+          if (_loading)
+            const SliverFillRemaining(child: LoadingState(text: '加载中...'))
+          else if (_error != null && _sections.isEmpty)
+            SliverFillRemaining(child: EmptyState(
+              icon: Icons.cloud_off_rounded, title: '加载失败', subtitle: _error,
+              actionLabel: '重试', onAction: _loadExplore,
+            ))
+          else if (isSearch && _searchResults.isEmpty)
+            SliverFillRemaining(child: EmptyState(icon: Icons.search_off_rounded, title: '未找到漫画', subtitle: '试试其他关键词'))
+          else if (isSearch)
+            ComicGrid(comics: _searchResults.cast<Map<String, dynamic>>(), onComicTap: _enterComic)
+          else ...[
+            // 板块列表
+            SliverList(delegate: SliverChildBuilderDelegate(
+              (ctx, i) {
+                if (i >= _sections.length) return null;
+                final sec = _sections[i];
+                final title = sec['title']?.toString() ?? '板块';
+                final items = (sec['items'] as List?) ?? [];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: HorizontalComicSection(
+                    title: title,
+                    comics: items.cast<Map<String, dynamic>>(),
+                    onMore: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?initial=$title'),
+                    onComicTap: _enterComic,
+                  ),
+                );
+              },
+              childCount: _sections.length,
+            )),
+
+            // 分类入口
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 36,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: sections.length,
-                          itemBuilder: (_, i) {
-                            final active = i == _activeSectionIndex;
-                            return GestureDetector(
-                              onTap: () { HapticFeedback.selectionClick(); setState(() => _activeSectionIndex = i); },
-                              child: Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: active ? AppTheme.primary : AppTheme.surfaceLight.withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child: Text(
-                                  sections[i]['title']?.toString() ?? '',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                                    color: active ? Colors.white : AppTheme.textSecondary,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: GestureDetector(
+                  onTap: () => GoRouter.of(context).push('/source/${widget.sourceId}/category'),
+                  child: LiquidGlass(
+                    radius: BorderRadius.circular(AppTheme.radiusMd),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    fillColor: AppTheme.glassFillLight,
+                    child: Row(children: [
+                      Container(
+                        width: 36, height: 36,
+                        decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.category_rounded, size: 18, color: Colors.white),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => GoRouter.of(context).push('/source/${widget.sourceId}/category'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Row(children: [
-                          Icon(Icons.category_rounded, size: 14, color: AppTheme.primary),
-                          SizedBox(width: 4),
-                          Text('全部分类', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primary)),
-                        ]),
-                      ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('全部分类', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                        Text('浏览更多漫画', style: TextStyle(fontSize: 12, color: AppTheme.textTertiary)),
+                      ])),
+                      const Icon(Icons.chevron_right_rounded, color: AppTheme.textTertiary),
+                    ]),
+                  ),
                 ),
               ),
             ),
 
-          if (_loading)
-            const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2)))
-          else if (_error != null && !showSearch)
-            SliverFillRemaining(
-              child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(Icons.cloud_off_rounded, size: 48, color: AppTheme.textTertiary),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(onPressed: _loadExplore, style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
-                  child: const Text('重试', style: TextStyle(color: Colors.white))),
-              ])),
-            )
-          else if (showSearch)
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, childAspectRatio: 0.62, crossAxisSpacing: 10, mainAxisSpacing: 10),
-                delegate: SliverChildBuilderDelegate(
-                  (_, i) {
-                    final c = _searchResults[i];
-                    return _ComicGridItem(
-                      title: c['title']?.toString() ?? '未知',
-                      subtitle: c['subtitle']?.toString() ?? '',
-                      cover: c['cover']?.toString() ?? '',
-                      id: c['id']?.toString() ?? '',
-                      onTap: () => _openComic(c),
-                      index: i,
-                    );
-                  },
-                  childCount: _searchResults.length,
-                ),
-              ),
-            )
-          else if (sections == null || sections.isEmpty)
-            const SliverFillRemaining(child: Center(child: Text('该源暂无内容', style: TextStyle(color: AppTheme.textSecondary))))
-          else
-            ...[_buildActiveSection(sections[_activeSectionIndex.clamp(0, sections.length - 1)])],
+            // 底部留白
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildActiveSection(dynamic sec) {
-    final items = (sec['items'] as List?) ?? [];
-    if (items.isEmpty) {
-      return const SliverFillRemaining(child: Center(child: Text('暂无内容', style: TextStyle(color: AppTheme.textTertiary))));
-    }
-    return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, childAspectRatio: 0.62, crossAxisSpacing: 10, mainAxisSpacing: 10),
-        delegate: SliverChildBuilderDelegate(
-          (_, i) {
-            final c = items[i];
-            return _ComicGridItem(
-              title: c['title']?.toString() ?? '',
-              subtitle: c['subtitle']?.toString() ?? '',
-              cover: c['cover']?.toString() ?? '',
-              id: c['id']?.toString() ?? '',
-              onTap: () => _openComic(c),
-              index: i,
-            );
-          },
-          childCount: items.length,
-        ),
-      ),
-    );
-  }
-
-  void _openComic(dynamic comic) {
-    HapticFeedback.lightImpact();
-    final id = comic['id']?.toString() ?? '';
-    if (id.isEmpty) return;
-    GoRouter.of(context).push('/source/${widget.sourceId}/comic/$id');
-  }
-}
-
-/// 横向漫画卡片（explore 板块）
-class _HorizontalComicCard extends StatefulWidget {
-  final String title, subtitle, cover;
-  final VoidCallback onTap;
-  final int index;
-  const _HorizontalComicCard({required this.title, required this.subtitle, required this.cover, required this.onTap, required this.index});
-  @override
-  State<_HorizontalComicCard> createState() => _HorizontalComicCardState();
-}
-
-class _HorizontalComicCardState extends State<_HorizontalComicCard> {
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: Container(
-        width: 110,
-        margin: const EdgeInsets.only(right: 10),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: AppTheme.glassBorder, width: 0.5),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 130,
-              width: double.infinity,
-              color: AppTheme.surfaceLight,
-              child: widget.cover.isNotEmpty
-                  ? Image.network(widget.cover, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _coverPlaceholder())
-                  : _coverPlaceholder(),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                  if (widget.subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(widget.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _coverPlaceholder() => Center(
-        child: Icon(Icons.menu_book_rounded, size: 28, color: AppTheme.textTertiary),
-      );
-}
-
-/// 网格漫画卡片（搜索结果）
-class _ComicGridItem extends StatelessWidget {
-  final String title, subtitle, cover, id;
-  final VoidCallback onTap;
-  final int index;
-  const _ComicGridItem({required this.title, required this.subtitle, required this.cover, required this.id, required this.onTap, required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: AppTheme.glassBorder, width: 0.5),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: AppTheme.surfaceLight,
-                child: cover.isNotEmpty
-                    ? Image.network(cover, fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.menu_book_rounded, size: 30, color: AppTheme.textTertiary))
-                    : const Icon(Icons.menu_book_rounded, size: 30, color: AppTheme.textTertiary),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                  if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -1,258 +1,287 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/theme/theme.dart';
-import '../../../app/components/manjie_card.dart';
-import '../../../app/components/manjie_button.dart';
-import '../../../app/components/manjie_toast.dart';
-import '../../../app/components/manjie_shimmer.dart';
+import '../../../app/widgets/comic_widgets.dart';
+import '../../../plugins/manga_source.dart';
+import '../../../plugins/local_venera_source.dart';
+import '../../../core/network/api_client.dart';
+import '../bloc/source_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// 源市场 — 分类筛选 + 搜索 + 液态玻璃卡片
 class SourceMarketPage extends StatefulWidget {
   const SourceMarketPage({super.key});
-
   @override
   State<SourceMarketPage> createState() => _SourceMarketPageState();
 }
 
-class _SourceMarketPageState extends State<SourceMarketPage> {
+class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerProviderStateMixin {
+  List<SourceManifest> _allSources = [];
+  List<SourceManifest> _filtered = [];
   bool _loading = true;
-  final List<_MarketSource> _sources = [];
-  String _searchQuery = '';
+  String _search = '';
+  late TabController _tabCtrl;
+  final _searchCtrl = TextEditingController();
+
+  final _tabs = [
+    {'key': 'all', 'name': '全部'},
+    {'key': 'zh', 'name': '中文'},
+    {'key': 'ja', 'name': '日本'},
+    {'key': 'intl', 'name': '海外'},
+    {'key': 'adult', 'name': '成人'},
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadSources();
+    _tabCtrl = TabController(length: _tabs.length, vsync: this);
+    _tabCtrl.addListener(() { if (!_tabCtrl.indexIsChanging) _applyFilter(); });
+    _load();
   }
 
-  Future<void> _loadSources() async {
+  @override
+  void dispose() { _tabCtrl.dispose(); _searchCtrl.dispose(); super.dispose(); }
+
+  Future<void> _load() async {
     setState(() => _loading = true);
-
-    // 模拟从注册表加载
-    await Future.delayed(const Duration(seconds: 1));
-    _sources.addAll([
-      _MarketSource(
-        id: 'bika', name: '哔咔漫画', version: '2.1.0',
-        description: '哔咔漫画源，支持搜索、分类、排行',
-        icon: '🔥', downloads: 15230, rating: 4.8, installed: true,
-      ),
-      _MarketSource(
-        id: 'jm', name: '禁漫天堂', version: '3.0.5',
-        description: '禁漫天堂源，支持搜索、分类、收藏',
-        icon: '🔞', downloads: 12890, rating: 4.6, installed: true,
-      ),
-      _MarketSource(
-        id: 'ehentai', name: 'E-Hentai', version: '1.5.0',
-        description: 'E-Hentai 源，支持搜索、标签浏览',
-        icon: '🌐', downloads: 8760, rating: 4.5, installed: false,
-      ),
-      _MarketSource(
-        id: 'nhentai', name: 'NHentai', version: '2.0.0',
-        description: 'NHentai 源，支持搜索、热门、随机',
-        icon: '📖', downloads: 7650, rating: 4.3, installed: false,
-      ),
-      _MarketSource(
-        id: 'copymanhua', name: '拷贝漫画', version: '1.8.0',
-        description: '拷贝漫画源，支持搜索、分类、追更',
-        icon: '📋', downloads: 6540, rating: 4.7, installed: false,
-      ),
-      _MarketSource(
-        id: 'komiic', name: 'Komiic', version: '1.2.0',
-        description: 'Komiic 源，支持搜索、收藏',
-        icon: '📚', downloads: 4320, rating: 4.2, installed: false,
-      ),
-      _MarketSource(
-        id: 'manhuaren', name: '漫画人', version: '1.0.0',
-        description: '漫画人源，支持搜索、分类、排行',
-        icon: '🎨', downloads: 3210, rating: 4.0, installed: false,
-      ),
-      _MarketSource(
-        id: 'manhuagui', name: '漫画柜', version: '1.1.0',
-        description: '漫画柜源，支持搜索、分类',
-        icon: '🗄️', downloads: 2980, rating: 3.8, installed: false,
-      ),
-    ]);
-
-    setState(() => _loading = false);
+    try {
+      final api = GetIt.instance<ApiClient>();
+      final res = await api.get('/sources');
+      final data = res.data;
+      _allSources = ((data?['sources'] as List?) ?? []).map((e) => SourceManifest.fromJson(e as Map<String, dynamic>)).toList();
+      _applyFilter();
+    } catch (e) {
+      setState(() => _loading = false);
+    }
   }
 
-  List<_MarketSource> get _filteredSources {
-    if (_searchQuery.isEmpty) return _sources;
-    return _sources.where((s) =>
-      s.name.contains(_searchQuery) || s.id.contains(_searchQuery)
-    ).toList();
+  void _applyFilter() {
+    final tab = _tabs[_tabCtrl.index]['key']!;
+    final q = _search.toLowerCase();
+    _filtered = _allSources.where((s) {
+      // 分类筛选
+      if (tab != 'all') {
+        final locale = s.metadata['locale']?.toString() ?? '';
+        final type = s.metadata['type']?.toString() ?? '';
+        if (tab == 'zh' && locale != 'zh') return false;
+        if (tab == 'ja' && locale != 'ja') return false;
+        if (tab == 'intl' && locale != '' && locale != 'en') return false;
+        if (tab == 'adult' && type != 'hentai') return false;
+      }
+      // 搜索
+      if (q.isNotEmpty && !s.name.toLowerCase().contains(q) && !s.id.toLowerCase().contains(q)) return false;
+      return true;
+    }).toList();
+    if (mounted) setState(() {});
   }
 
-  void _installSource(_MarketSource source) {
-    setState(() => source.installing = true);
-    // 模拟安装
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        source.installed = true;
-        source.installing = false;
-      });
-      ManjieToast.success(context, '${source.name} 安装成功');
-    });
+  Future<bool> _isInstalled(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('installed_sources') ?? '[]';
+    return (jsonDecode(json) as List).any((e) => SourceManifest.fromJson(e as Map<String, dynamic>).id == id);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('源市场')),
-      body: Column(
-        children: [
-          // 搜索栏
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: '搜索源名称...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                filled: true,
-                fillColor: AppTheme.surface,
+      backgroundColor: AppTheme.background,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // 头部
+          SliverAppBar(
+            pinned: true,
+            backgroundColor: Colors.transparent,
+            leading: GestureDetector(
+              onTap: () => context.pop(),
+              child: Container(margin: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppTheme.glassFillLight, shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.textPrimary)),
+            ),
+            title: const Text('源市场', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.textPrimary)),
+          ),
+
+          // 搜索框
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: LiquidGlass(
+                radius: BorderRadius.circular(14),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                fillColor: AppTheme.glassFillRegular,
+                child: Row(children: [
+                  const Icon(Icons.search_rounded, size: 20, color: AppTheme.textTertiary),
+                  const SizedBox(width: 10),
+                  Expanded(child: TextField(
+                    controller: _searchCtrl,
+                    style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
+                    decoration: const InputDecoration(hintText: '搜索漫画源', hintStyle: TextStyle(color: AppTheme.textTertiary, fontSize: 14), border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 14)),
+                    onChanged: (v) { _search = v; _applyFilter(); },
+                  )),
+                ]),
               ),
-              onChanged: (v) => setState(() => _searchQuery = v),
             ),
           ),
-          // 源列表
-          Expanded(
-            child: _loading
-              ? const ManjieGridShimmer()
-              : RefreshIndicator(
-                  onRefresh: _loadSources,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _filteredSources.length,
-                    itemBuilder: (_, i) => _MarketSourceCard(
-                      source: _filteredSources[i],
-                      onInstall: () => _installSource(_filteredSources[i]),
-                    ),
-                  ),
-                ),
+
+          // 分类Tab
+          SliverToBoxAdapter(
+            child: TabBar(
+              controller: _tabCtrl,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              indicatorColor: AppTheme.primary,
+              indicatorSize: TabBarIndicatorSize.label,
+              labelColor: AppTheme.primary,
+              unselectedLabelColor: AppTheme.textTertiary,
+              labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: const TextStyle(fontSize: 14),
+              tabPhysics: const BouncingScrollPhysics(),
+              tabs: _tabs.map((t) => Tab(text: t['name'])).toList(),
+            ),
           ),
+
+          // 源列表
+          if (_loading)
+            const SliverFillRemaining(child: LoadingState(text: '加载源市场...'))
+          else if (_filtered.isEmpty)
+            const SliverFillRemaining(child: EmptyState(icon: Icons.search_off_rounded, title: '未找到源'))
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (ctx, i) => _MarketSourceCard(manifest: _filtered[i], onInstalled: _load),
+                  childCount: _filtered.length,
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class _MarketSourceCard extends StatelessWidget {
-  final _MarketSource source;
-  final VoidCallback onInstall;
+class _MarketSourceCard extends StatefulWidget {
+  final SourceManifest manifest;
+  final VoidCallback onInstalled;
+  const _MarketSourceCard({required this.manifest, required this.onInstalled});
+  @override
+  State<_MarketSourceCard> createState() => _MarketSourceCardState();
+}
 
-  const _MarketSourceCard({required this.source, required this.onInstall});
+class _MarketSourceCardState extends State<_MarketSourceCard> {
+  bool _installing = false;
+  bool _installed = false;
+
+  @override
+  void initState() { super.initState(); _checkInstalled(); }
+
+  Future<void> _checkInstalled() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('installed_sources') ?? '[]';
+    final installed = (jsonDecode(json) as List).any((e) {
+      try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == widget.manifest.id; } catch (_) { return false; }
+    });
+    if (mounted) setState(() => _installed = installed);
+  }
+
+  Future<void> _install() async {
+    if (_installed || _installing) return;
+    setState(() => _installing = true);
+    HapticFeedback.mediumImpact();
+    try {
+      final api = GetIt.instance<ApiClient>();
+      final res = await api.get('/sources/${widget.manifest.id}');
+      if (res.statusCode == 200 && res.data != null) {
+        final manifest = SourceManifest.fromJson(res.data as Map<String, dynamic>);
+        // 下载源 JS 到本地
+        final sourceDir = await LocalVeneraInstaller.ensureSourceDir();
+        if (sourceDir != null) {
+          await LocalVeneraInstaller.install(manifest, sourceDir);
+        }
+        final prefs = await SharedPreferences.getInstance();
+        final json = prefs.getString('installed_sources') ?? '[]';
+        final list = jsonDecode(json) as List;
+        if (!list.any((e) {
+          try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == manifest.id; } catch (_) { return false; }
+        })) {
+          list.add(manifest.toJson());
+          await prefs.setString('installed_sources', jsonEncode(list));
+        }
+        if (mounted) {
+          setState(() { _installed = true; _installing = false; });
+          HapticFeedback.heavyImpact();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppTheme.surface,
+            content: Row(children: [
+              const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
+              const SizedBox(width: 8),
+              Expanded(child: Text('「${manifest.name}」安装成功', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13))),
+            ]),
+            action: SnackBarAction(label: '去发现页', textColor: AppTheme.primary, onPressed: () => GoRouter.of(context).go('/discover')),
+          ));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _installing = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: AppTheme.destructive,
+          content: Text('安装失败: $e', style: const TextStyle(color: Colors.white, fontSize: 13)),
+        ));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ManjieCard(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final m = widget.manifest;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: LiquidGlass(
+        radius: BorderRadius.circular(AppTheme.radiusLg),
+        padding: const EdgeInsets.all(14),
+        fillColor: AppTheme.glassFillRegular,
+        child: Row(children: [
           // 图标
           Container(
-            width: 52, height: 52,
+            width: 48, height: 48,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.15),
+              gradient: AppTheme.primaryGradient,
               borderRadius: BorderRadius.circular(14),
+              boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.25), blurRadius: 12)],
             ),
-            child: Center(child: Text(source.icon, style: const TextStyle(fontSize: 26))),
+            child: Center(child: Text(m.name.isNotEmpty ? m.name.characters.first : '?', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white))),
           ),
           const SizedBox(width: 12),
           // 信息
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(source.name, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 15)),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text('v${source.version}',
-                        style: const TextStyle(color: AppTheme.primary, fontSize: 10)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(source.description, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-                  maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Icon(Icons.star, size: 14, color: Color(0xFFFFC107)),
-                    const SizedBox(width: 2),
-                    Text('${source.rating}', style: TextStyle(color: Color(0xFFFFC107), fontSize: 12)),
-                    const SizedBox(width: 12),
-                    Icon(Icons.download, size: 14, color: AppTheme.textSecondary),
-                    const SizedBox(width: 2),
-                    Text(_formatDownloads(source.downloads), style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(m.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+              const SizedBox(width: 8),
+              SourceBadge.fromMeta(m.metadata),
+            ]),
+            const SizedBox(height: 4),
+            Text('v${m.version} · ${m.author}', style: const TextStyle(fontSize: 11, color: AppTheme.textTertiary)),
+          ])),
           // 安装按钮
-          if (source.installed)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.accent.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text('已安装', style: TextStyle(color: AppTheme.accent, fontSize: 12)),
-            )
-          else
-            SizedBox(
-              width: 60, height: 32,
-              child: source.installing
-                ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))
-                : ElevatedButton(
-                    onPressed: onInstall,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('安装', style: TextStyle(fontSize: 12, color: Colors.white)),
+          _installing
+            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
+            : _installed
+              ? const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 24)
+              : GestureDetector(
+                  onTap: _install,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: BorderRadius.circular(10), boxShadow: AppTheme.glowShadow),
+                    child: const Text('安装', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
                   ),
-            ),
-        ],
+                ),
+        ]),
       ),
     );
   }
-
-  String _formatDownloads(int count) {
-    if (count >= 10000) return '${(count / 10000).toStringAsFixed(1)}万';
-    return count.toString();
-  }
-}
-
-class _MarketSource {
-  final String id;
-  final String name;
-  final String version;
-  final String description;
-  final String icon;
-  final int downloads;
-  final double rating;
-  bool installed;
-  bool installing;
-
-  _MarketSource({
-    required this.id,
-    required this.name,
-    required this.version,
-    required this.description,
-    required this.icon,
-    required this.downloads,
-    required this.rating,
-    this.installed = false,
-    this.installing = false,
-  });
 }
