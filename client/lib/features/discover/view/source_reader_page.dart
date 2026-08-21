@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import '../../../app/theme/theme.dart';
 import '../../../core/network/api_client.dart';
+import '../../../plugins/source_data_service.dart';
 
 /// 源内阅读页 — 从服务器代理获取图片 URL 列表，客户端直连源 CDN 加载
 class SourceReaderPage extends StatefulWidget {
@@ -19,6 +20,8 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
   bool _loading = true;
   String? _error;
   List<String> _images = [];
+  List<String> _pages = [];
+  bool _hasMore = false;
   final _pageCtrl = PageController();
 
   @override

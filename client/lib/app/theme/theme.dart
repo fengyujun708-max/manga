@@ -49,12 +49,20 @@ class AppTheme {
     begin: Alignment.topLeft, end: Alignment.bottomRight,
   );
   // 沉浸式 Hero 渐变（从透明到纯黑）
+  static const LinearGradient heroGradient = LinearGradient(
+    begin: Alignment.topCenter, end: Alignment.bottomCenter,
+    colors: [Color(0x00000000), Color(0xFF000000)],
+  );
   static const LinearGradient heroScrim = LinearGradient(
     begin: Alignment.topCenter, end: Alignment.bottomCenter,
     colors: [Color(0x00000000), Color(0x80000000), Color(0xFF000000)],
     stops: [0, 0.5, 1],
   );
   // 玻璃卡片渐变
+  static const LinearGradient cardGradient = LinearGradient(
+    begin: Alignment.topLeft, end: Alignment.bottomRight,
+    colors: [Color(0xFF1A1A24), Color(0xFF111118)],
+  );
   static const LinearGradient glassCardGradient = LinearGradient(
     begin: Alignment.topLeft, end: Alignment.bottomRight,
     colors: [Color(0x14FFFFFF), Color(0x08FFFFFF)],

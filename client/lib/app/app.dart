@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/auth/view/login_page.dart';
 import '../features/home/view/home_page.dart';
