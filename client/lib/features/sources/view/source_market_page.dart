@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/theme/theme.dart';
 import '../../../app/widgets/comic_widgets.dart';
 import '../../../plugins/manga_source.dart';
-import '../../../plugins/local_venera_source.dart';
+import '../../../plugins/source_installer.dart';
 import '../../../core/network/api_client.dart';
 import '../bloc/source_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -197,9 +197,9 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
       if (res.statusCode == 200 && res.data != null) {
         final manifest = SourceManifest.fromJson(res.data as Map<String, dynamic>);
         // 下载源 JS 到本地
-        final sourceDir = await LocalVeneraInstaller.ensureSourceDir();
+        final sourceDir = await SourceInstaller.ensureSourceDir();
         if (sourceDir != null) {
-          await LocalVeneraInstaller.install(manifest, sourceDir);
+          await SourceInstaller.install(manifest, sourceDir);
         }
         final prefs = await SharedPreferences.getInstance();
         final json = prefs.getString('installed_sources') ?? '[]';

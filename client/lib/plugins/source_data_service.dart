@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:get_it/get_it.dart';
 import '../core/network/api_client.dart';
-import 'local_venera_source.dart';
+import 'source_installer.dart';
 import 'runtime/venera_engine.dart';
 
 /// 源数据服务 —— 优先本地执行（Venera 模式），本地无 JS 时回退服务器代理
@@ -18,7 +18,7 @@ class SourceDataService {
   Future<bool> hasLocalJs(String sourceId) async {
     if (_hasLocalJs.containsKey(sourceId)) return _hasLocalJs[sourceId]!;
     try {
-      final dir = await LocalVeneraInstaller.ensureSourceDir();
+      final dir = await SourceInstaller.ensureSourceDir();
       if (dir == null) return false;
       final file = File('$dir/$sourceId.js');
       final ok = await file.exists();
@@ -32,7 +32,7 @@ class SourceDataService {
   /// 加载本地源并执行（可用时返回 true）
   Future<bool> loadLocal(String sourceId) async {
     try {
-      final dir = await LocalVeneraInstaller.ensureSourceDir();
+      final dir = await SourceInstaller.ensureSourceDir();
       if (dir == null) return false;
       final file = File('$dir/$sourceId.js');
       if (!await file.exists()) return false;
