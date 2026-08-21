@@ -28,22 +28,24 @@ class _SourceComicPageState extends State<SourceComicPage> {
 
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
-    try {
-      final api = GetIt.instance<ApiClient>();
-      final res = await api.get('/source/${widget.sourceId}/comic/${widget.comicId}');
-      final data = res.data;
-      if (data is Map) {
-        setState(() {
-          _info = Map<String, dynamic>.from(data);
-          _chapters = (data['chapters'] as List?) ?? [];
-          _loading = false;
-        });
-      } else {
-        setState(() { _loading = false; _error = '源返回异常'; });
-      }
-    } catch (e) {
-      setState(() { _loading = false; _error = '加载失败: $e'; });
+    final result = await SourceDataService.instance.comic(widget.sourceId, widget.comicId);
+    if (!mounted) return;
+    final data = result['detail'] as Map<String, dynamic>? ?? {};
+    setState(() {
+      _info = data;
+      final rawChapters = result['chapters'] ?? _extractChapters(data);
+      _chapters = (rawChapters as List?) ?? [];
+      _loading = false;
+      if (result['error'] != null) _error = result['error'];
+    });
+  }
+
+  List<dynamic> _extractChapters(Map<String, dynamic> data) {
+    for (final key in ['chapters', 'episodes', 'comics']) {
+      final v = data[key];
+      if (v is List) return v;
     }
+    return [];
   }
 
   @override

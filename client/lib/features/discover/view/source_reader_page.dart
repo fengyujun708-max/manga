@@ -37,6 +37,21 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
     setState(() { _loading = true; _error = null; });
     try {
       final api = GetIt.instance<ApiClient>();
+      final result = await SourceDataService.instance.pages(widget.sourceId, widget.comicId, widget.epId);
+      if (result['pages'] is List) {
+        final pages = result['pages'] as List;
+        setState(() {
+          _pages = pages.map((p) {
+            if (p is Map) return p['url']?.toString() ?? '';
+            return p.toString();
+          }).toList();
+          _hasMore = (result['next'] ?? '').isNotEmpty;
+          _loading = false;
+        });
+        _currentIndex = 0;
+        _loadImage(0);
+        return;
+      }
       final res = await api.get('/source/${widget.sourceId}/pages',
           params: {'comicId': widget.comicId, 'epId': widget.epId});
       final data = res.data;

@@ -44,7 +44,7 @@ class SourceManifest {
       description: json['description'] ?? '',
       icon: json['icon'] ?? '📚',
       repositoryUrl: json['repositoryUrl'] ?? '',
-      downloadUrl: json['downloadUrl'] ?? '',
+      downloadUrl: json['downloadUrl'] ?? json['url'] ?? '',
       minAppVersion: json['minAppVersion'] ?? '1.0.0',
       capabilities: (json['capabilities'] as List?)?.map((e) => e.toString()).toList() ??
           ['search', 'detail', 'chapters', 'pages'],

@@ -39,6 +39,10 @@ dependencies:
   path_provider: ^2.1.0
   url_launcher: ^6.2.0
 
+  # JS 引擎（Venera 源本地执行，网络走手机）
+  flutter_js: ^0.8.7
+  crypto: ^3.0.0
+
   # 平台
   package_info_plus: ^8.0.0
   device_info_plus: ^11.0.0
@@ -50,6 +54,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/venera_client_runtime.js
 
   assets:
     - assets/images/

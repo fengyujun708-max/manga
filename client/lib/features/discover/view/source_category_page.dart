@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import '../../../app/theme/theme.dart';
 import '../../../core/network/api_client.dart';
+import '../../../plugins/source_data_service.dart';
 
 /// 源分类页 — 分类结构浏览 + 分类漫画列表（分页）+ 排行榜
 class SourceCategoryPage extends StatefulWidget {
@@ -66,14 +67,8 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
   Future<void> _loadCategories() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final api = GetIt.instance<ApiClient>();
-      final res = await api.get('/source/${widget.sourceId}/categories');
-      final data = res.data;
-      if (data is Map && data['categories'] is List) {
-        final parts = (data['categories'] as List)
-            .whereType<Map>()
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
+      final parts = await SourceDataService.instance.categories(widget.sourceId);
+      if (parts.isNotEmpty) {
         setState(() {
           _parts = parts;
           if (parts.isNotEmpty) {
@@ -111,22 +106,19 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
     if (_activeCategory.isEmpty) return;
     setState(() { _comicsLoading = true; if (reset) _page = 1; });
     try {
-      final api = GetIt.instance<ApiClient>();
       final q = _isRanking ? _rankType : _activeCategory;
-      final res = await api.get('/source/${widget.sourceId}/category',
-          params: {'name': q, 'page': reset ? 1 : _page, 'options': _selectedOptions.join(',')});
-      final data = res.data;
-      if (data is Map && data['comics'] is List) {
-        final list = data['comics'] as List;
-        setState(() {
-          _comics = reset ? list : [..._comics, ...list];
-          _hasMore = data['hasMore'] == true;
-          if (_hasMore) _page++;
-          _comicsLoading = false;
-        });
-      } else {
-        setState(() { _comicsLoading = false; _hasMore = false; });
-      }
+      final result = await SourceDataService.instance.categoryComics(
+          widget.sourceId, q, reset ? 1 : _page,
+          '',
+          _selectedOptions,
+          _isRanking);
+      final list = (result['items'] as List?) ?? [];
+      setState(() {
+        _comics = reset ? list : [..._comics, ...list];
+        _hasMore = result['hasMore'] == true;
+        if (_hasMore) _page++;
+        _comicsLoading = false;
+      });
     } catch (e) {
       setState(() { _comicsLoading = false; _hasMore = false; });
     }

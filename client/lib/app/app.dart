@@ -57,7 +57,13 @@ class ManjieApp extends StatelessWidget {
             child: const SourceMarketPage(),
           ),
         ),
-        GoRoute(path: '/discover/source/:id', builder: (_, state) => SourceDetailPage(sourceId: state.pathParameters['id']!)),
+        GoRoute(
+          path: '/discover/source/:id',
+          builder: (_, state) => SourceDetailPage(
+            sourceId: state.pathParameters['id']!,
+            sourceName: state.uri.queryParameters['name'] ?? '',
+          ),
+        ),
         GoRoute(
           path: '/source/:sourceId/comic/:comicId',
           builder: (_, state) => SourceComicPage(

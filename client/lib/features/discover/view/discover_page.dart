@@ -159,7 +159,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   void _enterSource(SourceManifest source) {
     HapticFeedback.lightImpact();
-    GoRouter.of(context).push('/discover/source/${source.id}');
+    GoRouter.of(context).push('/discover/source/${source.id}?name=${Uri.encodeComponent(source.name)}');
   }
 
   Widget _iconBtn(IconData icon, VoidCallback tap) {

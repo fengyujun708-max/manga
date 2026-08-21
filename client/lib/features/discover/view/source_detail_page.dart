@@ -5,11 +5,13 @@ import 'package:get_it/get_it.dart';
 import 'dart:convert';
 import '../../../app/theme/theme.dart';
 import '../../../core/network/api_client.dart';
+import '../../../plugins/source_data_service.dart';
 
-/// 漫画源详情页 — 从服务器代理执行源 JS，展示源真实内容（板块/搜索/线路）
+/// 漫画源详情页 — 优先本地执行源 JS（Venera 模式），无本地 JS 时服务器代理
 class SourceDetailPage extends StatefulWidget {
   final String sourceId;
-  const SourceDetailPage({super.key, required this.sourceId});
+  final String sourceName;
+  const SourceDetailPage({super.key, required this.sourceId, this.sourceName = ''});
 
   @override
   State<SourceDetailPage> createState() => _SourceDetailPageState();
@@ -23,6 +25,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
   List<dynamic> _searchResults = [];
   bool _searching = false;
   String _searchQuery = '';
+  String _mode = ''; // local / server
 
   // 线路
   List<dynamic> _routes = [];
@@ -46,22 +49,15 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
 
   Future<void> _loadExplore() async {
     setState(() { _loading = true; _error = null; });
-    try {
-      final api = GetIt.instance<ApiClient>();
-      final res = await api.get('/source/${widget.sourceId}/explore');
-      final data = res.data;
-      if (data is Map && data['sections'] is List) {
-        setState(() {
-          _sections = data['sections'] ?? [];
-          _loading = false;
-          _activeSectionIndex = 0;
-        });
-      } else {
-        setState(() { _loading = false; _error = '源返回异常'; });
-      }
-    } catch (e) {
-      setState(() { _loading = false; _error = '加载失败: $e'; });
-    }
+    final result = await SourceDataService.instance.explore(widget.sourceId);
+    if (!mounted) return;
+    setState(() {
+      _sections = result['sections'] ?? [];
+      _mode = result['mode'] ?? '';
+      _loading = false;
+      _activeSectionIndex = 0;
+      if ((result['error'] ?? '').isNotEmpty) _error = result['error'];
+    });
   }
 
   Future<void> _loadRoutes() async {
@@ -87,17 +83,13 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
       return;
     }
     setState(() { _searching = true; _searchQuery = q.trim(); });
-    try {
-      final api = GetIt.instance<ApiClient>();
-      final res = await api.get('/source/${widget.sourceId}/search', params: {'q': q.trim(), 'page': 1});
-      final data = res.data;
-      setState(() {
-        _searchResults = (data is Map && data['comics'] is List) ? data['comics'] : [];
-        _searching = false;
-      });
-    } catch (e) {
-      setState(() { _searching = false; _searchResults = []; });
-    }
+    final result = await SourceDataService.instance.search(widget.sourceId, q.trim(), 1);
+    if (!mounted) return;
+    setState(() {
+      _searchResults = result['items'] ?? [];
+      _mode = result['mode'] ?? _mode;
+      _searching = false;
+    });
   }
 
   void _showRoutePicker() {
@@ -167,8 +159,21 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
                 child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.textPrimary),
               ),
             ),
-            title: Text(widget.sourceId, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.textPrimary)),
+            title: Text(widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.textPrimary)),
             actions: [
+              // 执行模式标签（本地/服务器）
+              if (_mode.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _mode == 'local' ? AppTheme.success.withValues(alpha: 0.15) : AppTheme.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(_mode == 'local' ? '本地执行' : '服务器代理',
+                      style: TextStyle(fontSize: 10, color: _mode == 'local' ? AppTheme.success : AppTheme.primary)),
+                ),
               GestureDetector(
                 onTap: _showRoutePicker,
                 child: Container(

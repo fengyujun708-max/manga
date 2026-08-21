@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/theme/theme.dart';
 import '../../../plugins/manga_source.dart';
+import '../../../plugins/local_venera_source.dart';
 import '../../../core/network/api_client.dart';
 import '../bloc/source_bloc.dart';
 import '../bloc/source_event.dart';
@@ -292,6 +293,12 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
       final res = await api.get('/sources/${widget.manifest.id}');
       if (res.statusCode == 200 && res.data != null) {
         final manifest = SourceManifest.fromJson(res.data as Map<String, dynamic>);
+        // 下载源 JS 到本地（Venera 本地执行模式）
+        final sourceDir = await LocalVeneraInstaller.ensureSourceDir();
+        var jsInstalled = false;
+        if (sourceDir != null) {
+          jsInstalled = await LocalVeneraInstaller.install(manifest, sourceDir);
+        }
         // 写入 SharedPreferences（去重追加）
         final prefs = await SharedPreferences.getInstance();
         final json = prefs.getString('installed_sources') ?? '[]';
@@ -314,7 +321,8 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
               const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('「${manifest.name}」安装成功',
+                child: Text(
+                    jsInstalled ? '「${manifest.name}」安装成功' : '「${manifest.name}」已加入列表（JS 下载失败，走服务器代理）',
                     style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
               ),
             ]),
