@@ -143,6 +143,7 @@ class SourceManager {
       capabilities: ['search', 'detail', 'chapters', 'pages'],
       downloads: 0,
       rating: 0.0,
+      networkType: 'direct',
     );
     _manifests[sourceId] = manifest;
     _enabled[sourceId] = true;
