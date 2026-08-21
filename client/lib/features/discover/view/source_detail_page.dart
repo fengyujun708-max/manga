@@ -225,39 +225,60 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
             ),
           ),
 
-          // 分类标签栏（explore 板块作为 Tab）
+          // 分类标签栏（explore 板块作为 Tab）+ 全部分类入口
           if (!showSearch && sections != null && sections.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: SizedBox(
-                  height: 36,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: sections.length,
-                    itemBuilder: (_, i) {
-                      final active = i == _activeSectionIndex;
-                      return GestureDetector(
-                        onTap: () { HapticFeedback.selectionClick(); setState(() => _activeSectionIndex = i); },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: active ? AppTheme.primary : AppTheme.surfaceLight.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Text(
-                            sections[i]['title']?.toString() ?? '',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                              color: active ? Colors.white : AppTheme.textSecondary,
-                            ),
-                          ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 36,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: sections.length,
+                          itemBuilder: (_, i) {
+                            final active = i == _activeSectionIndex;
+                            return GestureDetector(
+                              onTap: () { HapticFeedback.selectionClick(); setState(() => _activeSectionIndex = i); },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: active ? AppTheme.primary : AppTheme.surfaceLight.withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                child: Text(
+                                  sections[i]['title']?.toString() ?? '',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                                    color: active ? Colors.white : AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => GoRouter.of(context).push('/source/${widget.sourceId}/category'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Row(children: [
+                          Icon(Icons.category_rounded, size: 14, color: AppTheme.primary),
+                          SizedBox(width: 4),
+                          Text('全部分类', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primary)),
+                        ]),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

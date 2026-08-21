@@ -9,6 +9,7 @@ import '../features/library/view/library_page.dart';
 import '../features/discover/view/source_detail_page.dart';
 import '../features/discover/view/source_comic_page.dart';
 import '../features/discover/view/source_reader_page.dart';
+import '../features/discover/view/source_category_page.dart';
 import '../features/discover/view/discover_page.dart';
 import '../features/community/view/community_page.dart';
 import '../features/profile/view/profile_page.dart';
@@ -70,6 +71,12 @@ class ManjieApp extends StatelessWidget {
             sourceId: state.pathParameters['sourceId']!,
             comicId: state.pathParameters['comicId']!,
             epId: state.pathParameters['epId']!,
+          ),
+        ),
+        GoRoute(
+          path: '/source/:sourceId/category',
+          builder: (_, state) => SourceCategoryPage(
+            sourceId: state.pathParameters['sourceId']!,
           ),
         ),
             GoRoute(path: '/search', builder: (_, __) => const SearchPage()),
