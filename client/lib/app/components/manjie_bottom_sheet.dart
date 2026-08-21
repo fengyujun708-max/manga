@@ -25,7 +25,7 @@ Future<T?> showManjieBottomSheet<T>({
               margin: const EdgeInsets.only(top: 12),
               width: 40, height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.divider,
+                color: Color(0xFF312E81),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

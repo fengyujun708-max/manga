@@ -246,7 +246,7 @@ class _HistoryChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.divider),
+        border: Border.all(color: Color(0xFF312E81)),
       ),
       child: GestureDetector(
         onTap: onTap,

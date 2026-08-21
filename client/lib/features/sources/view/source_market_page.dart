@@ -137,8 +137,7 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
               unselectedLabelColor: AppTheme.textTertiary,
               labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               unselectedLabelStyle: const TextStyle(fontSize: 14),
-              tabPhysics: const BouncingScrollPhysics(),
-              tabs: _tabs.map((t) => Tab(text: t['name'])).toList(),
+                            tabs: _tabs.map((t) => Tab(text: t['name'])).toList(),
             ),
           ),
 

@@ -205,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: AppTheme.divider, borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(color: Color(0xFF312E81), borderRadius: BorderRadius.circular(2)),
             ),
             const SizedBox(height: 16),
             Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
@@ -264,7 +264,7 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Divider(color: AppTheme.divider.withOpacity(0.3), height: 1, indent: 48);
+    return Divider(color: Color(0xFF312E81).withOpacity(0.3), height: 1, indent: 48);
   }
 }
 
@@ -318,7 +318,7 @@ class _SliderTile extends StatelessWidget {
                 SliderTheme(
                   data: SliderThemeData(
                     activeTrackColor: AppTheme.primary,
-                    inactiveTrackColor: AppTheme.divider,
+                    inactiveTrackColor: Color(0xFF312E81),
                     thumbColor: AppTheme.primary,
                     overlayColor: AppTheme.primary.withOpacity(0.2),
                   ),

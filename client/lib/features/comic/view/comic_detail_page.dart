@@ -247,7 +247,7 @@ class _ComicDetailPageState extends State<ComicDetailPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Divider(color: AppTheme.divider, height: 1),
+              child: Divider(color: Color(0xFF312E81), height: 1),
             ),
           ),
 
@@ -406,7 +406,7 @@ class _TabButton extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: selected ? AppTheme.primary.withOpacity(0.15) : AppTheme.divider,
+                  color: selected ? AppTheme.primary.withOpacity(0.15) : Color(0xFF312E81),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text('$count', style: TextStyle(

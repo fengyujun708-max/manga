@@ -388,7 +388,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             ),
             style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600),
           ),
-          const Divider(color: AppTheme.divider),
+          const Divider(color: Color(0xFF312E81)),
 
           // 内容
           TextField(

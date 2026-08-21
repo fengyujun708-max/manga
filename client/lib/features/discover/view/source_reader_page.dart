@@ -47,9 +47,8 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
           }).toList();
           _hasMore = (result['next'] ?? '').isNotEmpty;
           _loading = false;
+          _images = _pages;
         });
-        _currentIndex = 0;
-        _loadImage(0);
         return;
       }
       final res = await api.get('/source/${widget.sourceId}/pages',

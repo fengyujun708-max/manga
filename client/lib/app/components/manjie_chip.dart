@@ -28,7 +28,7 @@ class ManjieChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? (color ?? AppTheme.primary) : AppTheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? Colors.transparent : AppTheme.divider),
+          border: Border.all(color: selected ? Colors.transparent : Color(0xFF312E81)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

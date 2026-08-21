@@ -12,7 +12,7 @@ class ManjieShimmer extends StatelessWidget {
     return Container(
       width: width, height: height,
       decoration: BoxDecoration(
-        color: AppTheme.divider.withOpacity(0.3),
+        color: Color(0xFF312E81).withOpacity(0.3),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );

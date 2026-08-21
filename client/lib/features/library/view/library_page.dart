@@ -205,7 +205,7 @@ class _ComicGridItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: AppTheme.surfaceLight,
-                    border: Border.all(color: AppTheme.divider.withOpacity(0.3)),
+                    border: Border.all(color: Color(0xFF312E81).withOpacity(0.3)),
                   ),
                   child: Center(
                     child: Text(comic.title.substring(0, 1),
@@ -269,7 +269,7 @@ class _ComicListItem extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: AppTheme.surfaceLight,
-              border: Border.all(color: AppTheme.divider.withOpacity(0.3)),
+              border: Border.all(color: Color(0xFF312E81).withOpacity(0.3)),
             ),
             child: Center(child: Text(comic.title.substring(0, 1),
               style: TextStyle(fontSize: 24, color: AppTheme.textSecondary.withOpacity(0.3)))),
@@ -305,7 +305,7 @@ class _ComicListItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                     child: LinearProgressIndicator(
                       value: comic.progress,
-                      backgroundColor: AppTheme.divider,
+                      backgroundColor: Color(0xFF312E81),
                       valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
                       minHeight: 3,
                     ),

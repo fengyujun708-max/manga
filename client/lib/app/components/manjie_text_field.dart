@@ -83,11 +83,11 @@ class _ManjieTextFieldState extends State<ManjieTextField> {
             fillColor: AppTheme.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppTheme.divider),
+              borderSide: BorderSide(color: Color(0xFF312E81)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppTheme.divider),
+              borderSide: BorderSide(color: Color(0xFF312E81)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

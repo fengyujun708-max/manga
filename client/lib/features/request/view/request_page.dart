@@ -89,7 +89,7 @@ class _RequestPageState extends State<RequestPage> with SingleTickerProviderStat
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: AppTheme.divider, borderRadius: BorderRadius.circular(2)))),
+              decoration: BoxDecoration(color: Color(0xFF312E81), borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 16),
             Text(widget.type == 'manga' ? '发布求漫' : '发布求源',
               style: const TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
@@ -271,7 +271,7 @@ class _RequestCard extends StatelessWidget {
             controller: scrollController,
             children: [
               Center(child: Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: AppTheme.divider, borderRadius: BorderRadius.circular(2)))),
+                decoration: BoxDecoration(color: Color(0xFF312E81), borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -298,7 +298,7 @@ class _RequestCard extends StatelessWidget {
               // AI 匹配
               if (request.hasAiMatch) ...[
                 const SizedBox(height: 16),
-                const Divider(color: AppTheme.divider),
+                const Divider(color: Color(0xFF312E81)),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -324,7 +324,7 @@ class _RequestCard extends StatelessWidget {
 
               // 回答区
               const SizedBox(height: 16),
-              const Divider(color: AppTheme.divider),
+              const Divider(color: Color(0xFF312E81)),
               const SizedBox(height: 12),
               const Text('回答', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),

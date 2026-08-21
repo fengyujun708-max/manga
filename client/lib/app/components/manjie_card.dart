@@ -33,7 +33,7 @@ class ManjieCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? AppTheme.surface,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: AppTheme.divider.withOpacity(0.3)),
+        border: Border.all(color: Color(0xFF312E81).withOpacity(0.3)),
       ),
       child: child,
     );
