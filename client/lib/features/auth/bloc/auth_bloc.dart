@@ -186,7 +186,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onGuestLogin(AuthGuestLoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final res = await apiClient.post('/auth/guest');
+      final res = await apiClient.post('/auth/login', data: {'phone': 'guest', 'password': 'guest'});
       final data = res.data;
       await _saveUserSession(data, isGuest: true);
       emit(AuthAuthenticated(
