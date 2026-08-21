@@ -2,9 +2,10 @@
 // 网络通过宿主 fetch（Dart 实现），HTML 解析用简易 DOM 引擎
 'use strict';
 
-// ===== Convert（加密通过宿主桥接 sendMessage('crypto', ...)）=====
+// ===== Convert（加密通过宿主桥接，结果存全局变量）=====
 function __cryptoJs(op) {
-  return sendMessage('crypto', JSON.stringify(op));
+  sendMessage('crypto', JSON.stringify(op));
+  return globalThis.__cryptoResult || '';
 }
 const Convert = {
   decodeBase64(s) { return __cryptoJs({op:'b64decode', data:String(s??'')}); },
