@@ -27,6 +27,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
   // 线路
   List<dynamic> _routes = [];
   String _currentRoute = '';
+  int _activeSectionIndex = 0;
 
   final _searchCtrl = TextEditingController();
 
@@ -53,6 +54,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
         setState(() {
           _sections = data['sections'] ?? [];
           _loading = false;
+          _activeSectionIndex = 0;
         });
       } else {
         setState(() { _loading = false; _error = '源返回异常'; });
@@ -146,6 +148,9 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final sections = _searching || _searchQuery.isNotEmpty ? null : _sections;
+    final showSearch = _searching || _searchQuery.isNotEmpty;
+    
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -164,7 +169,6 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
             ),
             title: Text(widget.sourceId, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.textPrimary)),
             actions: [
-              // 线路切换
               GestureDetector(
                 onTap: _showRoutePicker,
                 child: Container(
@@ -188,7 +192,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
           // 搜索框
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
@@ -214,16 +218,53 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
                     ),
                   ),
                   if (_searching)
-                    GestureDetector(onTap: () { _searchCtrl.clear(); setState(() { _searchResults = []; _searching = false; }); },
+                    GestureDetector(onTap: () { _searchCtrl.clear(); setState(() { _searchResults = []; _searching = false; _searchQuery = ''; }); },
                       child: const Icon(Icons.close_rounded, size: 18, color: AppTheme.textTertiary)),
                 ]),
               ),
             ),
           ),
 
+          // 分类标签栏（explore 板块作为 Tab）
+          if (!showSearch && sections != null && sections.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: SizedBox(
+                  height: 36,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: sections.length,
+                    itemBuilder: (_, i) {
+                      final active = i == _activeSectionIndex;
+                      return GestureDetector(
+                        onTap: () { HapticFeedback.selectionClick(); setState(() => _activeSectionIndex = i); },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: active ? AppTheme.primary : AppTheme.surfaceLight.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Text(
+                            sections[i]['title']?.toString() ?? '',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                              color: active ? Colors.white : AppTheme.textSecondary,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+
           if (_loading)
             const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2)))
-          else if (_error != null && !_searching)
+          else if (_error != null && !showSearch)
             SliverFillRemaining(
               child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Icon(Icons.cloud_off_rounded, size: 48, color: AppTheme.textTertiary),
@@ -237,7 +278,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
                   child: const Text('重试', style: TextStyle(color: Colors.white))),
               ])),
             )
-          else if (_searching || _searchQuery.isNotEmpty)
+          else if (showSearch)
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
               sliver: SliverGrid(
@@ -259,50 +300,38 @@ class _SourceDetailPageState extends State<SourceDetailPage> with TickerProvider
                 ),
               ),
             )
-          else if (_sections.isEmpty)
+          else if (sections == null || sections.isEmpty)
             const SliverFillRemaining(child: Center(child: Text('该源暂无内容', style: TextStyle(color: AppTheme.textSecondary))))
           else
-            ..._sections.map((sec) => _buildSection(sec)),
+            ...[_buildActiveSection(sections[_activeSectionIndex.clamp(0, sections.length - 1)])],
         ],
       ),
     );
   }
 
-  Widget _buildSection(dynamic sec) {
-    final title = sec['title']?.toString() ?? '';
+  Widget _buildActiveSection(dynamic sec) {
     final items = (sec['items'] as List?) ?? [];
-    if (items.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.textPrimary)),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 168,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: items.length,
-                itemBuilder: (_, i) {
-                  final c = items[i];
-                  return _HorizontalComicCard(
-                    title: c['title']?.toString() ?? '',
-                    subtitle: c['subtitle']?.toString() ?? '',
-                    cover: c['cover']?.toString() ?? '',
-                    onTap: () => _openComic(c),
-                    index: i,
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
+    if (items.isEmpty) {
+      return const SliverFillRemaining(child: Center(child: Text('暂无内容', style: TextStyle(color: AppTheme.textTertiary))));
+    }
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, childAspectRatio: 0.62, crossAxisSpacing: 10, mainAxisSpacing: 10),
+        delegate: SliverChildBuilderDelegate(
+          (_, i) {
+            final c = items[i];
+            return _ComicGridItem(
+              title: c['title']?.toString() ?? '',
+              subtitle: c['subtitle']?.toString() ?? '',
+              cover: c['cover']?.toString() ?? '',
+              id: c['id']?.toString() ?? '',
+              onTap: () => _openComic(c),
+              index: i,
+            );
+          },
+          childCount: items.length,
         ),
       ),
     );
