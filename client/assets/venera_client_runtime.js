@@ -2,6 +2,16 @@
 // 网络通过宿主 fetch（Dart 实现），HTML 解析用简易 DOM 引擎
 'use strict';
 
+// ===== Venera 宿主全局（源 JS 常引用）=====
+globalThis.APP = {
+  locale: 'zh_CN',
+  platform: 'android',
+  packageName: 'com.manjie.app',
+  appVersion: '1.2.0',
+  version: '1.2.0',
+  channelId: 'dev',
+};
+
 // ===== fetch 兜底：flutter_js 未注入全局 fetch 时用 XMLHttpRequest 实现 =====
 if (typeof globalThis.fetch !== 'function') {
   globalThis.fetch = function (url, options) {
@@ -83,36 +93,82 @@ function extractAttr(html, attr) {
 
 function matchSelectorPart(html, part) {
   if (!html) return [];
-  const out = [];
-  if (part.startsWith('#')) {
-    const id = part.slice(1);
-    const re = new RegExp(`<[a-zA-Z0-9]+[^>]*\\bid=["']${id}["'][^>]*>[\\s\\S]*?</[a-zA-Z0-9]+>|<[a-zA-Z0-9]+[^>]*\\bid=["']${id}["'][^>]*/?>`, 'gi');
-    let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-    return out;
-  }
-  if (part.startsWith('.')) {
-    const cls = part.slice(1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(`<[a-zA-Z0-9]+[^>]*class=["'][^"']*\\b${cls}\\b[^"']*["'][^>]*>(?:[\\s\\S]*?</[a-zA-Z0-9]+>)?`, 'gi');
-    let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-    return out;
-  }
-  const attrMatch = part.match(/^\[([a-zA-Z-]+)(?:=["']([^"']*)["'])?\]$/);
-  if (attrMatch) {
-    const attr = attrMatch[1];
-    const val = attrMatch[2];
-    let re;
-    if (val !== undefined) {
-      re = new RegExp(`<[a-zA-Z0-9]+[^>]*\\b${attr}=["']${val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>(?:[\\s\\S]*?<\\/[a-zA-Z0-9]+>)?`, 'gi');
-    } else {
-      re = new RegExp(`<[a-zA-Z0-9]+[^>]*\\b${attr}[^>]*>(?:[\\s\\S]*?<\\/[a-zA-Z0-9]+>)?`, 'gi');
+  const VOID_TAGS = /^(img|br|hr|input|meta|link|source|area|base|col|embed|track|wbr)$/i;
+
+  // 扫描匹配谓词的开标签并做深度配对提取完整元素
+  function scanOpen(tagPattern, pred) {
+    const res = [];
+    const re = new RegExp('<(' + tagPattern + ')((?:"[^"]*"|\'[^\']*\'|[^>])*)>', 'gi');
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const attrs = m[2] || '';
+      if (pred && !pred(attrs)) continue;
+      const tag = m[1];
+      const start = m.index;
+      let end;
+      if (/\/\s*>\s*$/.test(m[0]) || VOID_TAGS.test(tag)) {
+        end = start + m[0].length;
+      } else {
+        const pair = new RegExp('<(/?)' + tag + '(?:(?:"[^"]*"|\'[^\']*\'|[^>])*)>', 'gi');
+        pair.lastIndex = start + m[0].length;
+        let depth = 1, p, found = false;
+        while ((p = pair.exec(html)) !== null) {
+          if (p[1] === '/') { depth--; if (depth <= 0) { end = p.index + p[0].length; found = true; break; } }
+          else if (!/\/\s*>\s*$/.test(p[0])) depth++;
+        }
+        if (!found) end = html.length;
+      }
+      res.push(html.slice(start, end));
+      re.lastIndex = end;
     }
-    let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-    return out;
+    return res;
   }
-  const tag = part === '*' ? '[a-zA-Z0-9]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`<${tag}[^>]*>(?:[\\s\\S]*?<\\/${tag}>)?`, 'gi');
-  let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-  return out;
+
+  function getAttrVal(attrs, name) {
+    const mm = attrs.match(new RegExp('\\b' + name + '\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\')', 'i'));
+    return mm ? (mm[1] !== undefined ? mm[1] : mm[2]) : null;
+  }
+  function classOk(attrs, needCls) {
+    if (!needCls.length) return true;
+    const cv = getAttrVal(attrs, 'class');
+    if (cv === null) return false;
+    const have = ' ' + cv + ' ';
+    return needCls.every(function (c) { return have.indexOf(' ' + c + ' ') !== -1; });
+  }
+  function attrCheck(attrs, aName, aOp, aVal) {
+    if (!aName) return true;
+    const rawAttr = new RegExp('\\b' + aName + '(?=[\\s=>/]|$)', 'i').test(attrs);
+    if (!aOp) return rawAttr;
+    const v = getAttrVal(attrs, aName);
+    if (v === null) return false;
+    switch (aOp) {
+      case '=': return v === aVal;
+      case '^=': return v.slice(0, aVal.length) === aVal;
+      case '$=': return v.slice(-aVal.length) === aVal;
+      case '*=': return v.indexOf(aVal) !== -1;
+      case '~=': return (' ' + v + ' ').indexOf(' ' + aVal + ' ') !== -1;
+      default: return false;
+    }
+  }
+
+  if (part.charAt(0) === '#') {
+    const id = part.slice(1);
+    return scanOpen('[a-zA-Z0-9]+', function (a) { return getAttrVal(a, 'id') === id; });
+  }
+  if (part.charAt(0) === '.') {
+    const needCls = [part.slice(1)];
+    return scanOpen('[a-zA-Z0-9]+', function (a) { return classOk(a, needCls); });
+  }
+  const cm = part.match(/^([a-zA-Z][a-zA-Z0-9]*|\*)?(?:\.([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)*))?(?:\[([a-zA-Z-]+)\s*(?:([\*\^\$~]?=)\s*(?:"([^"]*)"|'([^']*)'|([^\]\s"']+)))?\])?$/);
+  if (cm && (cm[1] || cm[2] || cm[3])) {
+    let tp = (!cm[1] || cm[1] === '*') ? '[a-zA-Z0-9]+' : cm[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const needCls = cm[2] ? cm[2].split('.') : [];
+    const aName = cm[3], aOp = cm[4] || '';
+    const aVal = cm[5] !== undefined ? cm[5] : (cm[6] !== undefined ? cm[6] : cm[7]);
+    return scanOpen(tp, function (a) { return classOk(a, needCls) && attrCheck(a, aName, aOp, aVal); });
+  }
+  const tag = (part === '*') ? '[a-zA-Z0-9]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return scanOpen(tag, null);
 }
 
 function parseSelector(html, selector) {
@@ -121,7 +177,7 @@ function parseSelector(html, selector) {
   const results = [];
   const ors = selector.split(',').map(s => s.trim()).filter(Boolean);
   for (const or of ors) {
-    const parts = or.split(/\s+/);
+    const parts = or.split(/\s+/).filter(p => p && p !== '>');
     let current = [html];
     for (const part of parts) {
       const next = [];
@@ -143,7 +199,8 @@ class SimpleElement {
     this.attributes = {};
     const attrRe = /([a-zA-Z-]+)=["']([^"']*)["']/g;
     let m; while ((m = attrRe.exec(this._html)) !== null) this.attributes[m[1]] = m[2];
-    this.textContent = htmlToText(this._html);
+    const rawTag = this._html.match(/^\s*<([a-zA-Z0-9]+)[^>]*>([\s\S]*?)<\/\1>\s*$/i);
+    this.textContent = (rawTag && /^(script|style|pre|textarea)$/i.test(rawTag[1])) ? rawTag[2] : htmlToText(this._html);
     this.text = this.textContent;
     this.innerHTML = this._html;
   }
@@ -335,12 +392,29 @@ globalThis.__executeSource__ = async function (jsCode, sourceId) {
   const sandboxProto = {
     ComicSource, Network, Convert, randomInt,
     Comic, ComicDetails, ComicList, Cookie, PageJumpTarget, Comment, HtmlDocument,
-    APP: { version: '9.9.9' },
     console, setTimeout, clearTimeout, setInterval, clearInterval,
     TextEncoder, TextDecoder, URLSearchParams, URL,
     createUuid: () => (globalThis.crypto && globalThis.crypto.randomUUID ? globalThis.crypto.randomUUID() : 'id-' + randomInt(10000, 99999)),
-    btoa: (s) => btoa(String(s)),
-    atob: (s) => atob(String(s)),
+    btoa: (s) => {
+      const S = String(s); const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      let out = '';
+      for (let i = 0; i < S.length; i += 3) {
+        const b = [S.charCodeAt(i), S.charCodeAt(i + 1), S.charCodeAt(i + 2)];
+        out += CH[b[0] >> 2] + CH[((b[0] & 3) << 4) | ((isNaN(b[1]) ? 0 : b[1]) >> 4)] + (isNaN(b[1]) ? '=' : CH[((b[1] & 15) << 2) | ((isNaN(b[2]) ? 0 : b[2]) >> 6)]) + (isNaN(b[2]) ? '=' : CH[b[2] & 63]);
+      }
+      return out;
+    },
+    atob: (s) => {
+      const S = String(s).replace(/[^A-Za-z0-9+\/=]/g, ''); const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      let out = '';
+      for (let i = 0; i < S.length; i += 4) {
+        const e = [CH.indexOf(S[i]), CH.indexOf(S[i + 1]), CH.indexOf(S[i + 2]), CH.indexOf(S[i + 3])];
+        out += String.fromCharCode((e[0] << 2) | ((e[1] === -1 ? 0 : e[1]) >> 4));
+        if (e[2] !== -1 && S[i + 2] !== '=') out += String.fromCharCode(((e[1] & 15) << 4) | (e[2] >> 2));
+        if (e[3] !== -1 && S[i + 3] !== '=') out += String.fromCharCode(((e[2] & 3) << 6) | e[3]);
+      }
+      return out;
+    },
     Date, Math, JSON, Promise, RegExp, String, Number, Boolean, Array, Object, Map, Set, Error,
     encodeURIComponent, decodeURIComponent, encodeURI, decodeURI,
   };
@@ -504,3 +578,9 @@ globalThis.__pages__ = async function (sourceId, comicId, epId) {
   }
   return { pages: [] };
 };
+
+// ===== 显式挂载到全局（保证跨 script 可见）=====
+try {
+  const __g = globalThis;
+  ['SimpleElement','SimpleDocument','HtmlDocument','Comic','ComicDetails','ComicList','Cookie','PageJumpTarget','Comment','ComicSource','parseSelector','matchSelectorPart','htmlToText','extractAttr','randomInt','Network','Convert'].forEach(n => { if (__g[n] === undefined) { try { __g[n] = eval(n); } catch (_) {} } });
+} catch (_) {}

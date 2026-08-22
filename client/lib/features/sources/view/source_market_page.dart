@@ -16,33 +16,22 @@ class SourceMarketPage extends StatefulWidget {
   State<SourceMarketPage> createState() => _SourceMarketPageState();
 }
 
-class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerProviderStateMixin {
+class _SourceMarketPageState extends State<SourceMarketPage> {
   List<SourceManifest> _all = [];
   List<SourceManifest> _filtered = [];
   bool _loading = true;
   String? _error;
   String _search = '';
-  late TabController _tabCtrl;
   final _searchCtrl = TextEditingController();
-
-  final _tabs = [
-    {'key': 'all', 'name': '全部'},
-    {'key': 'zh', 'name': '中文'},
-    {'key': 'ja', 'name': '日文'},
-    {'key': 'intl', 'name': '海外'},
-    {'key': 'adult', 'name': '成人'},
-  ];
 
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: _tabs.length, vsync: this);
-    _tabCtrl.addListener(() { if (!_tabCtrl.indexIsChanging) _applyFilter(); });
     _load();
   }
 
   @override
-  void dispose() { _tabCtrl.dispose(); _searchCtrl.dispose(); super.dispose(); }
+  void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
@@ -58,17 +47,8 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
   }
 
   void _applyFilter() {
-    final tab = _tabs[_tabCtrl.index]['key']!;
     final q = _search.toLowerCase();
     _filtered = _all.where((s) {
-      if (tab != 'all') {
-        final locale = s.metadata['locale']?.toString() ?? '';
-        final type = s.metadata['type']?.toString() ?? '';
-        if (tab == 'zh' && locale != 'zh') return false;
-        if (tab == 'ja' && locale != 'ja') return false;
-        if (tab == 'intl' && locale != '' && locale != 'en') return false;
-        if (tab == 'adult' && type != 'hentai') return false;
-      }
       if (q.isNotEmpty && !s.name.toLowerCase().contains(q) && !s.id.toLowerCase().contains(q)) return false;
       return true;
     }).toList();
@@ -104,18 +84,6 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
                   onChanged: (v) { _search = v; _applyFilter(); },
                 ),
               ),
-            ),
-          ),
-          // Tab
-          SliverToBoxAdapter(
-            child: TabBar(
-              controller: _tabCtrl,
-              isScrollable: true, tabAlignment: TabAlignment.start,
-              indicatorColor: DS.accent, indicatorSize: TabBarIndicatorSize.label,
-              labelColor: DS.accent, unselectedLabelColor: DS.textTertiary,
-              labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: const TextStyle(fontSize: 14),
-              tabs: _tabs.map((t) => Tab(text: t['name'])).toList(),
             ),
           ),
           if (_loading)
