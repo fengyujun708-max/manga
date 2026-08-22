@@ -54,8 +54,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       ));
     } else {
       context.read<AuthBloc>().add(AuthLoginRequested(
-        phone: _phoneCtrl.text.trim(),
-        password: _passwordCtrl.text,
+        _phoneCtrl.text.trim(),
+        _passwordCtrl.text,
       ));
     }
   }
