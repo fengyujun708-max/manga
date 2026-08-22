@@ -60,7 +60,7 @@ class _SourceDiagPageState extends State<SourceDiagPage> {
 
     // 3b. 宿主对象完整性（QuickJS 缺件检测）
     try {
-      const r = await engine.evaluate(
+      final r = await engine.evaluate(
         "JSON.stringify(['fetch','XMLHttpRequest','setInterval','TextEncoder','TextDecoder','btoa','atob','crypto'].filter(k => typeof globalThis[k] === 'undefined'))");
       final missing = r.toString();
       log('③b 宿主对象', missing == '[]' || missing.isEmpty ? '✅ 无缺失' : '⚠️ 缺失: $missing');
