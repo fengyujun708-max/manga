@@ -149,7 +149,12 @@ function __aesEcbDecrypt(dataStr, keyStr) {
 
 // ===== Convert（加密通过宿主桥接，结果存全局变量）=====
 function __cryptoJs(op) {
-  sendMessage('crypto', JSON.stringify(op));
+  // flutter_js QuickJS: sendMessage 同步且返回 Dart 回调的返回值
+  try {
+    const r = sendMessage('crypto', JSON.stringify(op));
+    if (typeof r === 'string') return r;
+  } catch (_) {}
+  // 兜底：旧模式（Dart 侧 evaluate 写全局变量）
   return globalThis.__cryptoResult || '';
 }
 const Convert = {

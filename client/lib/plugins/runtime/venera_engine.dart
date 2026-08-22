@@ -51,8 +51,9 @@ class VeneraEngine {
           break;
         default: result = '';
       }
-      // 把结果存到 JS 全局变量（同步可读）
+      // 结果同时走两条通道：返回值（新桥）+ 全局变量（旧桥兜底）
       _runtime!.evaluate('globalThis.__cryptoResult = ${jsonEncode(result)};');
+      return result;
     });
 
     // 加载运行时基座 JS
