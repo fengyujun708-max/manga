@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import '../../../app/ds.dart';
 import '../../../plugins/source_data_service.dart';
+import '../../../plugins/source_routes_service.dart';
 
 /// 源详情 — 沉浸式板块浏览 + 搜索 + 分类
 class SourceDetailPage extends StatefulWidget {
@@ -29,6 +30,15 @@ class _SourceDetailPageState extends State<SourceDetailPage> {
   void initState() { super.initState(); _load(); }
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
+
+  void _showRouteSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: DS.surface1,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(DS.rLg))),
+      builder: (_) => _RouteSheet(sourceId: widget.sourceId, onSwitched: () { _load(); }),
+    );
+  }
 
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
@@ -65,6 +75,10 @@ class _SourceDetailPageState extends State<SourceDetailPage> {
             ),
             title: Text(name, style: DS.headline),
             actions: [
+              GestureDetector(
+                onTap: _showRouteSheet,
+                child: Container(margin: const EdgeInsets.only(right: DS.sp8), padding: const EdgeInsets.all(6), decoration: const BoxDecoration(color: DS.glassFill, shape: BoxShape.circle), child: const Icon(Icons.network_check_rounded, size: 20, color: DS.textPrimary)),
+              ),
               if (_mode.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.only(right: DS.sp8),
@@ -174,5 +188,92 @@ class _HorizontalSection extends StatelessWidget {
         },
       )),
     ]);
+  }
+}
+class _RouteSheet extends StatefulWidget {
+  final String sourceId;
+  final VoidCallback onSwitched;
+  const _RouteSheet({required this.sourceId, required this.onSwitched});
+  @override
+  State<_RouteSheet> createState() => _RouteSheetState();
+}
+
+class _RouteSheetState extends State<_RouteSheet> {
+  List<RouteProbe>? _results;
+  bool _probing = true;
+  String? _current;
+
+  @override
+  void initState() {
+    super.initState();
+    SourceRoutesService.instance.warm().then((_) async {
+      _current = (SourceRoutesService.instance.getOverrides(widget.sourceId)['domains'] ?? '').toString();
+      await _probe();
+    });
+  }
+
+  Future<void> _probe() async {
+    setState(() => _probing = true);
+    final hosts = await SourceRoutesService.instance.extractHosts(widget.sourceId);
+    _results = hosts.isEmpty ? [] : await SourceRoutesService.instance.probe(hosts);
+    if (mounted) setState(() => _probing = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(DS.sp16, DS.sp16, DS.sp16, DS.sp24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.lan_rounded, size: 18, color: DS.accent),
+              const SizedBox(width: 8),
+              Text('网络检测 · ${widget.sourceId}', style: const TextStyle(color: DS.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              GestureDetector(onTap: _probe, child: const Icon(Icons.refresh_rounded, size: 20, color: DS.textTertiary)),
+            ]),
+            const SizedBox(height: DS.sp12),
+            if (_probing)
+              const Padding(padding: EdgeInsets.symmetric(vertical: 32), child: Center(child: CircularProgressIndicator(color: DS.accent, strokeWidth: 2)))
+            else if (_results == null || _results!.isEmpty)
+              Padding(padding: const EdgeInsets.symmetric(vertical: 24), child: Text('未在源脚本中发现候选线路', style: TextStyle(color: DS.textTertiary, fontSize: 13))),
+            if (!_probing && _results != null && _results!.isNotEmpty)
+              Flexible(child: SingleChildScrollView(child: Column(children: [
+                for (final r in _results!)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    leading: Icon(r.ok ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 20, color: r.ok ? (r.ms < 800 ? DS.success : DS.warning) : DS.error),
+                    title: Text(r.host, style: const TextStyle(color: DS.textPrimary, fontSize: 13)),
+                    subtitle: r.ok ? Text('${r.ms} ms', style: const TextStyle(color: DS.textTertiary, fontSize: 11)) : null,
+                    trailing: _current == r.host ? const Icon(Icons.radio_button_checked_rounded, size: 18, color: DS.accent) : null,
+                    onTap: () async {
+                      await SourceRoutesService.instance.setOverride(widget.sourceId, 'domains', r.host);
+                      setState(() => _current = r.host);
+                      widget.onSwitched();
+                    },
+                  ),
+              ]))),
+            if (!_probing && (_results?.any((r) => r.ok) ?? false))
+              Padding(
+                padding: const EdgeInsets.only(top: DS.sp8),
+                child: SizedBox(width: double.infinity, height: 44, child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(backgroundColor: DS.accent, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DS.rMd))),
+                  icon: const Icon(Icons.bolt_rounded, size: 18), label: const Text('自动选择最优', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  onPressed: () async {
+                    await SourceRoutesService.instance.autoSelect(widget.sourceId);
+                    setState(() => _current = SourceRoutesService.instance.getOverrides(widget.sourceId)['domains']?.toString());
+                    widget.onSwitched();
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                )),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

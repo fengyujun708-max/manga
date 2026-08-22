@@ -372,6 +372,10 @@ class ComicSource {
   saveData(key, val) { this._data[key] = val; }
   deleteData(key) { delete this._data[key]; }
   loadSetting(key) {
+    try {
+      const ov = globalThis.__settingsOverride__;
+      if (ov && ov[key] !== undefined && ov[key] !== null) return ov[key];
+    } catch (_) {}
     if (this._settings[key] !== undefined && this._settings[key] !== null) return this._settings[key];
     if (this.settings && this.settings[key] && this.settings[key].default !== undefined) return this.settings[key].default;
     return undefined;

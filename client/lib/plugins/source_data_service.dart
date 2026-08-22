@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'source_installer.dart';
+import 'source_routes_service.dart';
 import 'runtime/venera_engine.dart';
 
 /// 源数据服务 —— 纯本地执行（Venera 模式）
@@ -36,7 +37,7 @@ class SourceDataService {
       final file = File('$dir/$sourceId.js');
       if (!await file.exists()) return false;
       final code = await file.readAsString();
-      await engine.executeSource(sourceId, code);
+      await engine.executeSource(sourceId, code, settings: SourceRoutesService.instance.getOverrides(sourceId));
       return true;
     } catch (_) {
       return false;

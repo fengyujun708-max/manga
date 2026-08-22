@@ -54,8 +54,15 @@ class VeneraEngine {
   }
 
   /// 执行源 JS（每次重置全局，保证隔离）
-  Future<bool> executeSource(String sourceId, String jsCode) async {
+  Future<bool> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
     await init();
+    // 注入宿主侧设置覆盖（线路选择等）
+    if (settings != null && settings.isNotEmpty) {
+      final s = jsonEncode(settings).replaceAll("'", "\\'");
+      _runtime!.evaluate("globalThis.__settingsOverride__ = JSON.parse('" + s.replaceAll('\n', r'\n') + "');");
+    } else {
+      _runtime!.evaluate("globalThis.__settingsOverride__ = {};");
+    }
     _runtime!.evaluate('''
       try { delete globalThis.__sourceClass; } catch(_) {}
       try { delete globalThis.__sources__; } catch(_) {}
