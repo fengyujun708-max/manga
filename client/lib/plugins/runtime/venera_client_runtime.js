@@ -303,15 +303,46 @@ class ComicSource {
 // executeSource 在 host 侧调用（Dart 桥接），这里定义工厂
 
 // base64 注入入口：避免宿主字符串转义损坏（\r、引号等）
-globalThis.__executeSourceB64__ = function (b64, sourceId) {
+globalThis.__executeSourceB64__ = async function (b64, sourceId) {
+  globalThis.__sourceLoadError__ = null;
   try {
     const code = Convert.decodeBase64(b64);
-    const p = globalThis.__executeSource__(code, sourceId);
-    return { ok: true, promise: true };
+    await globalThis.__executeSource__(code, sourceId);
+    if (!globalThis.__sources__ || !globalThis.__sources__[sourceId]) {
+      globalThis.__sourceLoadError__ = '执行完成但源未注册（类检测失败或 init 抛错）';
+    }
   } catch (e) {
-    return { ok: false, error: String(e && e.message ? e.message : e) };
+    globalThis.__sourceLoadError__ = String(e && e.message ? e.message : e) + (e && e.stack ? ' @ ' + String(e.stack).split('\n')[1] : '');
   }
 };
+
+// 宿主缺失对象的兜底（QuickJS 可能缺 TextEncoder/setInterval 等）
+if (typeof globalThis.TextEncoder === 'undefined') {
+  globalThis.TextEncoder = function () {};
+  globalThis.TextEncoder.prototype.encode = function (s) {
+    const bin = unescape(encodeURIComponent(String(s ?? '')));
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i) & 0xff;
+    return u8;
+  };
+}
+if (typeof globalThis.TextDecoder === 'undefined') {
+  globalThis.TextDecoder = function () {};
+  globalThis.TextDecoder.prototype.decode = function (u8) {
+    try {
+      let bin = '';
+      const arr = (u8 && u8.length !== undefined) ? u8 : [];
+      for (let i = 0; i < arr.length; i++) bin += String.fromCharCode(arr[i]);
+      return decodeURIComponent(escape(bin));
+    } catch (_) { return ''; }
+  };
+}
+if (typeof globalThis.setInterval === 'undefined') {
+  globalThis.setInterval = function (fn, ms) { return 0; };
+}
+if (typeof globalThis.clearInterval === 'undefined') {
+  globalThis.clearInterval = function () {};
+}
 
 globalThis.__executeSource__ = async function (jsCode, sourceId) {  const sandboxProto = {
     ComicSource, Network, Convert, randomInt,

@@ -22,13 +22,17 @@ class SourceSetupDialog {
     'hcomic': 'HComic',
   };
 
-  /// 检查是否需要弹出（首次进入且未完成过）
+  /// 检查是否需要弹出：首次进入，或已安装源清单为空（配置损坏自愈）
   static Future<void> maybeShow(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final done = prefs.getBool(_flag) ?? false;
-      debugPrint('[SourceSetup] flag=$done');
-      if (done) return;
+      int installed = 0;
+      try {
+        installed = (jsonDecode(prefs.getString('installed_sources') ?? '[]') as List).length;
+      } catch (_) {}
+      debugPrint('[SourceSetup] flag=$done installed=$installed');
+      if (done && installed > 0) return;
       BuildContext ctx = (navigatorKey?.currentState != null)
           ? navigatorKey!.currentContext!
           : context;

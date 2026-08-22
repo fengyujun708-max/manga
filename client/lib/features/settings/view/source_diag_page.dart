@@ -58,6 +58,16 @@ class _SourceDiagPageState extends State<SourceDiagPage> {
       log('③ 网络层 fetch', '❌ $e');
     }
 
+    // 3b. 宿主对象完整性（QuickJS 缺件检测）
+    try {
+      const r = await engine.evaluate(
+        "JSON.stringify(['fetch','XMLHttpRequest','setInterval','TextEncoder','TextDecoder','btoa','atob','crypto'].filter(k => typeof globalThis[k] === 'undefined'))");
+      final missing = r.toString();
+      log('③b 宿主对象', missing == '[]' || missing.isEmpty ? '✅ 无缺失' : '⚠️ 缺失: $missing');
+    } catch (e) {
+      log('③b 宿主对象', '❌ $e');
+    }
+
     // 4. 完整链路：copy_manga explore
     try {
       final dir = await SourceInstaller.ensureSourceDir();
