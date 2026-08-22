@@ -1,220 +1,239 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import '../../../app/theme/theme.dart';
-import '../../../app/config/app_config.dart';
+import '../../../app/widgets/comic_widgets.dart';
 import '../bloc/auth_bloc.dart';
 
+/// Apple 液态玻璃登录页 — 极简深沉 + 毛玻璃输入 + 一键游客登录
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _nicknameController = TextEditingController();
-  bool _showPassword = false;
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+  final _phoneCtrl = TextEditingController(text: 'guest');
+  final _passwordCtrl = TextEditingController(text: 'guest');
+  final _confirmCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
   bool _isRegister = false;
-  String? _phoneError, _passwordError, _confirmError;
-
-  late AnimationController _fadeController;
-  late Animation<double> _fade;
-  late AnimationController _logoController;
-  late Animation<double> _logoScale;
-  late Animation<double> _logoGlow;
+  late AnimationController _entranceCtrl;
+  late Animation<double> _entrance;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
-    _fade = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
-    _logoController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
-    _logoScale = Tween<double>(begin: 0.6, end: 1.0).animate(CurvedAnimation(parent: _logoController, curve: Curves.elasticOut));
-    _logoGlow = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _logoController, curve: Curves.easeIn));
-    _fadeController.forward();
-    _logoController.forward();
+    _entranceCtrl = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
+    _entrance = CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOutCubic);
+    _entranceCtrl.forward();
   }
 
   @override
   void dispose() {
-    _phoneController.dispose(); _passwordController.dispose();
-    _confirmPasswordController.dispose(); _nicknameController.dispose();
-    _fadeController.dispose(); _logoController.dispose();
+    _phoneCtrl.dispose(); _passwordCtrl.dispose();
+    _confirmCtrl.dispose(); _nameCtrl.dispose();
+    _entranceCtrl.dispose();
     super.dispose();
   }
 
-  bool _validatePhone(String p) {
-    if (!RegExp(r'^1\d{10}$').hasMatch(p)) return false;
-    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(p)) return false;
-    if (RegExp(r'^(\d)\1{10}$').hasMatch(p)) return false;
-    const inc = '01234567890123456789'; const dec = '98765432109876543210';
-    final l6 = p.substring(5);
-    if (inc.contains(l6) || dec.contains(l6)) return false;
-    const bl = ['13800138000','13900139000','10000000000','12345678901','11111111111','00000000000','12312312345'];
-    if (bl.contains(p)) return false;
-    return true;
+  void _guestLogin() {
+    context.read<AuthBloc>().add(AuthGuestLoginRequested());
   }
 
-  bool _validate() {
-    bool ok = true;
-    setState(() { _phoneError = _passwordError = _confirmError = null; });
-    final p = _phoneController.text.trim();
-    if (!_validatePhone(p)) { _phoneError = '手机号无效'; ok = false; }
+  void _submit() {
     if (_isRegister) {
-      if (_passwordController.text.length < 8) { _passwordError = '密码至少8位'; ok = false; }
-      if (_passwordController.text != _confirmPasswordController.text) { _confirmError = '两次不一致'; ok = false; }
+      context.read<AuthBloc>().add(AuthRegisterRequested(
+        phone: _phoneCtrl.text.trim(),
+        password: _passwordCtrl.text,
+        confirmPassword: _confirmCtrl.text,
+        nickname: _nameCtrl.text.trim().isEmpty ? '用户${_phoneCtrl.text.trim().substring(0, 4)}' : _nameCtrl.text.trim(),
+      ));
     } else {
-      if (_passwordController.text.isEmpty) { _passwordError = '请输入密码'; ok = false; }
+      context.read<AuthBloc>().add(AuthLoginRequested(
+        phone: _phoneCtrl.text.trim(),
+        password: _passwordCtrl.text,
+      ));
     }
-    return ok;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
-        child: SafeArea(
-          child: BlocListener<AuthBloc, AuthState>(
-            listenWhen: (p, c) => c is AuthAuthenticated || c is AuthError,
-            listener: (ctx, s) {
-              if (s is AuthAuthenticated) { context.go('/home'); }
-              else if (s is AuthError) {
-                ScaffoldMessenger.of(ctx).showSnackBar(
-                  SnackBar(content: Text(s.message), backgroundColor: AppTheme.destructive),
-                );
-              }
-            },
-            child: FadeTransition(
-              opacity: _fade,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - 56),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 50),
-                      // 发光 Logo — 弹性入场
-                      ScaleTransition(
-                        scale: _logoScale,
-                        child: Container(
-                          width: 88, height: 88,
+      backgroundColor: AppTheme.background,
+      body: BlocListener<AuthBloc, AuthState>(
+        listenWhen: (p, c) => c is AuthAuthenticated || c is AuthError,
+        listener: (ctx, s) {
+          if (s is AuthAuthenticated) context.go('/home');
+          if (s is AuthError) {
+            ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+              backgroundColor: AppTheme.destructive,
+              content: Row(children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Expanded(child: Text(s.message, style: const TextStyle(color: Colors.white, fontSize: 13))),
+              ]),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ));
+          }
+        },
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (ctx, state) {
+            final loading = state is AuthLoading;
+            return SafeArea(
+              child: FadeTransition(
+                opacity: _entrance,
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Logo
+                        Container(
+                          width: 80, height: 80,
                           decoration: BoxDecoration(
                             gradient: AppTheme.primaryGradient,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primary.withValues(alpha: _logoGlow.value * 0.5),
-                                blurRadius: 30, spreadRadius: -4,
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, 8))],
+                          ),
+                          child: const Icon(Icons.auto_stories_rounded, size: 38, color: Colors.white),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('漫界', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -1)),
+                        const SizedBox(height: 6),
+                        const Text('海量漫画，一触即达', style: TextStyle(fontSize: 14, color: AppTheme.textTertiary)),
+                        const SizedBox(height: 40),
+
+                        // 液态玻璃表单
+                        LiquidGlass(
+                          radius: BorderRadius.circular(AppTheme.radiusLg),
+                          padding: const EdgeInsets.all(24),
+                          fillColor: AppTheme.glassFillRegular,
+                          child: Column(children: [
+                            // 手机号
+                            _GlassField(
+                              controller: _phoneCtrl,
+                              hint: '手机号 / 账号',
+                              icon: Icons.phone_iphone_rounded,
+                              enabled: !loading,
+                            ),
+                            const SizedBox(height: 14),
+                            // 密码
+                            _GlassField(
+                              controller: _passwordCtrl,
+                              hint: '密码',
+                              icon: Icons.lock_outline_rounded,
+                              obscure: true,
+                              enabled: !loading,
+                            ),
+                            if (_isRegister) ...[
+                              const SizedBox(height: 14),
+                              _GlassField(
+                                controller: _confirmCtrl,
+                                hint: '确认密码',
+                                icon: Icons.lock_outline_rounded,
+                                obscure: true,
+                                enabled: !loading,
+                              ),
+                              const SizedBox(height: 14),
+                              _GlassField(
+                                controller: _nameCtrl,
+                                hint: '昵称（可选）',
+                                icon: Icons.person_outline_rounded,
+                                enabled: !loading,
                               ),
                             ],
-                          ),
-                          child: const Icon(Icons.auto_stories_rounded, size: 42, color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text('漫界', style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 34, letterSpacing: 3)),
-                      const SizedBox(height: 6),
-                      Text('发现漫画的无限可能', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 0.8)),
-                      const SizedBox(height: 36),
-
-                      _field(_phoneController, '手机号', Icons.phone_android_rounded, error: _phoneError, kb: TextInputType.phone, maxLen: 11),
-                      const SizedBox(height: 12),
-                      if (_isRegister) ...[
-                        _field(_nicknameController, '昵称', Icons.person_rounded, hint: '给自己取个名字'),
-                        const SizedBox(height: 12),
-                      ],
-                      _field(_passwordController, _isRegister ? '设置密码' : '密码', Icons.lock_outline_rounded,
-                        error: _passwordError, hint: _isRegister ? '至少8位' : '输入密码',
-                        obscure: !_showPassword,
-                        suffix: IconButton(
-                          icon: Icon(_showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: AppTheme.textSecondary, size: 20),
-                          onPressed: () => setState(() => _showPassword = !_showPassword),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (_isRegister) ...[
-                        _field(_confirmPasswordController, '确认密码', Icons.lock_rounded, error: _confirmError, obscure: !_showPassword),
-                        const SizedBox(height: 12),
-                      ],
-
-                      // 登录按钮
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (ctx, s) {
-                          final loading = s is AuthLoading;
-                          return SpringButton(
-                            onPressed: loading ? null : _onSubmit,
-                            child: loading
-                              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : Text(_isRegister ? '注册' : '登录', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 14),
-
-                      // 游客登录 — 胶囊按钮
-                      GestureDetector(
-                        onTap: () => context.read<AuthBloc>().add(AuthGuestLoginRequested()),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppTheme.accent.withValues(alpha: 0.3), width: 0.5),
-                          ),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            Icon(Icons.explore_rounded, size: 16, color: AppTheme.accent),
-                            const SizedBox(width: 6),
-                            Text('游客登录', style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w600, fontSize: 13)),
+                            const SizedBox(height: 24),
+                            // 登录按钮
+                            SpringButton(
+                              onPressed: loading ? null : _submit,
+                              child: loading
+                                ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                                : Text(_isRegister ? '注册' : '登录', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                            ),
+                            const SizedBox(height: 14),
+                            // 切换登录/注册
+                            GestureDetector(
+                              onTap: loading ? null : () => setState(() => _isRegister = !_isRegister),
+                              child: Text(
+                                _isRegister ? '已有账号？去登录' : '没有账号？去注册',
+                                style: const TextStyle(fontSize: 13, color: AppTheme.textTertiary),
+                              ),
+                            ),
                           ]),
                         ),
-                      ),
-                      const SizedBox(height: 8),
 
-                      TextButton(
-                        onPressed: () => setState(() {
-                          _isRegister = !_isRegister;
-                          _phoneError = _passwordError = _confirmError = null;
-                        }),
-                        child: Text(_isRegister ? '已有账号？去登录' : '没有账号？去注册', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+
+                        // 游客登录
+                        GestureDetector(
+                          onTap: loading ? null : _guestLogin,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                              border: Border.all(color: AppTheme.glassBorder, width: 0.5),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.person_outline_rounded, size: 18, color: AppTheme.textTertiary),
+                                const SizedBox(width: 8),
+                                const Text('游客登录', style: TextStyle(fontSize: 15, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
+}
 
-  Widget _field(TextEditingController c, String label, IconData icon, {String? hint, String? error, bool obscure = false, TextInputType? kb, int? maxLen, Widget? suffix}) {
-    return TextField(
-      controller: c, obscureText: obscure, keyboardType: kb, maxLength: maxLen,
-      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
-      decoration: InputDecoration(labelText: label, hintText: hint,
-        prefixIcon: Icon(icon, color: AppTheme.textSecondary, size: 22), suffixIcon: suffix, errorText: error, counterText: ''),
+class _GlassField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  final IconData icon;
+  final bool obscure;
+  final bool enabled;
+  const _GlassField({required this.controller, required this.hint, required this.icon, this.obscure = false, this.enabled = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceLight.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.glassBorder, width: 0.5),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        enabled: enabled,
+        style: const TextStyle(fontSize: 15, color: AppTheme.textPrimary),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(fontSize: 15, color: AppTheme.textTertiary),
+          prefixIcon: Icon(icon, size: 20, color: AppTheme.textTertiary),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+      ),
     );
-  }
-
-  void _onSubmit() {
-    if (!_validate()) return;
-    final phone = _phoneController.text.trim();
-    final pw = _passwordController.text.trim();
-    if (_isRegister) {
-      context.read<AuthBloc>().add(AuthRegisterRequested(
-        phone: phone, password: pw, confirmPassword: _confirmPasswordController.text.trim(),
-        nickname: _nicknameController.text.trim().isNotEmpty ? _nicknameController.text.trim() : '用户$phone',
-      ));
-    } else {
-      context.read<AuthBloc>().add(AuthLoginRequested(phone, pw));
-    }
   }
 }
