@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:go_router/go_router.dart';
 import '../ds.dart';
+import '../../features/sources/view/source_setup_dialog.dart';
 
 /// 漫界 App Shell — 浮动液态玻璃底栏
 /// 滚动下滑隐藏 + 上滑/停止显示 + 选中微动效
@@ -37,6 +38,9 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     _barCtrl = AnimationController(duration: DS.durEmphasis, vsync: this);
     _barOffset = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _barCtrl, curve: DS.cEmphasis));
     _barOpacity = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(parent: _barCtrl, curve: Curves.easeOut));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) SourceSetupDialog.maybeShow(context);
+    });
   }
 
   @override

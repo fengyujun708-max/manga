@@ -17,46 +17,36 @@ class SourceInstaller {
     }
   }
 
-  /// 解析源 JS 真实下载地址：downloadUrl → jsdelivr 直猜 → 官方 index.json 匹配
+  /// 服务器源列表（20 个可用源）
+  static const String _serverBase = 'http://39.106.192.137';
+  static const List<String> vettedSources = [
+    'copy_manga','jm','komiic','comick','manga_dex','baozi','ccc','zaimanhua',
+    'manhuagui','manhuaren','manwaba','hot_manga','jcomic','goda','mh18','mxs',
+    'nhentai','wnacg','lanraragi','hcomic',
+  ];
+
+  /// 优先从自建服务器下载源 JS（国内可达），兜底 jsdelivr
   static Future<String> resolveJsUrl(SourceManifest m) async {
+    final id = m.id.toLowerCase();
+    // 0) 自建服务器（20 个白名单源）
+    final serverUrl = '$_serverBase/sources/$id.js';
+    try {
+      final r = await _httpGet(serverUrl);
+      if (r != null && r.contains('ComicSource')) return serverUrl;
+    } catch (_) {}
+    // 1) downloadUrl/repositoryUrl 直链
     final direct = m.downloadUrl.isNotEmpty ? m.downloadUrl : m.repositoryUrl;
-    if (direct.startsWith('http')) return direct;
-    // 1) 按约定文件名直猜（venera-configs 的 fileName 基本都是 key 小写）
-    final guess = 'https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/${m.id.toLowerCase()}.js';
+    if (direct.startsWith('http')) {
+      try {
+        final r = await _httpGet(direct);
+        if (r != null && r.contains('ComicSource')) return direct;
+      } catch (_) {}
+    }
+    // 2) jsdelivr 直猜
+    final guess = 'https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/$id.js';
     try {
       final r = await _httpGet(guess);
-      if (r != null) return guess;
-    } catch (_) {}
-    // 2) 拉 index.json 按 key/name 匹配（跳过多账号重复版本）
-    try {
-      final idx = await _httpGet('https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/index.json');
-      if (idx != null) {
-        final list = (jsonDecode(idx) as List).cast<Map<String, dynamic>>();
-        final wanted = m.id.toLowerCase();
-        Map<String, dynamic>? best;
-        for (final e in list) {
-          final key = (e['key'] ?? '').toString().toLowerCase();
-          final name = (e['name'] ?? '').toString();
-          final fname = (e['fileName'] ?? '').toString();
-          if ((key == wanted || fname.toLowerCase() == '$wanted.js') && best == null) {
-            best = e;
-          }
-        }
-        if (best == null) {
-          for (final e in list) {
-            if ((e['key'] ?? '').toString().toLowerCase() == wanted &&
-                !(e['name'] ?? '').toString().contains('多账号')) {
-              best = e; break;
-            }
-          }
-        }
-        final f = (best?['fileName'] ?? '').toString();
-        if (f.isNotEmpty) {
-          final u = 'https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/$f';
-          final r = await _httpGet(u);
-          if (r != null) return u;
-        }
-      }
+      if (r != null && r.contains('ComicSource')) return guess;
     } catch (_) {}
     return '';
   }
