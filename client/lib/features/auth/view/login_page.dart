@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:ui';
-import '../../app/ds.dart';
+import '../../../app/ds.dart';
 import '../bloc/auth_bloc.dart';
 
 /// Apple 风格登录页 — 纯黑沉浸 + 毛玻璃表单 + 一键游客
@@ -106,7 +106,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                 const SizedBox(height: 12),
                                 _field(_confirmCtrl, '确认密码', Icons.lock_outline_rounded, obscure: true, enabled: !loading),
                                 const SizedBox(height: 12),
-                                _field(_nameCtrl, '昵称（可选）', Icons.badge_outline, enabled: !loading),
+                                _field(_nameCtrl, '昵称（可选）', Icons.badge_outlined, enabled: !loading),
                               ],
                               const SizedBox(height: 24),
                               SpringButton(

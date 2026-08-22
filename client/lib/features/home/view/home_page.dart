@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../app/ds.dart';
-import '../../core/network/api_client.dart';
+import '../../../app/ds.dart';
+import '../../../core/network/api_client.dart';
 import 'package:get_it/get_it.dart';
 
 /// 首页 — Cinematic Immersive
