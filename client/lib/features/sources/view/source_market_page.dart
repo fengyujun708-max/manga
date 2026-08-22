@@ -4,13 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../app/theme/theme.dart';
-import '../../../app/widgets/comic_widgets.dart';
+import '../../../app/ds.dart';
 import '../../../plugins/manga_source.dart';
 import '../../../plugins/source_installer.dart';
 import '../../../core/network/api_client.dart';
-import '../bloc/source_bloc.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// 源市场 — 分类筛选 + 搜索 + 液态玻璃卡片
 class SourceMarketPage extends StatefulWidget {
@@ -20,7 +17,7 @@ class SourceMarketPage extends StatefulWidget {
 }
 
 class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerProviderStateMixin {
-  List<SourceManifest> _allSources = [];
+  List<SourceManifest> _all = [];
   List<SourceManifest> _filtered = [];
   bool _loading = true;
   String _search = '';
@@ -30,7 +27,7 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
   final _tabs = [
     {'key': 'all', 'name': '全部'},
     {'key': 'zh', 'name': '中文'},
-    {'key': 'ja', 'name': '日本'},
+    {'key': 'ja', 'name': '日文'},
     {'key': 'intl', 'name': '海外'},
     {'key': 'adult', 'name': '成人'},
   ];
@@ -51,19 +48,15 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
     try {
       final api = GetIt.instance<ApiClient>();
       final res = await api.get('/sources');
-      final data = res.data;
-      _allSources = ((data?['sources'] as List?) ?? []).map((e) => SourceManifest.fromJson(e as Map<String, dynamic>)).toList();
+      _all = ((res.data?['sources'] as List?) ?? []).map((e) => SourceManifest.fromJson(e as Map<String, dynamic>)).toList();
       _applyFilter();
-    } catch (e) {
-      setState(() => _loading = false);
-    }
+    } catch (_) { setState(() => _loading = false); }
   }
 
   void _applyFilter() {
     final tab = _tabs[_tabCtrl.index]['key']!;
     final q = _search.toLowerCase();
-    _filtered = _allSources.where((s) {
-      // 分类筛选
+    _filtered = _all.where((s) {
       if (tab != 'all') {
         final locale = s.metadata['locale']?.toString() ?? '';
         final type = s.metadata['type']?.toString() ?? '';
@@ -72,86 +65,65 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
         if (tab == 'intl' && locale != '' && locale != 'en') return false;
         if (tab == 'adult' && type != 'hentai') return false;
       }
-      // 搜索
       if (q.isNotEmpty && !s.name.toLowerCase().contains(q) && !s.id.toLowerCase().contains(q)) return false;
       return true;
     }).toList();
     if (mounted) setState(() {});
   }
 
-  Future<bool> _isInstalled(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('installed_sources') ?? '[]';
-    return (jsonDecode(json) as List).any((e) => SourceManifest.fromJson(e as Map<String, dynamic>).id == id);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: DS.bg,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // 头部
           SliverAppBar(
-            pinned: true,
-            backgroundColor: Colors.transparent,
+            pinned: true, backgroundColor: Colors.transparent,
             leading: GestureDetector(
               onTap: () => context.pop(),
-              child: Container(margin: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppTheme.glassFillLight, shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.textPrimary)),
+              child: Container(margin: const EdgeInsets.all(8), decoration: BoxDecoration(color: DS.glassFill, shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: DS.textPrimary)),
             ),
-            title: const Text('源市场', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.textPrimary)),
+            title: const Text('源市场', style: DS.headline),
           ),
-
-          // 搜索框
+          // 搜索
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-              child: LiquidGlass(
-                radius: BorderRadius.circular(14),
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                fillColor: AppTheme.glassFillRegular,
-                child: Row(children: [
-                  const Icon(Icons.search_rounded, size: 20, color: AppTheme.textTertiary),
-                  const SizedBox(width: 10),
-                  Expanded(child: TextField(
-                    controller: _searchCtrl,
-                    style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
-                    decoration: const InputDecoration(hintText: '搜索漫画源', hintStyle: TextStyle(color: AppTheme.textTertiary, fontSize: 14), border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 14)),
-                    onChanged: (v) { _search = v; _applyFilter(); },
-                  )),
-                ]),
+              padding: const EdgeInsets.fromLTRB(DS.sp16, DS.sp4, DS.sp16, DS.sp12),
+              child: Glass(
+                radius: DS.rMd,
+                padding: const EdgeInsets.symmetric(horizontal: DS.sp14),
+                child: TextField(
+                  controller: _searchCtrl,
+                  style: const TextStyle(fontSize: 14, color: DS.textPrimary),
+                  decoration: const InputDecoration(hintText: '搜索漫画源', hintStyle: TextStyle(color: DS.textTertiary, fontSize: 14), border: InputBorder.none, contentPadding: EdgeInsets.symmetric(vertical: 14), prefixIcon: Icon(Icons.search_rounded, size: 20, color: DS.textTertiary)),
+                  onChanged: (v) { _search = v; _applyFilter(); },
+                ),
               ),
             ),
           ),
-
-          // 分类Tab
+          // Tab
           SliverToBoxAdapter(
             child: TabBar(
               controller: _tabCtrl,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              indicatorColor: AppTheme.primary,
-              indicatorSize: TabBarIndicatorSize.label,
-              labelColor: AppTheme.primary,
-              unselectedLabelColor: AppTheme.textTertiary,
+              isScrollable: true, tabAlignment: TabAlignment.start,
+              indicatorColor: DS.accent, indicatorSize: TabBarIndicatorSize.label,
+              labelColor: DS.accent, unselectedLabelColor: DS.textTertiary,
               labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               unselectedLabelStyle: const TextStyle(fontSize: 14),
-                            tabs: _tabs.map((t) => Tab(text: t['name'])).toList(),
+              tabs: _tabs.map((t) => Tab(text: t['name'])).toList(),
             ),
           ),
-
-          // 源列表
           if (_loading)
-            const SliverFillRemaining(child: LoadingState(text: '加载源市场...'))
+            const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: DS.accent, strokeWidth: 2)))
           else if (_filtered.isEmpty)
             const SliverFillRemaining(child: EmptyState(icon: Icons.search_off_rounded, title: '未找到源'))
           else
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+              padding: const EdgeInsets.fromLTRB(DS.sp16, DS.sp8, DS.sp16, 120),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (ctx, i) => _MarketSourceCard(manifest: _filtered[i], onInstalled: _load),
+                  (ctx, i) => _MarketCard(manifest: _filtered[i], onDone: _load),
                   childCount: _filtered.length,
                 ),
               ),
@@ -162,28 +134,28 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
   }
 }
 
-class _MarketSourceCard extends StatefulWidget {
+class _MarketCard extends StatefulWidget {
   final SourceManifest manifest;
-  final VoidCallback onInstalled;
-  const _MarketSourceCard({required this.manifest, required this.onInstalled});
+  final VoidCallback onDone;
+  const _MarketCard({required this.manifest, required this.onDone});
   @override
-  State<_MarketSourceCard> createState() => _MarketSourceCardState();
+  State<_MarketCard> createState() => _MarketCardState();
 }
 
-class _MarketSourceCardState extends State<_MarketSourceCard> {
+class _MarketCardState extends State<_MarketCard> {
   bool _installing = false;
   bool _installed = false;
 
   @override
-  void initState() { super.initState(); _checkInstalled(); }
+  void initState() { super.initState(); _check(); }
 
-  Future<void> _checkInstalled() async {
+  Future<void> _check() async {
     final prefs = await SharedPreferences.getInstance();
     final json = prefs.getString('installed_sources') ?? '[]';
-    final installed = (jsonDecode(json) as List).any((e) {
+    final ok = (jsonDecode(json) as List).any((e) {
       try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == widget.manifest.id; } catch (_) { return false; }
     });
-    if (mounted) setState(() => _installed = installed);
+    if (mounted) setState(() => _installed = ok);
   }
 
   Future<void> _install() async {
@@ -194,19 +166,14 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
       final api = GetIt.instance<ApiClient>();
       final res = await api.get('/sources/${widget.manifest.id}');
       if (res.statusCode == 200 && res.data != null) {
-        final manifest = SourceManifest.fromJson(res.data as Map<String, dynamic>);
-        // 下载源 JS 到本地
-        final sourceDir = await SourceInstaller.ensureSourceDir();
-        if (sourceDir != null) {
-          await SourceInstaller.install(manifest, sourceDir);
-        }
+        final m = SourceManifest.fromJson(res.data as Map<String, dynamic>);
+        final dir = await SourceInstaller.ensureSourceDir();
+        if (dir != null) await SourceInstaller.install(m, dir);
         final prefs = await SharedPreferences.getInstance();
         final json = prefs.getString('installed_sources') ?? '[]';
         final list = jsonDecode(json) as List;
-        if (!list.any((e) {
-          try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == manifest.id; } catch (_) { return false; }
-        })) {
-          list.add(manifest.toJson());
+        if (!list.any((e) { try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == m.id; } catch (_) { return false; } })) {
+          list.add(m.toJson());
           await prefs.setString('installed_sources', jsonEncode(list));
         }
         if (mounted) {
@@ -214,24 +181,19 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
           HapticFeedback.heavyImpact();
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.surface,
+            backgroundColor: DS.surface1,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DS.rMd)),
             content: Row(children: [
-              const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
+              const Icon(Icons.check_circle_rounded, color: DS.success, size: 18),
               const SizedBox(width: 8),
-              Expanded(child: Text('「${manifest.name}」安装成功', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13))),
+              Expanded(child: Text('「${m.name}」安装成功', style: const TextStyle(color: DS.textPrimary, fontSize: 13))),
             ]),
-            action: SnackBarAction(label: '去发现页', textColor: AppTheme.primary, onPressed: () => GoRouter.of(context).go('/discover')),
+            action: SnackBarAction(label: '去发现页', textColor: DS.accent, onPressed: () => GoRouter.of(context).go('/discover')),
           ));
         }
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => _installing = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: AppTheme.destructive,
-          content: Text('安装失败: $e', style: const TextStyle(color: Colors.white, fontSize: 13)),
-        ));
-      }
+      if (mounted) { setState(() => _installing = false); HapticFeedback.heavyImpact(); }
     }
   }
 
@@ -239,46 +201,35 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
   Widget build(BuildContext context) {
     final m = widget.manifest;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: LiquidGlass(
-        radius: BorderRadius.circular(AppTheme.radiusLg),
-        padding: const EdgeInsets.all(14),
-        fillColor: AppTheme.glassFillRegular,
+      padding: const EdgeInsets.only(bottom: DS.sp12),
+      child: Glass(
+        radius: DS.rLg,
+        padding: const EdgeInsets.all(DS.sp14),
         child: Row(children: [
-          // 图标
           Container(
             width: 48, height: 48,
-            decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.25), blurRadius: 12)],
-            ),
-            child: Center(child: Text(m.name.isNotEmpty ? m.name.characters.first : '?', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white))),
+            decoration: BoxDecoration(color: DS.surface2, borderRadius: BorderRadius.circular(14)),
+            child: Center(child: Text(m.name.isNotEmpty ? m.name.characters.first : '?', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: DS.textPrimary))),
           ),
-          const SizedBox(width: 12),
-          // 信息
+          const SizedBox(width: DS.sp12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Text(m.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
-              const SizedBox(width: 8),
-              SourceBadge.fromMeta(m.metadata),
-            ]),
+            Text(m.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: DS.textPrimary)),
             const SizedBox(height: 4),
-            Text('v${m.version} · ${m.author}', style: const TextStyle(fontSize: 11, color: AppTheme.textTertiary)),
+            Text('v${m.version} · ${m.author}', style: const TextStyle(fontSize: 11, color: DS.textTertiary)),
           ])),
-          // 安装按钮
-          _installing
-            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
-            : _installed
-              ? const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 24)
-              : GestureDetector(
-                  onTap: _install,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: BorderRadius.circular(10), boxShadow: AppTheme.glowShadow),
-                    child: const Text('安装', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
-                  ),
-                ),
+          if (_installing)
+            const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: DS.accent))
+          else if (_installed)
+            const Icon(Icons.check_circle_rounded, color: DS.success, size: 24)
+          else
+            GestureDetector(
+              onTap: _install,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(color: DS.accent, borderRadius: BorderRadius.circular(DS.rSm)),
+                child: const Text('安装', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+              ),
+            ),
         ]),
       ),
     );
