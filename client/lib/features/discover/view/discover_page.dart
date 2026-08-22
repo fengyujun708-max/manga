@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../../app/ds.dart';
-import 'source_setup_dialog.dart';
+import '../../sources/view/source_setup_dialog.dart';
 import '../../../plugins/manga_source.dart';
 
 /// 发现页 — 已安装漫画源 + 引导
