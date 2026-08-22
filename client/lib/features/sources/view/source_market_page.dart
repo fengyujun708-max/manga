@@ -20,6 +20,7 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
   List<SourceManifest> _all = [];
   List<SourceManifest> _filtered = [];
   bool _loading = true;
+  String? _error;
   String _search = '';
   late TabController _tabCtrl;
   final _searchCtrl = TextEditingController();
@@ -44,13 +45,16 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
   void dispose() { _tabCtrl.dispose(); _searchCtrl.dispose(); super.dispose(); }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    setState(() { _loading = true; _error = null; });
     try {
       final api = GetIt.instance<ApiClient>();
       final res = await api.get('/sources');
       _all = ((res.data?['sources'] as List?) ?? []).map((e) => SourceManifest.fromJson(e as Map<String, dynamic>)).toList();
       _applyFilter();
-    } catch (_) { setState(() => _loading = false); }
+    } catch (e) {
+      _error = '无法连接源服务器，请检查网络后重试';
+    }
+    if (mounted) setState(() => _loading = false);
   }
 
   void _applyFilter() {
@@ -116,6 +120,8 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
           ),
           if (_loading)
             const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: DS.accent, strokeWidth: 2)))
+          else if (_error != null)
+            SliverFillRemaining(child: EmptyState(icon: Icons.cloud_off_rounded, title: '加载失败', subtitle: _error, actionLabel: '重试', onAction: _load))
           else if (_filtered.isEmpty)
             const SliverFillRemaining(child: EmptyState(icon: Icons.search_off_rounded, title: '未找到源'))
           else

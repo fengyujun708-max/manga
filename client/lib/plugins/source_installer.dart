@@ -17,32 +17,79 @@ class SourceInstaller {
     }
   }
 
-  /// 下载源 JS 并保存本地
-  static Future<bool> install(SourceManifest manifest, String sourceDir) async {
+  /// 解析源 JS 真实下载地址：downloadUrl → jsdelivr 直猜 → 官方 index.json 匹配
+  static Future<String> resolveJsUrl(SourceManifest m) async {
+    final direct = m.downloadUrl.isNotEmpty ? m.downloadUrl : m.repositoryUrl;
+    if (direct.startsWith('http')) return direct;
+    // 1) 按约定文件名直猜（venera-configs 的 fileName 基本都是 key 小写）
+    final guess = 'https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/${m.id.toLowerCase()}.js';
     try {
-      final url = manifest.downloadUrl.isEmpty
-          ? manifest.repositoryUrl
-          : manifest.downloadUrl;
-      if (url.isEmpty) return false;
-      final client = HttpClient();
+      final r = await _httpGet(guess);
+      if (r != null) return guess;
+    } catch (_) {}
+    // 2) 拉 index.json 按 key/name 匹配（跳过多账号重复版本）
+    try {
+      final idx = await _httpGet('https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/index.json');
+      if (idx != null) {
+        final list = (jsonDecode(idx) as List).cast<Map<String, dynamic>>();
+        final wanted = m.id.toLowerCase();
+        Map<String, dynamic>? best;
+        for (final e in list) {
+          final key = (e['key'] ?? '').toString().toLowerCase();
+          final name = (e['name'] ?? '').toString();
+          final fname = (e['fileName'] ?? '').toString();
+          if ((key == wanted || fname.toLowerCase() == '$wanted.js') && best == null) {
+            best = e;
+          }
+        }
+        if (best == null) {
+          for (final e in list) {
+            if ((e['key'] ?? '').toString().toLowerCase() == wanted &&
+                !(e['name'] ?? '').toString().contains('多账号')) {
+              best = e; break;
+            }
+          }
+        }
+        final f = (best?['fileName'] ?? '').toString();
+        if (f.isNotEmpty) {
+          final u = 'https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/$f';
+          final r = await _httpGet(u);
+          if (r != null) return u;
+        }
+      }
+    } catch (_) {}
+    return '';
+  }
+
+  static Future<String?> _httpGet(String url) async {
+    try {
+      final client = HttpClient()..connectionTimeout = const Duration(seconds: 12);
       try {
         final req = await client.getUrl(Uri.parse(url));
-        req.headers.set('User-Agent',
-            'Mozilla/5.0 (Linux; Android 13) Chrome/120.0 Mobile');
+        req.headers.set('User-Agent', 'Mozilla/5.0 (Linux; Android 13) Chrome/120.0 Mobile');
         final resp = await req.close();
-        if (resp.statusCode != 200) return false;
-        final bytes =
-            await resp.fold<List<int>>(<int>[], (a, b) => a..addAll(b));
-        final code = utf8.decode(bytes, allowMalformed: true);
-        if (!code.contains('ComicSource')) return false;
-        final dir = Directory(sourceDir);
-        if (!await dir.exists()) await dir.create(recursive: true);
-        final file = File('$sourceDir/${manifest.id}.js');
-        await file.writeAsString(code);
-        return true;
+        if (resp.statusCode != 200) return null;
+        return await resp.transform(utf8.decoder).join();
       } finally {
         client.close();
       }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 下载源 JS 并保存本地
+  static Future<bool> install(SourceManifest manifest, String sourceDir) async {
+    try {
+      final url = await resolveJsUrl(manifest);
+      if (url.isEmpty) return false;
+      final code = await _httpGet(url);
+      if (code == null || !code.contains('ComicSource')) return false;
+      final dir = Directory(sourceDir);
+      if (!await dir.exists()) await dir.create(recursive: true);
+      final file = File('$sourceDir/${manifest.id}.js');
+      await file.writeAsString(code);
+      return true;
     } catch (_) {
       return false;
     }
