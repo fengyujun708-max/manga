@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/ds.dart';
 import '../../../plugins/manga_source.dart';
 import '../../../plugins/source_installer.dart';
+import '../../../plugins/vetted_sources.dart';
 import '../../../core/network/api_client.dart';
 
 /// 源市场 — 分类筛选 + 搜索 + 液态玻璃卡片
@@ -38,7 +39,10 @@ class _SourceMarketPageState extends State<SourceMarketPage> {
     try {
       final api = GetIt.instance<ApiClient>();
       final res = await api.get('/sources');
-      _all = ((res.data?['sources'] as List?) ?? []).map((e) => SourceManifest.fromJson(e as Map<String, dynamic>)).toList();
+      _all = ((res.data?['sources'] as List?) ?? [])
+          .map((e) => SourceManifest.fromJson(e as Map<String, dynamic>))
+          .where((m) => VettedSources.ids.contains(m.id.toLowerCase()))
+          .toList();
       _applyFilter();
     } catch (e) {
       _error = '无法连接源服务器，请检查网络后重试';
