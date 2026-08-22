@@ -168,7 +168,23 @@ class _MarketCardState extends State<_MarketCard> {
       if (res.statusCode == 200 && res.data != null) {
         final m = SourceManifest.fromJson(res.data as Map<String, dynamic>);
         final dir = await SourceInstaller.ensureSourceDir();
-        if (dir != null) await SourceInstaller.install(m, dir);
+        final jsOk = dir != null && await SourceInstaller.install(m, dir);
+        if (!jsOk) {
+          if (mounted) {
+            setState(() => _installing = false);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: DS.surface1,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DS.rMd)),
+              content: Row(children: [
+                const Icon(Icons.wifi_off_rounded, color: DS.warning, size: 18),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('源脚本下载失败，请检查网络后重试', style: TextStyle(color: DS.textPrimary, fontSize: 13))),
+              ]),
+            ));
+          }
+          return;
+        }
         final prefs = await SharedPreferences.getInstance();
         final json = prefs.getString('installed_sources') ?? '[]';
         final list = jsonDecode(json) as List;

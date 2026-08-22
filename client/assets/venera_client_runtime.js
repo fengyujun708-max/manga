@@ -2,6 +2,35 @@
 // 网络通过宿主 fetch（Dart 实现），HTML 解析用简易 DOM 引擎
 'use strict';
 
+// ===== fetch 兜底：flutter_js 未注入全局 fetch 时用 XMLHttpRequest 实现 =====
+if (typeof globalThis.fetch !== 'function') {
+  globalThis.fetch = function (url, options) {
+    options = options || {};
+    return new Promise(function (resolve, reject) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open(options.method || 'GET', url, true);
+        var hs = options.headers || {};
+        Object.keys(hs).forEach(function (k) { try { xhr.setRequestHeader(k, String(hs[k])); } catch (_) {} });
+        xhr.onload = function () {
+          var headers = { get: function (name) {
+            try { return xhr.getResponseHeader(name) || ''; } catch (_) { return ''; }
+          }};
+          resolve({ status: xhr.status || 0, ok: (xhr.status || 0) >= 200 && (xhr.status || 0) < 300,
+            text: function () { return Promise.resolve(String(xhr.responseText || '')); },
+            json: function () { return Promise.resolve(JSON.parse(xhr.responseText || 'null')); },
+            headers: headers });
+        };
+        xhr.onerror = function () { reject(new Error('XHR network error')); };
+        xhr.ontimeout = function () { reject(new Error('XHR timeout')); };
+        if (options.body !== undefined && options.body !== null && String(options.method || 'GET').toUpperCase() !== 'GET') {
+          xhr.send(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
+        } else { xhr.send(); }
+      } catch (e) { reject(e); }
+    });
+  };
+}
+
 // ===== Convert（加密通过宿主桥接，结果存全局变量）=====
 function __cryptoJs(op) {
   sendMessage('crypto', JSON.stringify(op));

@@ -95,7 +95,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> {
           if (_loading)
             const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: DS.accent, strokeWidth: 2)))
           else if (_error != null && _sections.isEmpty)
-            SliverFillRemaining(child: EmptyState(icon: Icons.cloud_off_rounded, title: '加载失败', subtitle: _error, actionLabel: '重试', onAction: _load))
+            SliverFillRemaining(child: EmptyState(icon: Icons.cloud_off_rounded, title: '加载失败', subtitle: '$_error\n提示：海外源需设备直连，可开启 VPN 后重试', actionLabel: '重试', onAction: _load))
           else if (isSearch && _searchResults.isEmpty)
             const SliverFillRemaining(child: EmptyState(icon: Icons.search_off_rounded, title: '未找到漫画'))
           else if (isSearch)

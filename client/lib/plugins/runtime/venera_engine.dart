@@ -20,7 +20,9 @@ class VeneraEngine {
 
     // 加密桥接：sendMessage 是 void，用全局变量 __cryptoResult 传递结果
     _runtime!.setupBridge('crypto', (dynamic args) {
-      final m = args as Map;
+      final Map m = args is Map ? args : (() {
+        try { return jsonDecode(args.toString()) as Map; } catch (_) { return <String, dynamic>{}; }
+      })();
       final op = m['op']?.toString() ?? '';
       final data = m['data']?.toString() ?? '';
       String result = '';
