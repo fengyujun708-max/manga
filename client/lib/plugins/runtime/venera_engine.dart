@@ -25,21 +25,29 @@ class VeneraEngine {
       })();
       final op = m['op']?.toString() ?? '';
       final data = m['data']?.toString() ?? '';
+      // Venera 桥以字节为界；这里用 latin1(codeUnits) 保真二进制串
+      List<int> bin(String s) => List<int>.generate(s.length, (i) => s.codeUnitAt(i) & 0xff);
       String result = '';
       switch (op) {
-        case 'md5': result = md5.convert(utf8.encode(data)).toString(); break;
-        case 'sha1': result = sha1.convert(utf8.encode(data)).toString(); break;
-        case 'sha256': result = sha256.convert(utf8.encode(data)).toString(); break;
-        case 'sha512': result = sha512.convert(utf8.encode(data)).toString(); break;
+        // Venera 语义：哈希返回原始二进制(latin1)串，由源自行 hexEncode
+        case 'md5': result = String.fromCharCodes(md5.convert(bin(data)).bytes); break;
+        case 'sha1': result = String.fromCharCodes(sha1.convert(bin(data)).bytes); break;
+        case 'sha256': result = String.fromCharCodes(sha256.convert(bin(data)).bytes); break;
+        case 'sha512': result = String.fromCharCodes(sha512.convert(bin(data)).bytes); break;
         case 'hmac':
           final key = m['key']?.toString() ?? '';
           final msg = m['msg']?.toString() ?? '';
           final algo = m['algo']?.toString() ?? 'sha256';
-          result = Hmac(_hashAlgo(algo), utf8.encode(key)).convert(utf8.encode(msg)).toString();
+          result = String.fromCharCodes(Hmac(_hashAlgo(algo), bin(key)).convert(bin(msg)).bytes);
           break;
-        case 'b64encode': result = base64.encode(utf8.encode(data)); break;
+        case 'hex': result = _toHex(data); break;
+        case 'b64encode': {
+          final bytes = List<int>.generate(data.length, (i) => data.codeUnitAt(i) & 0xff);
+          result = base64.encode(bytes);
+          break;
+        }
         case 'b64decode':
-          try { result = utf8.decode(base64.decode(data), allowMalformed: true); } catch (_) { result = ''; }
+          try { result = String.fromCharCodes(base64.decode(data)); } catch (_) { result = ''; }
           break;
         default: result = '';
       }
@@ -120,6 +128,8 @@ globalThis.__evalDone__ = false;
     _runtime = null;
     _prepared = false;
   }
+
+  String _toHex(String latin1) => latin1.codeUnits.map((c) => c.toRadixString(16).padLeft(2, '0')).join();
 
   Hash _hashAlgo(String algo) {
     switch (algo.toLowerCase()) {

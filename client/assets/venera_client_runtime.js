@@ -41,6 +41,112 @@ if (typeof globalThis.fetch !== 'function') {
   };
 }
 
+// ===== AES-ECB 解密（纯 JS，AES-128/192/256 + PKCS7）=====
+const __aes = (function () {
+  const sbox = new Uint8Array(256), rsbox = new Uint8Array(256);
+  const S = '637c777bf26b6fc53001672bfed7ab76ca82c97dfa5947f0add4a2af9ca472c0b7fd9326363ff7cc34a5e5f171d8311504c723c31896059a071280e2eb27b27509832c1a1b6e5aa0523bd6b329e32f8453d100ed20fcb15b6acbbe394a4c58cfd0efaafb434d338545f9027f503c9fa851a3408f929d38f5bcb6da2110fff3d2cd0c13ec5f974417c4a77e3d645d197360814fdc222a908846eeb814de5e0bdbe0323a0a4906245cc2d3ac629195e479e7c8376d8dd54ea96c56f4ea657aae08ba78252e1ca6b4c6e8dd741f4bbd8b8a703eb5664803f60e613557b986c11d9ee1f8981169d98e949b1e87e9ce5528df8ca1890dbfe6426841992d0fb054bb16';
+  for (let i = 0; i < 256; i++) {
+    sbox[i] = parseInt(S.substr(i * 2, 2), 16);
+    rsbox[sbox[i]] = i;
+  }
+  // GF(2^8) 乘法
+  function xtime(a) { return ((a << 1) ^ ((a & 0x80) ? 0x1b : 0)) & 0xff; }
+  function mul(a, b) {
+    let r = 0;
+    while (b) { if (b & 1) r ^= a; a = xtime(a); b >>= 1; }
+    return r;
+  }
+  const RCON = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8];
+  // 密钥扩展 → 返回轮密钥数组（每轮16字节）
+  function expandKey(keyBytes) {
+    const nk = keyBytes.length / 4, nr = nk + 6;
+    const w = new Uint8Array(16 * (nr + 1));
+    w.set(keyBytes.subarray(0, 16 * ((nk * 4) / 16)));
+    let t = new Uint8Array(4);
+    for (let i = nk; i < 4 * (nr + 1); i++) {
+      const wi = i * 4;
+      if (i % nk === 0) {
+        t[0] = w[wi - 4]; t[1] = w[wi - 3]; t[2] = w[wi - 2]; t[3] = w[wi - 1];
+        const tmp = t[0]; t[0] = sbox[t[1]] ^ RCON[i / nk - 1]; t[1] = sbox[t[2]]; t[2] = sbox[t[3]]; t[3] = sbox[tmp];
+      } else if (nk > 6 && i % nk === 4) {
+        t[0] = sbox[w[wi - 4]]; t[1] = sbox[w[wi - 3]]; t[2] = sbox[w[wi - 2]]; t[3] = sbox[w[wi - 1]];
+      } else {
+        t[0] = w[wi - 4]; t[1] = w[wi - 3]; t[2] = w[wi - 2]; t[3] = w[wi - 1];
+      }
+      // W[i] = W[i-Nk] ^ g(W[i-1])
+      const p = wi - nk * 4;
+      w[wi]     = w[p]     ^ t[0];
+      w[wi + 1] = w[p + 1] ^ t[1];
+      w[wi + 2] = w[p + 2] ^ t[2];
+      w[wi + 3] = w[p + 3] ^ t[3];
+    }
+    return { rk: w, nr };
+  }
+  function decryptBlock(w, nr, inp, outOff, out) {
+    const st = new Uint8Array(16);
+    for (let i = 0; i < 16; i++) st[i] = inp[outOff + i];
+    function addRK(round) { const b = round * 16; for (let i = 0; i < 16; i++) st[i] ^= w[b + i]; }
+    function invShift() {
+      const t = new Uint8Array(16);
+      // 行 r（索引 r, r+4, r+8, r+12）右移 r
+      for (let c = 0; c < 4; c++) {
+        for (let r = 0; r < 4; r++) {
+          t[r + 4 * ((c + r) % 4)] = st[r + 4 * c];
+        }
+      }
+      st.set(t);
+    }
+    function invSub() { for (let i = 0; i < 16; i++) st[i] = rsbox[st[i]]; }
+    function invMix() {
+      for (let c = 0; c < 4; c++) {
+        const o = c * 4;
+        const a0 = st[o], a1 = st[o + 1], a2 = st[o + 2], a3 = st[o + 3];
+        st[o] = mul(a0, 14) ^ mul(a1, 11) ^ mul(a2, 13) ^ mul(a3, 9);
+        st[o + 1] = mul(a0, 9) ^ mul(a1, 14) ^ mul(a2, 11) ^ mul(a3, 13);
+        st[o + 2] = mul(a0, 13) ^ mul(a1, 9) ^ mul(a2, 14) ^ mul(a3, 11);
+        st[o + 3] = mul(a0, 11) ^ mul(a1, 13) ^ mul(a2, 9) ^ mul(a3, 14);
+      }
+    }
+    addRK(nr);
+    for (let round = nr - 1; round >= 1; round--) {
+      invShift(); invSub(); addRK(round); invMix();
+    }
+    invShift(); invSub(); addRK(0);
+    out.set(st, outOff);
+  }
+  return {
+    ecbDecrypt(bytes, keyUtf8) {
+      const keyBytes = [];
+      for (let i = 0; i < keyUtf8.length; i++) {
+        const c = keyUtf8.charCodeAt(i);
+        if (c > 255) throw new Error('aes key must be latin1');
+        keyBytes.push(c & 0xff);
+      }
+      if (![16, 24, 32].includes(keyBytes.length)) throw new Error('invalid aes key length ' + keyBytes.length);
+      const { rk, nr } = expandKey(new Uint8Array(keyBytes));
+      const nBlocks = Math.floor(bytes.length / 16);
+      if (nBlocks === 0) throw new Error('aes data too short');
+      const out = new Uint8Array(nBlocks * 16);
+      for (let b = 0; b < nBlocks; b++) decryptBlock(rk, nr, bytes, b * 16, out);
+      // PKCS7 unpad
+      const pad = out[out.length - 1];
+      if (pad >= 1 && pad <= 16 && nBlocks * 16 >= pad) return out.subarray(0, out.length - pad);
+      return out;
+    },
+  };
+})();
+
+function __aesEcbDecrypt(dataStr, keyStr) {
+  // dataStr 为 latin1 二进制串（decodeBase64 输出），还原为字节数组
+  const bytes = new Uint8Array(dataStr.length);
+  for (let i = 0; i < dataStr.length; i++) bytes[i] = dataStr.charCodeAt(i) & 0xff;
+  const dec = __aes.ecbDecrypt(bytes, keyStr);
+  // 还原为 latin1 字符串（供 decodeUtf8 转文本）
+  let s = '';
+  for (let i = 0; i < dec.length; i += 4096) s += String.fromCharCode.apply(null, dec.subarray(i, Math.min(i + 4096, dec.length)));
+  return s;
+}
+
 // ===== Convert（加密通过宿主桥接，结果存全局变量）=====
 function __cryptoJs(op) {
   sendMessage('crypto', JSON.stringify(op));
@@ -56,10 +162,11 @@ const Convert = {
   sha256(s) { return __cryptoJs({op:'sha256', data:String(s??'')}); },
   sha512(s) { return __cryptoJs({op:'sha512', data:String(s??'')}); },
   hmacString(keyBinary, msgBinary, algo = 'sha256') {
-    return __cryptoJs({op:'hmac', key:keyBinary, msg:String(msgBinary??''), algo:algo});
+    // Venera 官方语义：hmacString 返回 hex 字符串
+    return Convert.hexEncode(__cryptoJs({op:'hmac', key:keyBinary, msg:String(msgBinary??''), algo:algo}));
   },
   hmacSha256(key, msg) {
-    return __cryptoJs({op:'hmac', key:key, msg:String(msg??''), algo:'sha256'});
+    return Convert.hexEncode(__cryptoJs({op:'hmac', key:key, msg:String(msg??''), algo:'sha256'}));
   },
   hexEncode(s) {
     return Array.from(String(s ?? ''), (c) => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
@@ -70,7 +177,7 @@ const Convert = {
     return out;
   },
   decryptAesCbc(data, key, iv) { return data; },
-  decryptAesEcb(data, key) { return data; },
+  decryptAesEcb(data, key) { return __aesEcbDecrypt(String(data ?? ''), String(key ?? '')); },
   _toBuf(data) { return data; },
 };
 
@@ -109,14 +216,20 @@ function matchSelectorPart(html, part) {
       if (/\/\s*>\s*$/.test(m[0]) || VOID_TAGS.test(tag)) {
         end = start + m[0].length;
       } else {
-        const pair = new RegExp('<(/?)' + tag + '(?:(?:"[^"]*"|\'[^\']*\'|[^>])*)>', 'gi');
+        const pair = new RegExp('<(/?)' + tag + '(?=[\\s/>])((?:"[^"]*"|\'[^\']*\'|[^>])*)>', 'gi');
         pair.lastIndex = start + m[0].length;
         let depth = 1, p, found = false;
         while ((p = pair.exec(html)) !== null) {
           if (p[1] === '/') { depth--; if (depth <= 0) { end = p.index + p[0].length; found = true; break; } }
           else if (!/\/\s*>\s*$/.test(p[0])) depth++;
         }
-        if (!found) end = html.length;
+        if (!found) {
+          // 源站存在未闭合标签：以下一个同类开标签为边界兜底，避免吞掉整个文档
+          const nxt = new RegExp('<' + tag + '(?=[\\s/>])', 'gi');
+          nxt.lastIndex = start + m[0].length;
+          const nm = nxt.exec(html);
+          end = nm ? nm.index : html.length;
+        }
       }
       res.push(html.slice(start, end));
       re.lastIndex = end;
@@ -267,10 +380,13 @@ const Network = {
     }
     let res;
     try {
+      // Venera 官方语义：非字符串 body 自动 JSON 序列化
+      let outBody = body;
+      if (body !== undefined && body !== null && typeof body === 'object') outBody = JSON.stringify(body);
       res = await fetch(url, {
         method: method.toUpperCase(),
         headers: h,
-        body: (body !== undefined && body !== null && method.toUpperCase() !== 'GET') ? body : undefined,
+        body: (outBody !== undefined && outBody !== null && method.toUpperCase() !== 'GET') ? outBody : undefined,
         redirect: 'follow',
       });
     } catch (e) {
@@ -320,11 +436,19 @@ const Network = {
     if (typeof url === 'string' && /^(GET|POST|PUT|PATCH|DELETE|HEAD)$/i.test(url) && typeof arguments[1] === 'string') {
       method = url.toUpperCase(); realUrl = arguments[1]; hdrs = arguments[2] || {};
     }
-    const res = await this.request(method, realUrl, hdrs, null);
-    const bin = typeof res.body === 'string'
-      ? Uint8Array.from(atob(btoa(unescape(encodeURIComponent(res.body)))).split(''), (c) => c.charCodeAt(0))
-      : (res.body || new Uint8Array(0));
-    return { status: res.status, bytes: bin, body: bin, headers: res.headers || {} };
+    // 二进制路径：直接读 arrayBuffer（DataView/图片解析需要真字节）
+    try {
+      const h = {};
+      for (const [k, v] of Object.entries(hdrs || {})) {
+        if (v !== undefined && v !== null) h[k] = String(v);
+      }
+      const res2 = await fetch(realUrl, { method, headers: h, redirect: 'follow' });
+      const ab = await res2.arrayBuffer();
+      const bin = new Uint8Array(ab);
+      return { status: res2.status, bytes: bin, body: bin, headers: {} };
+    } catch (e) {
+      return { status: 0, bytes: new Uint8Array(0), body: new Uint8Array(0), headers: {}, error: String(e) };
+    }
   },
   getCookies(url) {
     try { const u = new URL(url); return Network._cookies.get(u.hostname) || []; } catch { return []; }
