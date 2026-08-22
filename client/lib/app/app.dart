@@ -14,6 +14,7 @@ import '../features/discover/view/discover_page.dart';
 import '../features/community/view/community_page.dart';
 import '../features/profile/view/profile_page.dart';
 import '../features/sources/view/source_market_page.dart';
+import '../features/sources/view/source_setup_dialog.dart';
 import '../core/network/api_client.dart';
 import '../features/search/view/search_page.dart';
 import '../features/comic/view/comic_detail_page.dart';
@@ -25,9 +26,13 @@ import 'theme/theme.dart';
 class ManjieApp extends StatelessWidget {
   const ManjieApp({super.key});
 
+  static final GlobalKey<NavigatorState> _rootNavKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
+    SourceSetupDialog.navigatorKey = _rootNavKey;
     final router = GoRouter(
+      navigatorKey: _rootNavKey,
       initialLocation: '/home',
       redirect: (context, state) {
         final authState = context.read<AuthBloc>().state;

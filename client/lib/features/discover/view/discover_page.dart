@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../../app/ds.dart';
+import 'source_setup_dialog.dart';
 import '../../../plugins/manga_source.dart';
 
 /// 发现页 — 已安装漫画源 + 引导
@@ -76,7 +77,10 @@ class _DiscoverPageState extends State<DiscoverPage> {
             SliverFillRemaining(child: EmptyState(
               icon: Icons.extension_off_rounded, title: '还没有安装漫画源',
               subtitle: '安装后即可浏览海量漫画',
-              actionLabel: '去源市场', onAction: () async { await GoRouter.of(context).push('/source-manager'); _load(); },
+              actionLabel: '一键安装源', onAction: () async {
+                await SourceSetupDialog.maybeShow(context);
+                _load();
+              },
             ))
           else
             SliverPadding(

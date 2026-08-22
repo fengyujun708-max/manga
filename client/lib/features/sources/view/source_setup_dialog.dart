@@ -9,6 +9,9 @@ import '../../../plugins/manga_source.dart';
 class SourceSetupDialog {
   static const _flag = 'source_setup_done';
 
+  /// 根 Navigator（由 app.dart 注入），确保弹窗一定能弹出
+  static GlobalKey<NavigatorState>? navigatorKey;
+
   static const Map<String, String> _names = {
     'copy_manga': '拷贝漫画', 'jm': '禁漫天堂', 'komiic': 'Komiic',
     'comick': 'Comick', 'manga_dex': 'MangaDex', 'baozi': '包子漫画',
@@ -23,15 +26,22 @@ class SourceSetupDialog {
   static Future<void> maybeShow(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (prefs.getBool(_flag) ?? false) return;
-      if (!context.mounted) return;
+      final done = prefs.getBool(_flag) ?? false;
+      debugPrint('[SourceSetup] flag=$done');
+      if (done) return;
+      BuildContext ctx = (navigatorKey?.currentState != null)
+          ? navigatorKey!.currentContext!
+          : context;
+      if (!ctx.mounted) return;
       await showDialog(
-        context: context,
+        context: ctx,
         barrierDismissible: false,
         barrierColor: Colors.black87,
         builder: (_) => const _SetupSheet(),
       );
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[SourceSetup] show failed: $e');
+    }
   }
 
   static SourceManifest _manifest(String id) => SourceManifest(
