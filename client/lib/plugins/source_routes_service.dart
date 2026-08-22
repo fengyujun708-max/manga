@@ -96,7 +96,7 @@ class SourceRoutesService {
     if (hosts.isEmpty) return;
     final probes = await probe(hosts);
     final ok = probes.where((p) => p.ok).toList()
-      ..sort((a, b) => a.ms.compareTo(b.ms));
+      ..sort((a, b) => a.latencyMs!.compareTo(b.latencyMs!));
     if (ok.isNotEmpty) await selectRoute(sourceId, 'domains', ok.first.host);
   }
 
