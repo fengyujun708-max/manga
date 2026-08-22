@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import '../../../core/network/api_client.dart';
 import '../../../plugins/source_data_service.dart';
 import '../../../app/widgets/comic_widgets.dart';
+import '../../../app/ds.dart';
 
 /// 源内漫画详情页 — 从服务器代理执行源 JS 获取真实详情 + 章节
 class SourceComicPage extends StatefulWidget {

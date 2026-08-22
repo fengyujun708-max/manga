@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../app/components/manjie_button.dart';
+import '../../app/ds.dart';
 
 /// App 版本信息
 class AppVersion {
