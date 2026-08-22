@@ -3,6 +3,17 @@
 'use strict';
 
 // ===== 宿主缺失对象兜底（QuickJS 无 TextEncoder/setInterval/btoa 等）=====
+if (typeof globalThis.clearTimeout === 'undefined') { globalThis.clearTimeout = function () {}; }
+if (typeof globalThis.setTimeout === 'undefined') {
+  globalThis.setTimeout = function (fn, ms) { try { fn(); } catch (_) {} return 0; };
+}
+if (typeof globalThis.crypto === 'undefined') {
+  globalThis.crypto = {
+    randomUUID: function () { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); },
+    getRandomValues: function (arr) { for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256); return arr; },
+  };
+}
 if (typeof globalThis.setInterval === 'undefined') { globalThis.setInterval = function () { return 0; }; }
 if (typeof globalThis.clearInterval === 'undefined') { globalThis.clearInterval = function () {}; }
 if (typeof globalThis.TextEncoder === 'undefined') {
