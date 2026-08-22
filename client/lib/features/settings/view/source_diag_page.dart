@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -76,9 +77,13 @@ class _SourceDiagPageState extends State<SourceDiagPage> {
 
     // 5. 后端连通性
     try {
-      final api = GetIt.instance<ApiClint>();
-      await api.get('/sources');
-      log('⑤ 后端 /v1/sources', '✅ 可达');
+      final hc = HttpClient();
+      final req = await hc.getUrl(Uri.parse('http://39.106.192.137/v1/sources'));
+      final resp = await req.close().timeout(const Duration(seconds: 10));
+      final body = await resp.transform(utf8.decoder).join();
+      hc.close();
+      final n = body.contains('"sources"') ? '✅ 可达 (${resp.statusCode})' : '❌ 响应异常';
+      log('⑤ 后端 /v1/sources', n);
     } catch (e) {
       log('⑤ 后端 /v1/sources', '❌ $e');
     }
