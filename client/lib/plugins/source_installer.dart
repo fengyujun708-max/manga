@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'manga_source.dart';
@@ -81,9 +82,13 @@ class SourceInstaller {
   /// 下载源 JS 并保存本地
   static Future<bool> install(SourceManifest manifest, String sourceDir) async {
     try {
-      final url = await resolveJsUrl(manifest);
-      if (url.isEmpty) return false;
-      final code = await _httpGet(url);
+      // 首选：APK 内置源 JS（离线可用，国内网络不受 jsdelivr 影响）
+      String? code = await _bundledJs(manifest.id);
+      if (code == null || !code.contains('ComicSource')) {
+        final url = await resolveJsUrl(manifest);
+        if (url.isEmpty) return false;
+        code = await _httpGet(url);
+      }
       if (code == null || !code.contains('ComicSource')) return false;
       final dir = Directory(sourceDir);
       if (!await dir.exists()) await dir.create(recursive: true);
@@ -92,6 +97,15 @@ class SourceInstaller {
       return true;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// 从 APK 资产读取内置源 JS
+  static Future<String?> _bundledJs(String id) async {
+    try {
+      return await rootBundle.loadString('assets/sources/${id.toLowerCase()}.js');
+    } catch (_) {
+      return null;
     }
   }
 
