@@ -18,8 +18,9 @@ class VeneraEngine {
     if (_prepared) return;
     _runtime = getJavascriptRuntime(xhr: true, extraArgs: const {'stackSize': 1024 * 1024 * 2});
 
-    // 加密桥接：sendMessage 是 void，用全局变量 __cryptoResult 传递结果
-    _runtime!.setupBridge('crypto', (dynamic args) {
+    // 加密桥接：flutter_js 宿主会把回调返回值同步传回 JS；
+    // 签名是 void Function，用 dynamic 中转变量绕过静态类型
+    dynamic Function(dynamic) cryptoBridge = (dynamic args) {
       final Map m = args is Map ? args : (() {
         try { return jsonDecode(args.toString()) as Map; } catch (_) { return <String, dynamic>{}; }
       })();
@@ -54,7 +55,8 @@ class VeneraEngine {
       // 结果同时走两条通道：返回值（新桥）+ 全局变量（旧桥兜底）
       _runtime!.evaluate('globalThis.__cryptoResult = ${jsonEncode(result)};');
       return result;
-    });
+    };
+    _runtime!.setupBridge('crypto', cryptoBridge);
 
     // 加载运行时基座 JS
     final runtimeJs = await rootBundle.loadString('assets/venera_client_runtime.js');
