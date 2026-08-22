@@ -246,9 +246,9 @@ class _RouteSheetState extends State<_RouteSheet> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     dense: true,
-                    leading: Icon(r.ok ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 20, color: r.ok ? (r.ms < 800 ? DS.success : DS.warning) : DS.error),
+                    leading: Icon(r.ok ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 20, color: r.ok ? ((r.latencyMs ?? 0) < 800 ? DS.success : DS.warning) : DS.error),
                     title: Text(r.host, style: const TextStyle(color: DS.textPrimary, fontSize: 13)),
-                    subtitle: r.ok ? Text('${r.ms} ms', style: const TextStyle(color: DS.textTertiary, fontSize: 11)) : null,
+                    subtitle: r.ok ? Text('${r.latencyMs} ms', style: const TextStyle(color: DS.textTertiary, fontSize: 11)) : null,
                     trailing: _current == r.host ? const Icon(Icons.radio_button_checked_rounded, size: 18, color: DS.accent) : null,
                     onTap: () async {
                       await SourceRoutesService.instance.setOverride(widget.sourceId, 'domains', r.host);
