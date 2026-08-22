@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../app/components/manjie_button.dart';
-import '../../app/theme/theme.dart';
 
 /// App 版本信息
 class AppVersion {
@@ -128,20 +127,20 @@ Future<void> showUpdateDialog(BuildContext context, UpdateCheckResult result) {
     builder: (ctx) => WillPopScope(
       onWillPop: () async => !result.isForceUpdate,
       child: AlertDialog(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: DS.surface1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.15),
+                color: DS.accent.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.system_update, color: AppTheme.primary, size: 24),
+              child: const Icon(Icons.system_update, color: DS.accent, size: 24),
             ),
             const SizedBox(width: 12),
-            const Text('发现新版本', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18)),
+            const Text('发现新版本', style: TextStyle(color: DS.textPrimary, fontSize: 18)),
           ],
         ),
         content: Column(
@@ -150,14 +149,14 @@ Future<void> showUpdateDialog(BuildContext context, UpdateCheckResult result) {
           children: [
             Row(
               children: [
-                Text('当前版本: ', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-                Text(AppVersion.current().version, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
+                Text('当前版本: ', style: const TextStyle(color: DS.textSecondary, fontSize: 13)),
+                Text(AppVersion.current().version, style: const TextStyle(color: DS.textPrimary, fontSize: 13)),
               ],
             ),
             Row(
               children: [
-                Text('最新版本: ', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-                Text(result.latestVersion?.version ?? '', style: const TextStyle(color: AppTheme.accent, fontSize: 13)),
+                Text('最新版本: ', style: const TextStyle(color: DS.textSecondary, fontSize: 13)),
+                Text(result.latestVersion?.version ?? '', style: const TextStyle(color: DS.accent, fontSize: 13)),
               ],
             ),
             if (result.isForceUpdate) ...[
@@ -180,13 +179,13 @@ Future<void> showUpdateDialog(BuildContext context, UpdateCheckResult result) {
             ],
             if (result.changelog != null) ...[
               const SizedBox(height: 12),
-              const Text('更新内容:', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+              const Text('更新内容:', style: TextStyle(color: DS.textSecondary, fontSize: 13)),
               const SizedBox(height: 4),
-              Text(result.changelog!, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, height: 1.5)),
+              Text(result.changelog!, style: const TextStyle(color: DS.textPrimary, fontSize: 13, height: 1.5)),
             ],
             if (result.message != null) ...[
               const SizedBox(height: 8),
-              Text(result.message!, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              Text(result.message!, style: const TextStyle(color: DS.textSecondary, fontSize: 12)),
             ],
           ],
         ),
@@ -194,7 +193,7 @@ Future<void> showUpdateDialog(BuildContext context, UpdateCheckResult result) {
           if (!result.isForceUpdate)
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('稍后再说', style: TextStyle(color: AppTheme.textSecondary)),
+              child: const Text('稍后再说', style: TextStyle(color: DS.textSecondary)),
             ),
           ManjieButton(
             label: '立即更新',
@@ -226,17 +225,17 @@ class MaintenancePage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
+                  color: DS.accent.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.construction, size: 64, color: AppTheme.primary),
+                child: const Icon(Icons.construction, size: 64, color: DS.accent),
               ),
               const SizedBox(height: 24),
-              const Text('系统维护中', style: TextStyle(color: AppTheme.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
+              const Text('系统维护中', style: TextStyle(color: DS.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Text(
                 message ?? '我们正在进行系统升级，请稍后再来',
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+                style: const TextStyle(color: DS.textSecondary, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),

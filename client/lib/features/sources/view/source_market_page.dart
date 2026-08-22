@@ -92,7 +92,7 @@ class _SourceMarketPageState extends State<SourceMarketPage> with SingleTickerPr
               padding: const EdgeInsets.fromLTRB(DS.sp16, DS.sp4, DS.sp16, DS.sp12),
               child: Glass(
                 radius: DS.rMd,
-                padding: const EdgeInsets.symmetric(horizontal: DS.sp14),
+                padding: const EdgeInsets.symmetric(horizontal: DS.sp16),
                 child: TextField(
                   controller: _searchCtrl,
                   style: const TextStyle(fontSize: 14, color: DS.textPrimary),
@@ -204,7 +204,7 @@ class _MarketCardState extends State<_MarketCard> {
       padding: const EdgeInsets.only(bottom: DS.sp12),
       child: Glass(
         radius: DS.rLg,
-        padding: const EdgeInsets.all(DS.sp14),
+        padding: const EdgeInsets.all(DS.sp16),
         child: Row(children: [
           Container(
             width: 48, height: 48,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import '../models/reader_models.dart';
+import '../../../app/ds.dart';
 import '../widgets/modes/reader_modes.dart';
 import '../widgets/reader_settings.dart';
 
@@ -274,7 +275,7 @@ class _ReaderPageState extends State<ReaderPage> {
                     child: LinearProgressIndicator(
                       value: totalPages > 0 ? (_state.currentPage + 1) / totalPages : 0,
                       backgroundColor: Colors.white12,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6C5CE7)),
+                      valueColor: const AlwaysStoppedAnimation<Color>(DS.accent),
                       minHeight: 3,
                     ),
                   ),
@@ -322,7 +323,7 @@ class _ReaderPageState extends State<ReaderPage> {
       builder: (_) => Container(
         height: MediaQuery.of(context).size.height * 0.6,
         decoration: const BoxDecoration(
-          color: Color(0xFF1A1A2E),
+          color: DS.surface1,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -347,7 +348,7 @@ class _ReaderPageState extends State<ReaderPage> {
                   final isCurrent = i == _currentChapterIndex;
                   return ListTile(
                     selected: isCurrent,
-                    selectedTileColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+                    selectedTileColor: const DS.accent.withValues(alpha: 0.15),
                     title: Text(
                       widget.chapters[i].title,
                       style: TextStyle(
@@ -358,7 +359,7 @@ class _ReaderPageState extends State<ReaderPage> {
                     subtitle: Text('${widget.chapters[i].pageCount}页',
                       style: const TextStyle(color: Colors.white38, fontSize: 11)),
                     trailing: isCurrent
-                      ? const Icon(Icons.check, color: Color(0xFF6C5CE7), size: 18)
+                      ? const Icon(Icons.check, color: DS.accent, size: 18)
                       : null,
                     onTap: () {
                       Navigator.of(context).pop();

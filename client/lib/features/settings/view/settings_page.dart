@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/theme.dart';
+import '../../../app/ds.dart';
 import '../../../app/components/manjie_card.dart';
 import '../../../app/components/manjie_toast.dart';
 
@@ -198,21 +198,21 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (_) => Container(
         padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
-          color: AppTheme.surface,
+          color: DS.surface1,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Color(0xFF312E81), borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(color: DS.glassBorder, borderRadius: BorderRadius.circular(2)),
             ),
             const SizedBox(height: 16),
-            Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
+            Text(title, style: const TextStyle(color: DS.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             ...List.generate(options.length, (i) => ListTile(
-              title: Text(options[i], style: TextStyle(color: i == selected ? AppTheme.primary : AppTheme.textPrimary)),
-              trailing: i == selected ? const Icon(Icons.check, color: AppTheme.primary) : null,
+              title: Text(options[i], style: TextStyle(color: i == selected ? DS.accent : DS.textPrimary)),
+              trailing: i == selected ? const Icon(Icons.check, color: DS.accent) : null,
               onTap: () {
                 onSelected(i);
                 Navigator.of(context).pop();
@@ -228,7 +228,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: DS.surface1,
         title: const Text('清除缓存'),
         content: const Text('确定要清除所有缓存数据吗？\n包括图片缓存和临时文件。'),
         actions: [
@@ -254,7 +254,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, left: 4),
-      child: Text(title, style: const TextStyle(color: AppTheme.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+      child: Text(title, style: const TextStyle(color: DS.accent, fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -264,7 +264,7 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Divider(color: Color(0xFF312E81).withOpacity(0.3), height: 1, indent: 48);
+    return Divider(color: DS.glassBorder.withOpacity(0.3), height: 1, indent: 48);
   }
 }
 
@@ -282,10 +282,10 @@ class _SwitchTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
-        leading: Icon(icon, color: AppTheme.primary, size: 22),
-        title: Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15)),
-        subtitle: subtitle != null ? Text(subtitle!, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)) : null,
-        trailing: Switch(value: value, onChanged: onChanged, activeColor: AppTheme.primary),
+        leading: Icon(icon, color: DS.accent, size: 22),
+        title: Text(title, style: const TextStyle(color: DS.textPrimary, fontSize: 15)),
+        subtitle: subtitle != null ? Text(subtitle!, style: const TextStyle(color: DS.textSecondary, fontSize: 12)) : null,
+        trailing: Switch(value: value, onChanged: onChanged, activeColor: DS.accent),
       ),
     );
   }
@@ -308,26 +308,26 @@ class _SliderTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primary, size: 22),
+          Icon(icon, color: DS.accent, size: 22),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15)),
+                Text(title, style: const TextStyle(color: DS.textPrimary, fontSize: 15)),
                 SliderTheme(
                   data: SliderThemeData(
-                    activeTrackColor: AppTheme.primary,
-                    inactiveTrackColor: Color(0xFF312E81),
-                    thumbColor: AppTheme.primary,
-                    overlayColor: AppTheme.primary.withOpacity(0.2),
+                    activeTrackColor: DS.accent,
+                    inactiveTrackColor: DS.glassBorder,
+                    thumbColor: DS.accent,
+                    overlayColor: DS.accent.withOpacity(0.2),
                   ),
                   child: Slider(value: value, min: min, max: max, onChanged: onChanged),
                 ),
               ],
             ),
           ),
-          Text(displayValue, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text(displayValue, style: const TextStyle(color: DS.textSecondary, fontSize: 13)),
         ],
       ),
     );
@@ -346,14 +346,14 @@ class _SelectTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primary, size: 22),
-      title: Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15)),
+      leading: Icon(icon, color: DS.accent, size: 22),
+      title: Text(title, style: const TextStyle(color: DS.textPrimary, fontSize: 15)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(value, style: TextStyle(color: textColor ?? AppTheme.textSecondary, fontSize: 14)),
+          Text(value, style: TextStyle(color: textColor ?? DS.textSecondary, fontSize: 14)),
           const SizedBox(width: 4),
-          const Icon(Icons.chevron_right, color: AppTheme.textSecondary, size: 20),
+          const Icon(Icons.chevron_right, color: DS.textSecondary, size: 20),
         ],
       ),
       onTap: onTap,
@@ -373,11 +373,11 @@ class _ActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primary, size: 22),
-      title: Text(title, style: TextStyle(color: textColor ?? AppTheme.textPrimary, fontSize: 15)),
+      leading: Icon(icon, color: DS.accent, size: 22),
+      title: Text(title, style: TextStyle(color: textColor ?? DS.textPrimary, fontSize: 15)),
       trailing: value.isNotEmpty
-        ? Text(value, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14))
-        : const Icon(Icons.chevron_right, color: AppTheme.textSecondary, size: 20),
+        ? Text(value, style: const TextStyle(color: DS.textSecondary, fontSize: 14))
+        : const Icon(Icons.chevron_right, color: DS.textSecondary, size: 20),
       onTap: onTap,
     );
   }

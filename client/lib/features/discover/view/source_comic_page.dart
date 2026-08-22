@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'package:get_it/get_it.dart';
-import '../../../app/theme/theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../plugins/source_data_service.dart';
 import '../../../app/widgets/comic_widgets.dart';
@@ -61,11 +60,11 @@ class _SourceComicPageState extends State<SourceComicPage> {
     final desc = (_info['description'] ?? '').toString();
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: DS.bg,
       body: _loading
-        ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+        ? const Center(child: CircularProgressIndicator(color: DS.accent))
         : _error != null
-          ? Center(child: Text(_error!, style: const TextStyle(color: AppTheme.textSecondary)))
+          ? Center(child: Text(_error!, style: const TextStyle(color: DS.textSecondary)))
           : CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
@@ -75,13 +74,13 @@ class _SourceComicPageState extends State<SourceComicPage> {
                   backgroundColor: Colors.transparent,
                   leading: GestureDetector(
                     onTap: () => context.pop(),
-                    child: Container(margin: const EdgeInsets.all(8), decoration: const BoxDecoration(color: Color(0x14FFFFFF), shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.textPrimary)),
+                    child: Container(margin: const EdgeInsets.all(8), decoration: const BoxDecoration(color: Color(0x14FFFFFF), shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: DS.textPrimary)),
                   ),
-                  flexibleSpace: FlexibleSpaceBar(background: Container(color: AppTheme.surface)),
+                  flexibleSpace: FlexibleSpaceBar(background: Container(color: DS.surface1)),
                 ),
                 if (desc.isNotEmpty)
-                  SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(16), child: Text(desc, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, height: 1.6)))),
-                SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 4), child: Text('章节', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)))),
+                  SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(16), child: Text(desc, style: const TextStyle(fontSize: 13, color: DS.textSecondary, height: 1.6)))),
+                SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 4), child: Text('章节', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: DS.textPrimary)))),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
                   sliver: SliverList(
@@ -99,14 +98,14 @@ class _SourceComicPageState extends State<SourceComicPage> {
                             margin: const EdgeInsets.only(bottom: 8),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                             decoration: BoxDecoration(
-                              color: i % 2 == 0 ? AppTheme.surface : AppTheme.surfaceLight,
-                              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                              color: i % 2 == 0 ? DS.surface1 : DS.surface2,
+                              borderRadius: BorderRadius.circular(DS.rSm),
                             ),
                             child: Row(children: [
-                              Container(width: 28, height: 28, decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Center(child: Text('${i + 1}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primary)))),
+                              Container(width: 28, height: 28, decoration: BoxDecoration(color: DS.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Center(child: Text('${i + 1}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: DS.accent)))),
                               const SizedBox(width: 12),
-                              Expanded(child: Text(chTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary))),
-                              const Icon(Icons.chevron_right_rounded, size: 18, color: AppTheme.textTertiary),
+                              Expanded(child: Text(chTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, color: DS.textPrimary))),
+                              const Icon(Icons.chevron_right_rounded, size: 18, color: DS.textTertiary),
                             ]),
                           ),
                         );

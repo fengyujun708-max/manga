@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/theme.dart';
 import '../../../app/widgets/comic_widgets.dart';
 import '../../../plugins/source_data_service.dart';
 
@@ -115,7 +114,7 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: DS.bg,
       body: CustomScrollView(
         controller: _scroll,
         physics: const BouncingScrollPhysics(),
@@ -126,9 +125,9 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
             backgroundColor: Colors.transparent,
             leading: GestureDetector(
               onTap: () => context.pop(),
-              child: Container(margin: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppTheme.glassFillLight, shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.textPrimary)),
+              child: Container(margin: const EdgeInsets.all(8), decoration: BoxDecoration(color: DS.glassFillStrong, shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: DS.textPrimary)),
             ),
-            title: const Text('分类浏览', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+            title: const Text('分类浏览', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: DS.textPrimary)),
           ),
 
           if (_loading)
@@ -156,11 +155,11 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: active ? AppTheme.primary.withValues(alpha: 0.15) : AppTheme.surface,
+                            color: active ? DS.accent.withValues(alpha: 0.15) : DS.surface1,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: active ? AppTheme.primary.withValues(alpha: 0.3) : AppTheme.glassBorder, width: 0.5),
+                            border: Border.all(color: active ? DS.accent.withValues(alpha: 0.3) : DS.glassBorder, width: 0.5),
                           ),
-                          child: Text(name, style: TextStyle(fontSize: 13, fontWeight: active ? FontWeight.w600 : FontWeight.w400, color: active ? AppTheme.primary : AppTheme.textSecondary)),
+                          child: Text(name, style: TextStyle(fontSize: 13, fontWeight: active ? FontWeight.w600 : FontWeight.w400, color: active ? DS.accent : DS.textSecondary)),
                         ),
                       );
                     },
@@ -188,12 +187,12 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
-                            gradient: active ? AppTheme.primaryGradient : null,
-                            color: active ? null : AppTheme.surface,
+                            gradient: active ? const LinearGradient(colors: [DS.accent, Color(0xFFD93025)]) : null,
+                            color: active ? null : DS.surface1,
                             borderRadius: BorderRadius.circular(16),
-                            border: active ? null : Border.all(color: AppTheme.glassBorder, width: 0.5),
+                            border: active ? null : Border.all(color: DS.glassBorder, width: 0.5),
                           ),
-                          child: Text(cat, style: TextStyle(fontSize: 12, fontWeight: active ? FontWeight.w600 : FontWeight.w400, color: active ? Colors.white : AppTheme.textSecondary)),
+                          child: Text(cat, style: TextStyle(fontSize: 12, fontWeight: active ? FontWeight.w600 : FontWeight.w400, color: active ? Colors.white : DS.textSecondary)),
                         ),
                       );
                     },
@@ -208,8 +207,8 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
               crossAxisCount: 3,
               onComicTap: _enterComic,
               footer: _comicsLoading
-                ? const Padding(padding: EdgeInsets.all(20), child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))))
-                : _hasMore ? null : const Padding(padding: EdgeInsets.all(20), child: Center(child: Text('没有更多了', style: TextStyle(fontSize: 12, color: AppTheme.textTertiary)))),
+                ? const Padding(padding: EdgeInsets.all(20), child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: DS.accent))))
+                : _hasMore ? null : const Padding(padding: EdgeInsets.all(20), child: Center(child: Text('没有更多了', style: TextStyle(fontSize: 12, color: DS.textTertiary)))),
             ),
 
             if (_comics.isEmpty && !_comicsLoading)

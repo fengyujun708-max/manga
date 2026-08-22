@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../app/theme/theme.dart';
+import '../../../app/ds.dart';
 import '../../../app/components/manjie_card.dart';
 import '../../../app/components/manjie_button.dart';
 import '../../../app/components/manjie_toast.dart';
@@ -42,9 +42,9 @@ class _RequestPageState extends State<RequestPage> with SingleTickerProviderStat
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.primary,
-          labelColor: AppTheme.primary,
-          unselectedLabelColor: AppTheme.textSecondary,
+          indicatorColor: DS.accent,
+          labelColor: DS.accent,
+          unselectedLabelColor: DS.textSecondary,
           tabs: const [
             Tab(text: '进行中'),
             Tab(text: '已解决'),
@@ -60,7 +60,7 @@ class _RequestPageState extends State<RequestPage> with SingleTickerProviderStat
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateDialog(context),
-        backgroundColor: AppTheme.primary,
+        backgroundColor: DS.accent,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('发布求漫', style: TextStyle(color: Colors.white)),
       ),
@@ -81,7 +81,7 @@ class _RequestPageState extends State<RequestPage> with SingleTickerProviderStat
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
         decoration: const BoxDecoration(
-          color: AppTheme.surface,
+          color: DS.surface1,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -89,10 +89,10 @@ class _RequestPageState extends State<RequestPage> with SingleTickerProviderStat
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Color(0xFF312E81), borderRadius: BorderRadius.circular(2)))),
+              decoration: BoxDecoration(color: DS.glassBorder, borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 16),
             Text(widget.type == 'manga' ? '发布求漫' : '发布求源',
-              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+              style: const TextStyle(color: DS.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             TextField(
               controller: nameController,
@@ -100,7 +100,7 @@ class _RequestPageState extends State<RequestPage> with SingleTickerProviderStat
                 labelText: widget.type == 'manga' ? '漫画名称' : '源名称',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: const TextStyle(color: DS.textPrimary),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -110,7 +110,7 @@ class _RequestPageState extends State<RequestPage> with SingleTickerProviderStat
                 labelText: '描述/线索',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: const TextStyle(color: DS.textPrimary),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -172,7 +172,7 @@ class _RequestCard extends StatelessWidget {
       case '已找到': return Colors.green;
       case '寻找中': return Colors.orange;
       case '待处理': return Colors.orange;
-      default: return AppTheme.textSecondary;
+      default: return DS.textSecondary;
     }
   }
 
@@ -195,19 +195,19 @@ class _RequestCard extends StatelessWidget {
                 child: Text(request.status, style: TextStyle(color: _statusColor(request.status), fontSize: 11)),
               ),
               const SizedBox(width: 8),
-              Text(request.user, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+              Text(request.user, style: const TextStyle(color: DS.textSecondary, fontSize: 13)),
               const Spacer(),
-              Text(request.time, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              Text(request.time, style: const TextStyle(color: DS.textSecondary, fontSize: 12)),
             ],
           ),
           const SizedBox(height: 10),
-          Text(request.title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(request.title, style: const TextStyle(color: DS.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Text(
             type == 'manga'
               ? '记得是几年前看的，主角使用剑术，画风很精美...'
               : '之前用的源最近不能用了，求推荐稳定的替代源',
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            style: const TextStyle(color: DS.textSecondary, fontSize: 13),
             maxLines: 2, overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 12),
@@ -217,17 +217,17 @@ class _RequestCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppTheme.accent.withOpacity(0.1),
+                color: DS.accent.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.accent.withOpacity(0.2)),
+                border: Border.all(color: DS.accent.withOpacity(0.2)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.auto_awesome, size: 16, color: AppTheme.accent),
+                  Icon(Icons.auto_awesome, size: 16, color: DS.accent),
                   const SizedBox(width: 6),
-                  const Text('AI 已找到候选漫画', style: TextStyle(color: AppTheme.accent, fontSize: 12)),
+                  const Text('AI 已找到候选漫画', style: TextStyle(color: DS.accent, fontSize: 12)),
                   const Spacer(),
-                  Text('查看 →', style: TextStyle(color: AppTheme.accent, fontSize: 12)),
+                  Text('查看 →', style: TextStyle(color: DS.accent, fontSize: 12)),
                 ],
               ),
             ),
@@ -236,9 +236,9 @@ class _RequestCard extends StatelessWidget {
           // 底部
           Row(
             children: [
-              const Icon(Icons.chat_bubble_outline, size: 16, color: AppTheme.textSecondary),
+              const Icon(Icons.chat_bubble_outline, size: 16, color: DS.textSecondary),
               const SizedBox(width: 4),
-              Text('${request.answers} 个回答', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              Text('${request.answers} 个回答', style: const TextStyle(color: DS.textSecondary, fontSize: 12)),
               if (request.status == '已解决') ...[
                 const SizedBox(width: 16),
                 const Icon(Icons.check_circle, size: 16, color: Colors.green),
@@ -264,14 +264,14 @@ class _RequestCard extends StatelessWidget {
         builder: (_, scrollController) => Container(
           padding: const EdgeInsets.all(20),
           decoration: const BoxDecoration(
-            color: AppTheme.surface,
+            color: DS.surface1,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: ListView(
             controller: scrollController,
             children: [
               Center(child: Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: Color(0xFF312E81), borderRadius: BorderRadius.circular(2)))),
+                decoration: BoxDecoration(color: DS.glassBorder, borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -284,27 +284,27 @@ class _RequestCard extends StatelessWidget {
                     child: Text(request.status, style: TextStyle(color: _statusColor(request.status), fontSize: 11)),
                   ),
                   const Spacer(),
-                  Text(request.time, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                  Text(request.time, style: const TextStyle(color: DS.textSecondary, fontSize: 12)),
                 ],
               ),
               const SizedBox(height: 12),
-              Text(request.title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(request.title, style: const TextStyle(color: DS.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               const Text('记得是几年前看的，主角使用剑术，画风很精美，类似浪客剑心的风格...',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.5)),
+                style: TextStyle(color: DS.textSecondary, fontSize: 14, height: 1.5)),
               const SizedBox(height: 8),
-              Text('发布者: ${request.user}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              Text('发布者: ${request.user}', style: const TextStyle(color: DS.textSecondary, fontSize: 12)),
 
               // AI 匹配
               if (request.hasAiMatch) ...[
                 const SizedBox(height: 16),
-                const Divider(color: Color(0xFF312E81)),
+                const Divider(color: DS.glassBorder),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.auto_awesome, size: 20, color: AppTheme.accent),
+                    const Icon(Icons.auto_awesome, size: 20, color: DS.accent),
                     const SizedBox(width: 8),
-                    const Text('AI 匹配结果', style: TextStyle(color: AppTheme.accent, fontSize: 16, fontWeight: FontWeight.w600)),
+                    const Text('AI 匹配结果', style: TextStyle(color: DS.accent, fontSize: 16, fontWeight: FontWeight.w600)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -324,9 +324,9 @@ class _RequestCard extends StatelessWidget {
 
               // 回答区
               const SizedBox(height: 16),
-              const Divider(color: Color(0xFF312E81)),
+              const Divider(color: DS.glassBorder),
               const SizedBox(height: 12),
-              const Text('回答', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('回答', style: TextStyle(color: DS.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
               ...List.generate(3, (i) => _AnswerCard(
                 user: '热心用户${i + 1}',
@@ -345,14 +345,14 @@ class _RequestCard extends StatelessWidget {
                         hintText: '输入你的回答...',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
                         filled: true,
-                        fillColor: AppTheme.surfaceLight,
+                        fillColor: DS.surface2,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.send, color: AppTheme.primary),
+                    icon: const Icon(Icons.send, color: DS.accent),
                     onPressed: () => ManjieToast.success(context, '回答已发送'),
                   ),
                 ],
@@ -383,11 +383,11 @@ class _AiMatchCard extends StatelessWidget {
           Container(
             width: 48, height: 64,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.2),
+              color: DS.accent.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(child: Text(title.substring(0, 1),
-              style: const TextStyle(fontSize: 24, color: AppTheme.primary))),
+              style: const TextStyle(fontSize: 24, color: DS.accent))),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -396,24 +396,24 @@ class _AiMatchCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+                    Text(title, style: const TextStyle(color: DS.textPrimary, fontWeight: FontWeight.w600)),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.accent.withOpacity(0.15),
+                        color: DS.accent.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text('匹配度 $match', style: const TextStyle(color: AppTheme.accent, fontSize: 11)),
+                      child: Text('匹配度 $match', style: const TextStyle(color: DS.accent, fontSize: 11)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(reason, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                Text(reason, style: const TextStyle(color: DS.textSecondary, fontSize: 12)),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: AppTheme.textSecondary, size: 20),
+          const Icon(Icons.chevron_right, color: DS.textSecondary, size: 20),
         ],
       ),
     );
@@ -439,7 +439,7 @@ class _AnswerCard extends StatelessWidget {
             children: [
               ManjieAvatar(name: user, size: 28),
               const SizedBox(width: 8),
-              Text(user, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
+              Text(user, style: const TextStyle(color: DS.textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
               const SizedBox(width: 8),
               if (isBest)
                 Container(
@@ -451,11 +451,11 @@ class _AnswerCard extends StatelessWidget {
                   child: const Text('最佳回答', style: TextStyle(color: Colors.green, fontSize: 10)),
                 ),
               const Spacer(),
-              Text(time, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+              Text(time, style: const TextStyle(color: DS.textSecondary, fontSize: 11)),
             ],
           ),
           const SizedBox(height: 8),
-          Text(content, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14)),
+          Text(content, style: const TextStyle(color: DS.textPrimary, fontSize: 14)),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -471,9 +471,9 @@ class _AnswerCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.thumb_up_outlined, size: 16, color: AppTheme.textSecondary),
+              const Icon(Icons.thumb_up_outlined, size: 16, color: DS.textSecondary),
               const SizedBox(width: 4),
-              const Text('3', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              const Text('3', style: TextStyle(color: DS.textSecondary, fontSize: 12)),
             ],
           ),
         ],

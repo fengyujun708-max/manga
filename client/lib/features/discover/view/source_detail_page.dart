@@ -80,7 +80,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> {
             bottom: _showSearch ? PreferredSize(
               preferredSize: const Size.fromHeight(56),
               child: Padding(padding: const EdgeInsets.fromLTRB(DS.sp16, 0, DS.sp16, DS.sp12),
-                child: Glass(radius: DS.rMd, padding: const EdgeInsets.symmetric(horizontal: DS.sp14),
+                child: Glass(radius: DS.rMd, padding: const EdgeInsets.symmetric(horizontal: DS.sp16),
                   child: Row(children: [
                     const Icon(Icons.search_rounded, size: 20, color: DS.textTertiary),
                     const SizedBox(width: 10),

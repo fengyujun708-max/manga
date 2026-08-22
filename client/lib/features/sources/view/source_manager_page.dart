@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../app/theme/theme.dart';
 import '../../../plugins/manga_source.dart';
 import '../../../plugins/source_installer.dart';
 import '../../../core/network/api_client.dart';
@@ -51,21 +50,21 @@ class _SourceManagerPageState extends State<SourceManagerPage>
                     child: Container(
                       width: 40, height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceLight.withValues(alpha: 0.5),
+                        color: DS.surface2.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.textPrimary),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: DS.textPrimary),
                     ),
                   ),
                   const SizedBox(width: 12),
                   ShaderMask(
-                    shaderCallback: (b) => AppTheme.primaryGradient.createShader(b),
+                    shaderCallback: (b) => const LinearGradient(colors: [DS.accent, Color(0xFFD93025)]).createShader(b),
                     child: const Text('漫画源管理',
                         style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: Colors.white)),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.sync_rounded, color: AppTheme.textPrimary),
+                    icon: const Icon(Icons.sync_rounded, color: DS.textPrimary),
                     onPressed: () => context.read<SourceBloc>().add(SourceRefreshRequested()),
                   ),
                 ],
@@ -75,14 +74,14 @@ class _SourceManagerPageState extends State<SourceManagerPage>
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceLight.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              color: DS.surface2.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(DS.rMd),
             ),
             child: TabBar(
               controller: _tabController,
-              labelColor: AppTheme.primary,
-              unselectedLabelColor: AppTheme.textSecondary,
-              indicatorColor: AppTheme.primary,
+              labelColor: DS.accent,
+              unselectedLabelColor: DS.textSecondary,
+              indicatorColor: DS.accent,
               indicatorSize: TabBarIndicatorSize.label,
               dividerColor: Colors.transparent,
               tabs: const [Tab(text: '已安装'), Tab(text: '源市场')],
@@ -114,7 +113,7 @@ class _InstalledTab extends StatelessWidget {
             itemCount: 4,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: ShimmerBox(width: double.infinity, height: 72, radius: BorderRadius.circular(AppTheme.radiusMd)),
+              child: ShimmerBox(width: double.infinity, height: 72, radius: BorderRadius.circular(DS.rMd)),
             ),
           );
         }
@@ -152,16 +151,16 @@ class _InstalledSourceCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.glassBorder, width: 0.5),
+        color: DS.surface1,
+        borderRadius: BorderRadius.circular(DS.rLg),
+        border: Border.all(color: DS.glassBorder, width: 0.5),
       ),
       child: Row(
         children: [
           Container(
             width: 48, height: 48,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.15),
+              color: DS.accent.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(child: Text(manifest.icon, style: const TextStyle(fontSize: 22))),
@@ -174,22 +173,22 @@ class _InstalledSourceCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(manifest.name,
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.textPrimary)),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: DS.textPrimary)),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        color: DS.accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text('v${manifest.version}',
-                          style: const TextStyle(color: AppTheme.primary, fontSize: 10)),
+                          style: const TextStyle(color: DS.accent, fontSize: 10)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(manifest.description,
-                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                    style: const TextStyle(color: DS.textSecondary, fontSize: 12),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
@@ -202,7 +201,7 @@ class _InstalledSourceCard extends StatelessWidget {
                 context.read<SourceBloc>().add(SourceDeleteRequested(manifest.id));
               }
             },
-            activeColor: AppTheme.primary,
+            activeColor: DS.accent,
           ),
         ],
       ),
@@ -221,7 +220,7 @@ class _MarketTab extends StatelessWidget {
             itemCount: 4,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: ShimmerBox(width: double.infinity, height: 88, radius: BorderRadius.circular(AppTheme.radiusLg)),
+              child: ShimmerBox(width: double.infinity, height: 88, radius: BorderRadius.circular(DS.rLg)),
             ),
           );
         }
@@ -316,19 +315,19 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.surface,
+            backgroundColor: DS.surface1,
             content: Row(children: [
-              const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
+              const Icon(Icons.check_circle_rounded, color: DS.success, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                     jsInstalled ? '「${manifest.name}」安装成功' : '「${manifest.name}」已加入列表（JS 下载失败，走服务器代理）',
-                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
+                    style: const TextStyle(color: DS.textPrimary, fontSize: 13)),
               ),
             ]),
             action: SnackBarAction(
               label: '去发现页',
-              textColor: AppTheme.primary,
+              textColor: DS.accent,
               onPressed: () => GoRouter.of(context).go('/discover'),
             ),
           ),
@@ -340,7 +339,7 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppTheme.destructive,
+          backgroundColor: DS.error,
           content: Text('安装失败: $e', style: const TextStyle(color: Colors.white, fontSize: 13)),
         ),
       );
@@ -354,9 +353,9 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.glassBorder, width: 0.5),
+        color: DS.surface1,
+        borderRadius: BorderRadius.circular(DS.rLg),
+        border: Border.all(color: DS.glassBorder, width: 0.5),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +363,7 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
           Container(
             width: 52, height: 52,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.12),
+              color: DS.accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(child: Text(m.icon, style: const TextStyle(fontSize: 24))),
@@ -377,35 +376,35 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
                 Row(
                   children: [
                     Text(m.name,
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.textPrimary)),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: DS.textPrimary)),
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        color: DS.accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text('v${m.version}',
-                          style: const TextStyle(color: AppTheme.primary, fontSize: 10)),
+                          style: const TextStyle(color: DS.accent, fontSize: 10)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(m.description,
-                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                    style: const TextStyle(color: DS.textSecondary, fontSize: 12),
                     maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.star_rounded, size: 14, color: AppTheme.accent),
+                    Icon(Icons.star_rounded, size: 14, color: DS.accent),
                     const SizedBox(width: 2),
                     Text(m.rating.toStringAsFixed(1),
-                        style: const TextStyle(color: AppTheme.accent, fontSize: 12)),
+                        style: const TextStyle(color: DS.accent, fontSize: 12)),
                     const SizedBox(width: 12),
-                    Icon(Icons.download_rounded, size: 14, color: AppTheme.textTertiary),
+                    Icon(Icons.download_rounded, size: 14, color: DS.textTertiary),
                     const SizedBox(width: 2),
                     Text('${m.downloads} 次下载',
-                        style: const TextStyle(color: AppTheme.textTertiary, fontSize: 12)),
+                        style: const TextStyle(color: DS.textTertiary, fontSize: 12)),
                   ],
                 ),
               ],
@@ -418,15 +417,15 @@ class _MarketSourceCardState extends State<_MarketSourceCard> {
                 ? Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppTheme.success.withValues(alpha: 0.15),
+                      color: DS.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text('已安装', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.success)),
+                    child: const Text('已安装', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: DS.success)),
                   )
                 : ElevatedButton(
                     onPressed: _installing ? null : _install,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
+                      backgroundColor: DS.accent,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       padding: EdgeInsets.zero,
@@ -456,15 +455,15 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 48, color: AppTheme.textTertiary),
+          Icon(icon, size: 48, color: DS.textTertiary),
           const SizedBox(height: 12),
-          Text(message, style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+          Text(message, style: TextStyle(color: DS.textSecondary, fontSize: 14)),
           if (action != null && actionLabel != null) ...[
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: action,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
+                backgroundColor: DS.accent,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),

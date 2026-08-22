@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/theme.dart';
-import '../../../app/components/manjie_button.dart';
-import '../../../app/components/manjie_toast.dart';
+import '../../../app/ds.dart';
 import '../../reader/view/reader_page.dart';
 import '../../reader/models/reader_models.dart';
 
+/// 漫画详情页 — Cinematic Hero
 class ComicDetailPage extends StatefulWidget {
   final String comicId;
   const ComicDetailPage({super.key, required this.comicId});
@@ -18,9 +18,8 @@ class _ComicDetailPageState extends State<ComicDetailPage> {
   bool _isFavorited = false;
   bool _showFullDescription = false;
   bool _chapterDescending = true;
-  int _selectedTab = 0; // 0: 章节, 1: 简介, 2: 相关
+  int _tab = 0; // 0 章节 / 1 相关
 
-  // 模拟数据
   final _comic = {
     'title': '海贼王',
     'author': '尾田荣一郎',
@@ -37,13 +36,13 @@ class _ComicDetailPageState extends State<ComicDetailPage> {
     'pages': '${(i % 5) + 15}',
   });
 
-  final List<Map<String, String>> _recommendations = [
-    {'title': '咒术回战', 'author': '芥见下下', 'color': '0xFFE74C3C'},
-    {'title': '鬼灭之刃', 'author': '吾峠呼世晴', 'color': '0xFF3498DB'},
-    {'title': '一拳超人', 'author': 'ONE', 'color': '0xFFE67E22'},
-    {'title': '进击的巨人', 'author': '谏山创', 'color': '0xFF2ECC71'},
-    {'title': '全职猎人', 'author': '冨樫义博', 'color': '0xFF673AB7'},
-    {'title': '钢之炼金术师', 'author': '荒川弘', 'color': '0xFF795548'},
+  static const _recommendations = [
+    {'title': '咒术回战', 'author': '芥见下下'},
+    {'title': '鬼灭之刃', 'author': '吾峠呼世晴'},
+    {'title': '一拳超人', 'author': 'ONE'},
+    {'title': '进击的巨人', 'author': '谏山创'},
+    {'title': '全职猎人', 'author': '冨樫义博'},
+    {'title': '钢之炼金术师', 'author': '荒川弘'},
   ];
 
   List<Map<String, String>> get _displayChapters {
@@ -55,294 +54,213 @@ class _ComicDetailPageState extends State<ComicDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: DS.bg,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          // 顶部封面
+          // ── 电影感 Hero ──
           SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            stretch: true,
-            backgroundColor: AppTheme.surface,
+            expandedHeight: 340,
+            pinned: true, stretch: true,
+            backgroundColor: DS.bg, elevation: 0,
+            leading: _circleBtn(Icons.arrow_back_ios_new_rounded, () => Navigator.of(context).pop()),
+            actions: [_circleBtn(Icons.share_rounded, ())],
             flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // 封面渐变背景
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0xFF6C5CE7), Color(0xFF0F3460), Color(0xFF0A0A1A)],
-                      ),
-                    ),
-                  ),
-                  // 装饰
-                  Positioned(
-                    right: -60, top: -60,
-                    child: Container(
-                      width: 250, height: 250,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
-                      ),
-                    ),
-                  ),
-                  // 底部渐变
-                  Positioned(
-                    left: 0, right: 0, bottom: 0,
-                    child: Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, AppTheme.background],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // 返回按钮
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 8,
-                    left: 8,
-                    child: IconButton(
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  // 分享按钮
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 8,
-                    right: 8,
-                    child: IconButton(
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.share, color: Colors.white, size: 20),
-                      ),
-                      onPressed: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 漫画信息
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 标题
-                  Text(_comic['title']!, style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  )),
-                  const SizedBox(height: 8),
-
-                  // 作者 + 状态
-                  Row(
-                    children: [
-                      _InfoChip(icon: Icons.person, text: _comic['author']!),
-                      const SizedBox(width: 12),
-                      _InfoChip(icon: Icons.circle, text: _comic['status']!, color: AppTheme.accent),
-                      const SizedBox(width: 12),
-                      _InfoChip(icon: Icons.star, text: _comic['rating']!, color: Colors.amber),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // 标签
-                  Wrap(
-                    spacing: 6, runSpacing: 6,
-                    children: _comic['tags']!.split(', ').map((t) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(t, style: const TextStyle(color: AppTheme.primary, fontSize: 12)),
-                    )).toList(),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 操作按钮
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ManjieButton(
-                          label: '开始阅读',
-                          icon: Icons.play_arrow,
-                          onPressed: () => _openReader(context, 0),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      ManjieButton(
-                        label: '',
-                        icon: _isFavorited ? Icons.favorite : Icons.favorite_border,
-                        variant: ManjieButtonVariant.outlined,
-                        width: 50,
-                        onPressed: () {
-                          setState(() => _isFavorited = !_isFavorited);
-                          ManjieToast.success(context, _isFavorited ? '已收藏' : '已取消收藏');
-                        },
-                      ),
+              background: Stack(fit: StackFit.expand, children: [
+                // 封面占位背景
+                Container(color: DS.surface1),
+                Center(child: Icon(Icons.menu_book_rounded, size: 140, color: Colors.white.withValues(alpha: 0.04))),
+                // 底部渐隐入 bg
+                const Positioned(left: 0, right: 0, bottom: 0, height: 200, child: DecoratedBox(decoration: BoxDecoration(gradient: DS.heroScrim))),
+                // 标题区
+                Positioned(left: DS.sp16, right: DS.sp16, bottom: DS.sp16, child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(color: DS.accent, borderRadius: BorderRadius.circular(DS.rSm)),
+                        child: Text(_comic['status']!, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white))),
                       const SizedBox(width: 8),
-                      ManjieButton(
-                        label: '',
-                        icon: Icons.download_outlined,
-                        variant: ManjieButtonVariant.outlined,
-                        width: 50,
-                        onPressed: () => ManjieToast.show(context, '开始下载...'),
-                      ),
-                    ],
-                  ),
+                      const Icon(Icons.star_rounded, size: 14, color: DS.warning),
+                      const SizedBox(width: 2),
+                      Text(_comic['rating']!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: DS.warning)),
+                    ]),
+                    const SizedBox(height: 8),
+                    Text(_comic['title']!, style: DS.display),
+                    const SizedBox(height: 4),
+                    Text(_comic['author']!, style: DS.bodySec),
+                  ],
+                )),
+              ]),
+            ),
+          ),
 
-                  // 简介
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () => setState(() => _showFullDescription = !_showFullDescription),
-                    child: Text(
-                      _comic['description']!,
-                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.6),
-                      maxLines: _showFullDescription ? null : 3,
-                      overflow: _showFullDescription ? null : TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (!_showFullDescription)
-                    TextButton(
-                      onPressed: () => setState(() => _showFullDescription = true),
-                      child: const Text('展开全部 ↓', style: TextStyle(color: AppTheme.primary, fontSize: 13)),
-                    ),
-                ],
+          // ── 信息区 ──
+          SliverToBoxAdapter(child: Padding(
+            padding: const EdgeInsets.fromLTRB(DS.sp16, DS.sp8, DS.sp16, 0),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // 标签
+              Wrap(spacing: 6, runSpacing: 6, children: _comic['tags']!.split(', ').map((t) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(color: DS.glassFill, borderRadius: BorderRadius.circular(DS.rSm)),
+                child: Text(t, style: const TextStyle(fontSize: 12, color: DS.textSecondary)),
+              )).toList()),
+              const SizedBox(height: DS.sp16),
+
+              // 操作区
+              Row(children: [
+                Expanded(child: SpringButton(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  onPressed: () => _openReader(context, 0),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.play_arrow_rounded, size: 22, color: Colors.white),
+                    SizedBox(width: 6), Text('开始阅读'),
+                  ]),
+                )),
+                const SizedBox(width: DS.sp12),
+                _roundAction(icon: _isFavorited ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  active: _isFavorited, onTap: () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _isFavorited = !_isFavorited);
+                  }),
+                const SizedBox(width: DS.sp8),
+                _roundAction(icon: Icons.download_outlined, onTap: () {}),
+              ]),
+
+              // 简介
+              const SizedBox(height: DS.sp20),
+              GestureDetector(
+                onTap: () => setState(() => _showFullDescription = !_showFullDescription),
+                child: Text(_comic['description']!, style: DS.bodySec, maxLines: _showFullDescription ? null : 3,
+                    overflow: _showFullDescription ? null : TextOverflow.ellipsis),
               ),
-            ),
-          ),
+              if (!_showFullDescription)
+                GestureDetector(onTap: () => setState(() => _showFullDescription = true),
+                  child: const Padding(padding: EdgeInsets.only(top: 6),
+                    child: Text('展开全部', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: DS.textPrimary)))),
+            ]),
+          )),
 
-          // Tab 切换
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  _TabButton(label: '章节', count: _chapters.length, selected: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
-                  const SizedBox(width: 16),
-                  _TabButton(label: '相关推荐', count: _recommendations.length, selected: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Divider(color: Color(0xFF312E81), height: 1),
-            ),
-          ),
+          // ── Tab 切换 ──
+          SliverToBoxAdapter(child: Padding(
+            padding: const EdgeInsets.fromLTRB(DS.sp16, DS.sp24, DS.sp16, DS.sp12),
+            child: Row(children: [
+              _tabBtn('章节', _chapters.length, 0),
+              const SizedBox(width: DS.sp20),
+              _tabBtn('相关推荐', _recommendations.length, 1),
+            ]),
+          )),
 
-          // Tab 内容
-          if (_selectedTab == 0) ..._buildChapterList(),
-          if (_selectedTab == 1) ..._buildRecommendations(),
+          if (_tab == 0) ..._buildChapters() else ..._buildRelated(),
         ],
       ),
     );
   }
 
-  List<Widget> _buildChapterList() {
+  List<Widget> _buildChapters() {
     return [
-      // 排序切换
-      SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              const Text('全部章节', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
-              const Spacer(),
-              GestureDetector(
-                onTap: () => setState(() => _chapterDescending = !_chapterDescending),
-                child: Row(
-                  children: [
-                    Text(_chapterDescending ? '倒序' : '正序', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-                    const SizedBox(width: 4),
-                    Icon(_chapterDescending ? Icons.arrow_downward : Icons.arrow_upward, size: 16, color: AppTheme.textSecondary),
-                  ],
-                ),
-              ),
-            ],
+      SliverToBoxAdapter(child: Padding(
+        padding: const EdgeInsets.fromLTRB(DS.sp16, 0, DS.sp16, DS.sp12),
+        child: Row(children: [
+          Text('共 ${_chapters.length} 话', style: DS.caption),
+          const Spacer(),
+          GestureDetector(
+            onTap: () { HapticFeedback.selectionClick(); setState(() => _chapterDescending = !_chapterDescending); },
+            child: Row(children: [
+              Text(_chapterDescending ? '倒序' : '正序', style: const TextStyle(fontSize: 13, color: DS.textTertiary)),
+              Icon(_chapterDescending ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded, size: 15, color: DS.textTertiary),
+            ]),
           ),
-        ),
-      ),
-      // 章节列表
-      SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (_, i) {
+        ]),
+      )),
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(DS.sp16, 0, DS.sp16, 100),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, childAspectRatio: 3.4, crossAxisSpacing: DS.sp8, mainAxisSpacing: DS.sp8),
+          delegate: SliverChildBuilderDelegate((_, i) {
             final ch = _displayChapters[i];
-            return _ChapterTile(
-              title: ch['title']!,
-              updateTime: ch['updateTime']!,
-              pages: ch['pages']!,
-              isRead: i < 5,
+            final isRead = i < 5;
+            return GestureDetector(
               onTap: () => _openReader(context, i),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: DS.sp12),
+                decoration: BoxDecoration(
+                  color: isRead ? DS.surface1 : DS.surface2,
+                  borderRadius: BorderRadius.circular(DS.rMd),
+                  border: Border.all(color: i == 0 ? DS.accent.withValues(alpha: 0.5) : Colors.transparent, width: 1),
+                ),
+                child: Row(children: [
+                  Expanded(child: Text(ch['title']!, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isRead ? DS.textTertiary : DS.textPrimary))),
+                  Text('${ch['pages']}P', style: DS.micro),
+                ]),
+              ),
             );
-          },
-          childCount: _displayChapters.length,
+          }, childCount: _displayChapters.length),
         ),
       ),
-      const SliverToBoxAdapter(child: SizedBox(height: 80)),
     ];
   }
 
-  List<Widget> _buildRecommendations() {
+  List<Widget> _buildRelated() {
     return [
-      SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 0.7,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (_, i) {
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(DS.sp16, 0, DS.sp16, 100),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, childAspectRatio: 0.55, crossAxisSpacing: DS.sp12, mainAxisSpacing: DS.sp16),
+          delegate: SliverChildBuilderDelegate((_, i) {
             final item = _recommendations[i];
-            return GestureDetector(
+            return ComicCard(
+              cover: '', title: item['title']!, subtitle: item['author'],
               onTap: () {},
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Color(int.parse(item['color']!, radix: 16)),
-                      ),
-                      child: Center(
-                        child: Text(item['title']!.substring(0, 1), style: const TextStyle(fontSize: 36, color: Colors.white24)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(item['title']!, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13), maxLines: 1),
-                  Text(item['author']!, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
-                ],
-              ),
             );
-          },
-          childCount: _recommendations.length,
+          }, childCount: _recommendations.length),
         ),
       ),
-      const SliverToBoxAdapter(child: SizedBox(height: 80)),
     ];
+  }
+
+  Widget _tabBtn(String label, int count, int idx) {
+    final selected = _tab == idx;
+    return GestureDetector(
+      onTap: () { HapticFeedback.selectionClick(); setState(() => _tab = idx); },
+      child: AnimatedContainer(duration: DS.durStd, curve: DS.cStd,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? DS.surface3 : Colors.transparent,
+          borderRadius: BorderRadius.circular(DS.rMd),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(label, style: TextStyle(fontSize: 14, fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? DS.textPrimary : DS.textTertiary)),
+          const SizedBox(width: 5),
+          Text('$count', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: selected ? DS.accent : DS.textDisabled)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _roundAction({required IconData icon, bool active = false, VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(width: 50, height: 50,
+        decoration: BoxDecoration(
+          color: active ? DS.accent.withValues(alpha: 0.15) : DS.surface2,
+          borderRadius: BorderRadius.circular(DS.rMd),
+          border: Border.all(color: active ? DS.accent.withValues(alpha: 0.4) : Colors.transparent, width: 1),
+        ),
+        child: Icon(icon, size: 22, color: active ? DS.accent : DS.textSecondary)),
+    );
+  }
+
+  Widget _circleBtn(IconData icon, VoidCallback onTap) {
+    return Padding(padding: const EdgeInsets.all(6), child: GestureDetector(
+      onTap: onTap,
+      child: Container(width: 36, height: 36,
+        decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.35), shape: BoxShape.circle),
+        child: Icon(icon, size: 18, color: Colors.white)),
+    ));
   }
 
   void _openReader(BuildContext context, int chapterIndex) {
@@ -359,108 +277,5 @@ class _ComicDetailPageState extends State<ComicDetailPage> {
         initialChapter: chapterIndex,
       ),
     ));
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final Color? color;
-
-  const _InfoChip({required this.icon, required this.text, this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: color ?? AppTheme.textSecondary),
-        const SizedBox(width: 4),
-        Text(text, style: TextStyle(color: color ?? AppTheme.textSecondary, fontSize: 13)),
-      ],
-    );
-  }
-}
-
-class _TabButton extends StatelessWidget {
-  final String label;
-  final int count;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _TabButton({required this.label, required this.count, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: TextStyle(
-                color: selected ? AppTheme.primary : AppTheme.textSecondary,
-                fontSize: 15, fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-              )),
-              const SizedBox(width: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: selected ? AppTheme.primary.withOpacity(0.15) : Color(0xFF312E81),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text('$count', style: TextStyle(
-                  color: selected ? AppTheme.primary : AppTheme.textSecondary, fontSize: 11)),
-              ),
-            ],
-          ),
-          if (selected)
-            Container(
-              margin: const EdgeInsets.only(top: 6),
-              width: 24, height: 3,
-              decoration: BoxDecoration(
-                color: AppTheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChapterTile extends StatelessWidget {
-  final String title;
-  final String updateTime;
-  final String pages;
-  final bool isRead;
-  final VoidCallback onTap;
-
-  const _ChapterTile({
-    required this.title, required this.updateTime, required this.pages,
-    required this.isRead, required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        width: 4, height: 4,
-        decoration: BoxDecoration(
-          color: isRead ? AppTheme.accent : AppTheme.primary,
-          shape: BoxShape.circle,
-        ),
-      ),
-      title: Text(title, style: TextStyle(
-        color: isRead ? AppTheme.textSecondary : AppTheme.textPrimary,
-        fontWeight: isRead ? FontWeight.normal : FontWeight.w500,
-        fontSize: 14,
-      )),
-      subtitle: Text('$pages页 · $updateTime', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-      trailing: isRead
-        ? const Icon(Icons.check_circle, size: 18, color: AppTheme.accent)
-        : const Icon(Icons.chevron_right, size: 18, color: AppTheme.textSecondary),
-    );
   }
 }

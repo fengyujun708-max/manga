@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
-import '../../../app/theme/theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../plugins/source_data_service.dart';
 
@@ -82,13 +81,13 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded), onPressed: () => context.pop()),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2))
+          ? const Center(child: CircularProgressIndicator(color: DS.accent, strokeWidth: 2))
           : _error != null
               ? Center(
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Text(_error!, style: const TextStyle(color: Colors.white70, fontSize: 13)),
                     const SizedBox(height: 16),
-                    ElevatedButton(onPressed: _load, style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+                    ElevatedButton(onPressed: _load, style: ElevatedButton.styleFrom(backgroundColor: DS.accent),
                       child: const Text('重试', style: TextStyle(color: Colors.white))),
                   ]),
                 )
@@ -105,7 +104,7 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
                             fit: BoxFit.contain,
                             loadingBuilder: (ctx, child, progress) => progress == null
                                 ? child
-                                : const Center(child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2)),
+                                : const Center(child: CircularProgressIndicator(color: DS.accent, strokeWidth: 2)),
                             errorBuilder: (_, __, ___) => const Center(
                               child: Text('图片加载失败', style: TextStyle(color: Colors.white54, fontSize: 12)),
                             ),
