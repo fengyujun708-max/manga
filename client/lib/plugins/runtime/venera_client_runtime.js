@@ -2,9 +2,301 @@
 // 网络通过宿主 fetch（Dart 实现），HTML 解析用简易 DOM 引擎
 'use strict';
 
+// ===== 宿主缺失对象兜底（QuickJS 无 TextEncoder/setInterval/btoa 等）=====
+if (typeof globalThis.clearTimeout === 'undefined') { globalThis.clearTimeout = function () {}; }
+if (typeof globalThis.setTimeout === 'undefined') {
+  globalThis.setTimeout = function (fn, ms) { try { fn(); } catch (_) {} return 0; };
+}
+if (typeof globalThis.crypto === 'undefined') {
+  globalThis.crypto = {
+    randomUUID: function () { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); },
+    getRandomValues: function (arr) { for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256); return arr; },
+  };
+}
+if (typeof globalThis.setInterval === 'undefined') { globalThis.setInterval = function () { return 0; }; }
+if (typeof globalThis.clearInterval === 'undefined') { globalThis.clearInterval = function () {}; }
+if (typeof globalThis.TextEncoder === 'undefined') {
+  globalThis.TextEncoder = function () {};
+  globalThis.TextEncoder.prototype.encode = function (s) {
+    const bin = unescape(encodeURIComponent(String(s == null ? '' : s)));
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i) & 0xff;
+    return u8;
+  };
+}
+if (typeof globalThis.TextDecoder === 'undefined') {
+  globalThis.TextDecoder = function () {};
+  globalThis.TextDecoder.prototype.decode = function (u8) {
+    try {
+      let bin = '';
+      const arr = (u8 && u8.length !== undefined) ? u8 : [];
+      for (let i = 0; i < arr.length; i++) bin += String.fromCharCode(arr[i]);
+      return decodeURIComponent(escape(bin));
+    } catch (_) { return ''; }
+  };
+}
+if (typeof globalThis.btoa === 'undefined') {
+  const B64C = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  globalThis.btoa = function (s) {
+    s = String(s); let out = '', i;
+    for (i = 0; i < s.length; i += 3) {
+      const b = [s.charCodeAt(i), s.charCodeAt(i + 1), s.charCodeAt(i + 2)];
+      out += B64C[b[0] >> 2] + B64C[((b[0] & 3) << 4) | ((b[1] || 0) >> 4)] +
+             (isNaN(b[1]) ? '=' : B64C[((b[1] & 15) << 2) | ((b[2] || 0) >> 6)]) +
+             (isNaN(b[2]) ? '=' : B64C[b[2] & 63]);
+    }
+    return out;
+  };
+}
+if (typeof globalThis.atob === 'undefined') {
+  globalThis.atob = function (s) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    s = String(s).replace(/=+$/, ''); let out = '';
+    for (let i = 0; i < s.length; i += 4) {
+      const e = [chars.indexOf(s[i]), chars.indexOf(s[i + 1]), chars.indexOf(s[i + 2]), chars.indexOf(s[i + 3])];
+      out += String.fromCharCode((e[0] << 2) | (e[1] >> 4), ((e[1] & 15) << 4) | (e[2] >> 2), ((e[2] & 3) << 6) | e[3]);
+    }
+    return out;
+  };
+}
+
+
+
+// ===== URL / URLSearchParams 最小实现（QuickJS 缺失）=====
+if (typeof globalThis.URLSearchParams === 'undefined') {
+  globalThis.URLSearchParams = function (init) {
+    this._pairs = [];
+    if (typeof init === 'string') {
+      const q = init.replace(/^\?/, '');
+      const parts = q ? q.split('&') : [];
+      for (let i = 0; i < parts.length; i++) {
+        if (!parts[i]) continue;
+        const eq = parts[i].indexOf('=');
+        try {
+          this._pairs.push([decodeURIComponent(eq < 0 ? parts[i] : parts[i].slice(0, eq)),
+                            eq < 0 ? '' : decodeURIComponent(parts[i].slice(eq + 1))]);
+        } catch (_) {}
+      }
+    } else if (init && typeof init === 'object' && init._pairs) {
+      this._pairs = init._pairs.slice();
+    } else if (init && typeof init === 'object') {
+      const ks = Object.keys(init);
+      for (let i = 0; i < ks.length; i++) this._pairs.push([ks[i], String(init[ks[i]])]);
+    }
+  };
+  globalThis.URLSearchParams.prototype.append = function (k, v) { this._pairs.push([String(k), String(v)]); };
+  globalThis.URLSearchParams.prototype.get = function (k) { k = String(k); for (const p of this._pairs) if (p[0] === k) return p[1]; return null; };
+  globalThis.URLSearchParams.prototype.getAll = function (k) { k = String(k); return this._pairs.filter(p => p[0] === k).map(p => p[1]); };
+  globalThis.URLSearchParams.prototype.has = function (k) { return this.get(k) !== null; };
+  globalThis.URLSearchParams.prototype.set = function (k, v) {
+    k = String(k); const nv = String(v); const out = []; let seen = false;
+    for (const p of this._pairs) { if (p[0] === k) { if (!seen) { out.push([k, nv]); seen = true; } } else out.push(p); }
+    if (!seen) out.push([k, nv]); this._pairs = out;
+  };
+  globalThis.URLSearchParams.prototype.delete = function (k) { k = String(k); this._pairs = this._pairs.filter(p => p[0] !== k); };
+  globalThis.URLSearchParams.prototype.forEach = function (cb, self) { for (const p of this._pairs) cb.call(self || null, p[1], p[0], this); };
+  Object.defineProperty(globalThis.URLSearchParams.prototype, 'toString', { value: function () {
+    const enc = (s) => encodeURIComponent(s);
+    return this._pairs.map(p => enc(p[0]) + '=' + enc(p[1])).join('&');
+  }});
+  Object.defineProperty(globalThis.URLSearchParams.prototype, 'size', { get: function () { return this._pairs.length; }});
+}
+if (typeof globalThis.URL === 'undefined') {
+  const _URL_RE = /^([a-zA-Z][a-zA-Z0-9+.-]*:)\/\/([^@\/?#]*@)?([^\/?#]*)([^?#]*)(\?[^#]*)?(#.*)?/;
+  const _def = (obj, name, val) => Object.defineProperty(obj, name, { value: val, writable: false });
+  globalThis.URL = function (url, base) {
+    url = String(url == null ? '' : url);
+    let m = url.match(_URL_RE);
+    if (!m && base) { // 相对路径 → 与 base 合并
+      const bm = String(base).match(_URL_RE);
+      if (bm) {
+        let path = url.split('#')[0].split('?')[0];
+        const bpath = bm[4] || '/';
+        let merged;
+        if (path.startsWith('/')) merged = path;
+        else if (path === '') merged = bpath;
+        else merged = (bpath.slice(0, bpath.lastIndexOf('/') + 1) || '/') + path;
+        url = bm[1] + '//' + (bm[2] || '') + bm[3] + merged + (url.includes('?') ? url.slice(url.indexOf('?')).split('#')[0] : '') + (url.includes('#') ? url.slice(url.indexOf('#')) : '');
+        m = url.match(_URL_RE);
+      }
+    }
+    if (!m) throw new TypeError('Invalid URL: ' + url);
+    const auth = m[2] ? m[2].slice(0, -1) : '';
+    const hostPart = m[3];
+    const colon = hostPart.lastIndexOf(':');
+    const hasPort = colon > -1 && /^\d+$/.test(hostPart.slice(colon + 1));
+    _def(this, 'protocol', m[1]);
+    _def(this, 'username', auth.split(':')[0] || '');
+    _def(this, 'password', auth.split(':')[1] || '');
+    _def(this, 'hostname', hasPort ? hostPart.slice(0, colon) : hostPart);
+    _def(this, 'port', hasPort ? hostPart.slice(colon + 1) : '');
+    _def(this, 'pathname', m[4] || '/');
+    _def(this, 'search', m[5] || '');
+    _def(this, 'hash', m[6] || '');
+    _def(this, 'origin', m[1] + '//' + hostPart);
+    _def(this, 'host', hasPort ? hostPart : hostPart);
+    _def(this, 'href', url);
+    _def(this, 'searchParams', new globalThis.URLSearchParams(m[5] || ''));
+  };
+  globalThis.URL.prototype.toString = function () { return this.href; };
+  if (typeof globalThis.URL.createObjectURL !== 'function') globalThis.URL.createObjectURL = function () { return ''; };
+  if (typeof globalThis.URL.revokeObjectURL !== 'function') globalThis.URL.revokeObjectURL = function () {};
+}
+
+// ===== Venera 宿主全局（源 JS 常引用）=====
+globalThis.APP = {
+  locale: 'zh_CN',
+  platform: 'android',
+  packageName: 'com.manjie.app',
+  appVersion: '1.2.0',
+  version: '1.2.0',
+  channelId: 'dev',
+};
+
+// ===== fetch 兜底：flutter_js 未注入全局 fetch 时用 XMLHttpRequest 实现 =====
+if (typeof globalThis.fetch !== 'function') {
+  globalThis.fetch = function (url, options) {
+    options = options || {};
+    return new Promise(function (resolve, reject) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open(options.method || 'GET', url, true);
+        var hs = options.headers || {};
+        Object.keys(hs).forEach(function (k) { try { xhr.setRequestHeader(k, String(hs[k])); } catch (_) {} });
+        xhr.onload = function () {
+          var headers = { get: function (name) {
+            try { return xhr.getResponseHeader(name) || ''; } catch (_) { return ''; }
+          }};
+          resolve({ status: xhr.status || 0, ok: (xhr.status || 0) >= 200 && (xhr.status || 0) < 300,
+            text: function () { return Promise.resolve(String(xhr.responseText || '')); },
+            json: function () { return Promise.resolve(JSON.parse(xhr.responseText || 'null')); },
+            headers: headers });
+        };
+        xhr.onerror = function () { reject(new Error('XHR network error')); };
+        xhr.ontimeout = function () { reject(new Error('XHR timeout')); };
+        if (options.body !== undefined && options.body !== null && String(options.method || 'GET').toUpperCase() !== 'GET') {
+          xhr.send(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
+        } else { xhr.send(); }
+      } catch (e) { reject(e); }
+    });
+  };
+}
+
+// ===== AES-ECB 解密（纯 JS，AES-128/192/256 + PKCS7）=====
+const __aes = (function () {
+  const sbox = new Uint8Array(256), rsbox = new Uint8Array(256);
+  const S = '637c777bf26b6fc53001672bfed7ab76ca82c97dfa5947f0add4a2af9ca472c0b7fd9326363ff7cc34a5e5f171d8311504c723c31896059a071280e2eb27b27509832c1a1b6e5aa0523bd6b329e32f8453d100ed20fcb15b6acbbe394a4c58cfd0efaafb434d338545f9027f503c9fa851a3408f929d38f5bcb6da2110fff3d2cd0c13ec5f974417c4a77e3d645d197360814fdc222a908846eeb814de5e0bdbe0323a0a4906245cc2d3ac629195e479e7c8376d8dd54ea96c56f4ea657aae08ba78252e1ca6b4c6e8dd741f4bbd8b8a703eb5664803f60e613557b986c11d9ee1f8981169d98e949b1e87e9ce5528df8ca1890dbfe6426841992d0fb054bb16';
+  for (let i = 0; i < 256; i++) {
+    sbox[i] = parseInt(S.substr(i * 2, 2), 16);
+    rsbox[sbox[i]] = i;
+  }
+  // GF(2^8) 乘法
+  function xtime(a) { return ((a << 1) ^ ((a & 0x80) ? 0x1b : 0)) & 0xff; }
+  function mul(a, b) {
+    let r = 0;
+    while (b) { if (b & 1) r ^= a; a = xtime(a); b >>= 1; }
+    return r;
+  }
+  const RCON = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8];
+  // 密钥扩展 → 返回轮密钥数组（每轮16字节）
+  function expandKey(keyBytes) {
+    const nk = keyBytes.length / 4, nr = nk + 6;
+    const w = new Uint8Array(16 * (nr + 1));
+    w.set(keyBytes.subarray(0, 16 * ((nk * 4) / 16)));
+    let t = new Uint8Array(4);
+    for (let i = nk; i < 4 * (nr + 1); i++) {
+      const wi = i * 4;
+      if (i % nk === 0) {
+        t[0] = w[wi - 4]; t[1] = w[wi - 3]; t[2] = w[wi - 2]; t[3] = w[wi - 1];
+        const tmp = t[0]; t[0] = sbox[t[1]] ^ RCON[i / nk - 1]; t[1] = sbox[t[2]]; t[2] = sbox[t[3]]; t[3] = sbox[tmp];
+      } else if (nk > 6 && i % nk === 4) {
+        t[0] = sbox[w[wi - 4]]; t[1] = sbox[w[wi - 3]]; t[2] = sbox[w[wi - 2]]; t[3] = sbox[w[wi - 1]];
+      } else {
+        t[0] = w[wi - 4]; t[1] = w[wi - 3]; t[2] = w[wi - 2]; t[3] = w[wi - 1];
+      }
+      // W[i] = W[i-Nk] ^ g(W[i-1])
+      const p = wi - nk * 4;
+      w[wi]     = w[p]     ^ t[0];
+      w[wi + 1] = w[p + 1] ^ t[1];
+      w[wi + 2] = w[p + 2] ^ t[2];
+      w[wi + 3] = w[p + 3] ^ t[3];
+    }
+    return { rk: w, nr };
+  }
+  function decryptBlock(w, nr, inp, outOff, out) {
+    const st = new Uint8Array(16);
+    for (let i = 0; i < 16; i++) st[i] = inp[outOff + i];
+    function addRK(round) { const b = round * 16; for (let i = 0; i < 16; i++) st[i] ^= w[b + i]; }
+    function invShift() {
+      const t = new Uint8Array(16);
+      // 行 r（索引 r, r+4, r+8, r+12）右移 r
+      for (let c = 0; c < 4; c++) {
+        for (let r = 0; r < 4; r++) {
+          t[r + 4 * ((c + r) % 4)] = st[r + 4 * c];
+        }
+      }
+      st.set(t);
+    }
+    function invSub() { for (let i = 0; i < 16; i++) st[i] = rsbox[st[i]]; }
+    function invMix() {
+      for (let c = 0; c < 4; c++) {
+        const o = c * 4;
+        const a0 = st[o], a1 = st[o + 1], a2 = st[o + 2], a3 = st[o + 3];
+        st[o] = mul(a0, 14) ^ mul(a1, 11) ^ mul(a2, 13) ^ mul(a3, 9);
+        st[o + 1] = mul(a0, 9) ^ mul(a1, 14) ^ mul(a2, 11) ^ mul(a3, 13);
+        st[o + 2] = mul(a0, 13) ^ mul(a1, 9) ^ mul(a2, 14) ^ mul(a3, 11);
+        st[o + 3] = mul(a0, 11) ^ mul(a1, 13) ^ mul(a2, 9) ^ mul(a3, 14);
+      }
+    }
+    addRK(nr);
+    for (let round = nr - 1; round >= 1; round--) {
+      invShift(); invSub(); addRK(round); invMix();
+    }
+    invShift(); invSub(); addRK(0);
+    out.set(st, outOff);
+  }
+  return {
+    ecbDecrypt(bytes, keyUtf8) {
+      const keyBytes = [];
+      for (let i = 0; i < keyUtf8.length; i++) {
+        const c = keyUtf8.charCodeAt(i);
+        if (c > 255) throw new Error('aes key must be latin1');
+        keyBytes.push(c & 0xff);
+      }
+      if (![16, 24, 32].includes(keyBytes.length)) throw new Error('invalid aes key length ' + keyBytes.length);
+      const { rk, nr } = expandKey(new Uint8Array(keyBytes));
+      const nBlocks = Math.floor(bytes.length / 16);
+      if (nBlocks === 0) throw new Error('aes data too short');
+      const out = new Uint8Array(nBlocks * 16);
+      for (let b = 0; b < nBlocks; b++) decryptBlock(rk, nr, bytes, b * 16, out);
+      // PKCS7 unpad
+      const pad = out[out.length - 1];
+      if (pad >= 1 && pad <= 16 && nBlocks * 16 >= pad) return out.subarray(0, out.length - pad);
+      return out;
+    },
+  };
+})();
+
+function __aesEcbDecrypt(dataStr, keyStr) {
+  // dataStr 为 latin1 二进制串（decodeBase64 输出），还原为字节数组
+  const bytes = new Uint8Array(dataStr.length);
+  for (let i = 0; i < dataStr.length; i++) bytes[i] = dataStr.charCodeAt(i) & 0xff;
+  const dec = __aes.ecbDecrypt(bytes, keyStr);
+  // 还原为 latin1 字符串（供 decodeUtf8 转文本）
+  let s = '';
+  for (let i = 0; i < dec.length; i += 4096) s += String.fromCharCode.apply(null, dec.subarray(i, Math.min(i + 4096, dec.length)));
+  return s;
+}
+
 // ===== Convert（加密通过宿主桥接，结果存全局变量）=====
 function __cryptoJs(op) {
-  sendMessage('crypto', JSON.stringify(op));
+  // flutter_js QuickJS: sendMessage 同步且返回 Dart 回调的返回值
+  try {
+    const r = sendMessage('crypto', JSON.stringify(op));
+    if (typeof r === 'string') return r;
+  } catch (_) {}
+  // 兜底：旧模式（Dart 侧 evaluate 写全局变量）
   return globalThis.__cryptoResult || '';
 }
 const Convert = {
@@ -17,10 +309,11 @@ const Convert = {
   sha256(s) { return __cryptoJs({op:'sha256', data:String(s??'')}); },
   sha512(s) { return __cryptoJs({op:'sha512', data:String(s??'')}); },
   hmacString(keyBinary, msgBinary, algo = 'sha256') {
-    return __cryptoJs({op:'hmac', key:keyBinary, msg:String(msgBinary??''), algo:algo});
+    // Venera 官方语义：hmacString 返回 hex 字符串
+    return Convert.hexEncode(__cryptoJs({op:'hmac', key:keyBinary, msg:String(msgBinary??''), algo:algo}));
   },
   hmacSha256(key, msg) {
-    return __cryptoJs({op:'hmac', key:key, msg:String(msg??''), algo:'sha256'});
+    return Convert.hexEncode(__cryptoJs({op:'hmac', key:key, msg:String(msg??''), algo:'sha256'}));
   },
   hexEncode(s) {
     return Array.from(String(s ?? ''), (c) => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
@@ -31,7 +324,7 @@ const Convert = {
     return out;
   },
   decryptAesCbc(data, key, iv) { return data; },
-  decryptAesEcb(data, key) { return data; },
+  decryptAesEcb(data, key) { return __aesEcbDecrypt(String(data ?? ''), String(key ?? '')); },
   _toBuf(data) { return data; },
 };
 
@@ -54,36 +347,88 @@ function extractAttr(html, attr) {
 
 function matchSelectorPart(html, part) {
   if (!html) return [];
-  const out = [];
-  if (part.startsWith('#')) {
-    const id = part.slice(1);
-    const re = new RegExp(`<[a-zA-Z0-9]+[^>]*\\bid=["']${id}["'][^>]*>[\\s\\S]*?</[a-zA-Z0-9]+>|<[a-zA-Z0-9]+[^>]*\\bid=["']${id}["'][^>]*/?>`, 'gi');
-    let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-    return out;
-  }
-  if (part.startsWith('.')) {
-    const cls = part.slice(1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(`<[a-zA-Z0-9]+[^>]*class=["'][^"']*\\b${cls}\\b[^"']*["'][^>]*>(?:[\\s\\S]*?</[a-zA-Z0-9]+>)?`, 'gi');
-    let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-    return out;
-  }
-  const attrMatch = part.match(/^\[([a-zA-Z-]+)(?:=["']([^"']*)["'])?\]$/);
-  if (attrMatch) {
-    const attr = attrMatch[1];
-    const val = attrMatch[2];
-    let re;
-    if (val !== undefined) {
-      re = new RegExp(`<[a-zA-Z0-9]+[^>]*\\b${attr}=["']${val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>(?:[\\s\\S]*?<\\/[a-zA-Z0-9]+>)?`, 'gi');
-    } else {
-      re = new RegExp(`<[a-zA-Z0-9]+[^>]*\\b${attr}[^>]*>(?:[\\s\\S]*?<\\/[a-zA-Z0-9]+>)?`, 'gi');
+  const VOID_TAGS = /^(img|br|hr|input|meta|link|source|area|base|col|embed|track|wbr)$/i;
+
+  // 扫描匹配谓词的开标签并做深度配对提取完整元素
+  function scanOpen(tagPattern, pred) {
+    const res = [];
+    const re = new RegExp('<(' + tagPattern + ')((?:"[^"]*"|\'[^\']*\'|[^>])*)>', 'gi');
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const attrs = m[2] || '';
+      if (pred && !pred(attrs)) continue;
+      const tag = m[1];
+      const start = m.index;
+      let end;
+      if (/\/\s*>\s*$/.test(m[0]) || VOID_TAGS.test(tag)) {
+        end = start + m[0].length;
+      } else {
+        const pair = new RegExp('<(/?)' + tag + '(?=[\\s/>])((?:"[^"]*"|\'[^\']*\'|[^>])*)>', 'gi');
+        pair.lastIndex = start + m[0].length;
+        let depth = 1, p, found = false;
+        while ((p = pair.exec(html)) !== null) {
+          if (p[1] === '/') { depth--; if (depth <= 0) { end = p.index + p[0].length; found = true; break; } }
+          else if (!/\/\s*>\s*$/.test(p[0])) depth++;
+        }
+        if (!found) {
+          // 源站存在未闭合标签：以下一个同类开标签为边界兜底，避免吞掉整个文档
+          const nxt = new RegExp('<' + tag + '(?=[\\s/>])', 'gi');
+          nxt.lastIndex = start + m[0].length;
+          const nm = nxt.exec(html);
+          end = nm ? nm.index : html.length;
+        }
+      }
+      res.push(html.slice(start, end));
+      re.lastIndex = end;
     }
-    let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-    return out;
+    return res;
   }
-  const tag = part === '*' ? '[a-zA-Z0-9]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`<${tag}[^>]*>(?:[\\s\\S]*?<\\/${tag}>)?`, 'gi');
-  let m; while ((m = re.exec(html)) !== null) out.push(m[0]);
-  return out;
+
+  function getAttrVal(attrs, name) {
+    const mm = attrs.match(new RegExp('\\b' + name + '\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\')', 'i'));
+    return mm ? (mm[1] !== undefined ? mm[1] : mm[2]) : null;
+  }
+  function classOk(attrs, needCls) {
+    if (!needCls.length) return true;
+    const cv = getAttrVal(attrs, 'class');
+    if (cv === null) return false;
+    const have = ' ' + cv + ' ';
+    return needCls.every(function (c) { return have.indexOf(' ' + c + ' ') !== -1; });
+  }
+  function attrCheck(attrs, aName, aOp, aVal) {
+    if (!aName) return true;
+    const rawAttr = new RegExp('\\b' + aName + '(?=[\\s=>/]|$)', 'i').test(attrs);
+    if (!aOp) return rawAttr;
+    const v = getAttrVal(attrs, aName);
+    if (v === null) return false;
+    switch (aOp) {
+      case '=': return v === aVal;
+      case '^=': return v.slice(0, aVal.length) === aVal;
+      case '$=': return v.slice(-aVal.length) === aVal;
+      case '*=': return v.indexOf(aVal) !== -1;
+      case '~=': return (' ' + v + ' ').indexOf(' ' + aVal + ' ') !== -1;
+      default: return false;
+    }
+  }
+
+  if (part.charAt(0) === '#') {
+    const id = part.slice(1);
+    return scanOpen('[a-zA-Z0-9]+', function (a) { return getAttrVal(a, 'id') === id; });
+  }
+  if (part.charAt(0) === '.') {
+    const needCls = [part.slice(1)];
+    return scanOpen('[a-zA-Z0-9]+', function (a) { return classOk(a, needCls); });
+  }
+  const cm = part.match(/^([a-zA-Z][a-zA-Z0-9]*|\*)?(?:\.([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)*))?(?:\[([a-zA-Z-]+)\s*(?:([\*\^\$~]?=)\s*(?:"([^"]*)"|'([^']*)'|([^\]\s"']+)))?\])?$/);
+  if (cm && (cm[1] || cm[2] || cm[3])) {
+    let tp = (!cm[1] || cm[1] === '*') ? '[a-zA-Z0-9]+' : cm[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const needCls = cm[2] ? cm[2].split('.') : [];
+    const aName = cm[3], aOp = cm[4] || '';
+    const aVal = cm[5] !== undefined ? cm[5] : (cm[6] !== undefined ? cm[6] : cm[7]);
+    return scanOpen(tp, function (a) { return classOk(a, needCls) && attrCheck(a, aName, aOp, aVal); });
+  }
+  const tag = (part === '*') ? '[a-zA-Z0-9]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return scanOpen(tag, null);
 }
 
 function parseSelector(html, selector) {
@@ -92,7 +437,7 @@ function parseSelector(html, selector) {
   const results = [];
   const ors = selector.split(',').map(s => s.trim()).filter(Boolean);
   for (const or of ors) {
-    const parts = or.split(/\s+/);
+    const parts = or.split(/\s+/).filter(p => p && p !== '>');
     let current = [html];
     for (const part of parts) {
       const next = [];
@@ -114,7 +459,8 @@ class SimpleElement {
     this.attributes = {};
     const attrRe = /([a-zA-Z-]+)=["']([^"']*)["']/g;
     let m; while ((m = attrRe.exec(this._html)) !== null) this.attributes[m[1]] = m[2];
-    this.textContent = htmlToText(this._html);
+    const rawTag = this._html.match(/^\s*<([a-zA-Z0-9]+)[^>]*>([\s\S]*?)<\/\1>\s*$/i);
+    this.textContent = (rawTag && /^(script|style|pre|textarea)$/i.test(rawTag[1])) ? rawTag[2] : htmlToText(this._html);
     this.text = this.textContent;
     this.innerHTML = this._html;
   }
@@ -181,10 +527,13 @@ const Network = {
     }
     let res;
     try {
+      // Venera 官方语义：非字符串 body 自动 JSON 序列化
+      let outBody = body;
+      if (body !== undefined && body !== null && typeof body === 'object') outBody = JSON.stringify(body);
       res = await fetch(url, {
         method: method.toUpperCase(),
         headers: h,
-        body: (body !== undefined && body !== null && method.toUpperCase() !== 'GET') ? body : undefined,
+        body: (outBody !== undefined && outBody !== null && method.toUpperCase() !== 'GET') ? outBody : undefined,
         redirect: 'follow',
       });
     } catch (e) {
@@ -234,11 +583,19 @@ const Network = {
     if (typeof url === 'string' && /^(GET|POST|PUT|PATCH|DELETE|HEAD)$/i.test(url) && typeof arguments[1] === 'string') {
       method = url.toUpperCase(); realUrl = arguments[1]; hdrs = arguments[2] || {};
     }
-    const res = await this.request(method, realUrl, hdrs, null);
-    const bin = typeof res.body === 'string'
-      ? Uint8Array.from(atob(btoa(unescape(encodeURIComponent(res.body)))).split(''), (c) => c.charCodeAt(0))
-      : (res.body || new Uint8Array(0));
-    return { status: res.status, bytes: bin, body: bin, headers: res.headers || {} };
+    // 二进制路径：直接读 arrayBuffer（DataView/图片解析需要真字节）
+    try {
+      const h = {};
+      for (const [k, v] of Object.entries(hdrs || {})) {
+        if (v !== undefined && v !== null) h[k] = String(v);
+      }
+      const res2 = await fetch(realUrl, { method, headers: h, redirect: 'follow' });
+      const ab = await res2.arrayBuffer();
+      const bin = new Uint8Array(ab);
+      return { status: res2.status, bytes: bin, body: bin, headers: {} };
+    } catch (e) {
+      return { status: 0, bytes: new Uint8Array(0), body: new Uint8Array(0), headers: {}, error: String(e) };
+    }
   },
   getCookies(url) {
     try { const u = new URL(url); return Network._cookies.get(u.hostname) || []; } catch { return []; }
@@ -286,6 +643,10 @@ class ComicSource {
   saveData(key, val) { this._data[key] = val; }
   deleteData(key) { delete this._data[key]; }
   loadSetting(key) {
+    try {
+      const ov = globalThis.__settingsOverride__;
+      if (ov && ov[key] !== undefined && ov[key] !== null) return ov[key];
+    } catch (_) {}
     if (this._settings[key] !== undefined && this._settings[key] !== null) return this._settings[key];
     if (this.settings && this.settings[key] && this.settings[key].default !== undefined) return this.settings[key].default;
     return undefined;
@@ -302,11 +663,11 @@ class ComicSource {
 // 注意：QuickJS 中直接运行，无法用 vm。我们用全局注册表模式：
 // executeSource 在 host 侧调用（Dart 桥接），这里定义工厂
 
-// base64 注入入口：避免宿主字符串转义损坏（\r、引号等）
+// base64 注入入口（宿主传整份源码，避免字符串转义损坏）
 globalThis.__executeSourceB64__ = async function (b64, sourceId) {
   globalThis.__sourceLoadError__ = null;
   try {
-    const code = Convert.decodeBase64(b64);
+    const code = Convert.decodeUtf8(Convert.decodeBase64(b64));
     await globalThis.__executeSource__(code, sourceId);
     if (!globalThis.__sources__ || !globalThis.__sources__[sourceId]) {
       globalThis.__sourceLoadError__ = '执行完成但源未注册（类检测失败或 init 抛错）';
@@ -316,60 +677,44 @@ globalThis.__executeSourceB64__ = async function (b64, sourceId) {
   }
 };
 
-// 宿主缺失对象的兜底（QuickJS 可能缺 TextEncoder/setInterval 等）
-if (typeof globalThis.TextEncoder === 'undefined') {
-  globalThis.TextEncoder = function () {};
-  globalThis.TextEncoder.prototype.encode = function (s) {
-    const bin = unescape(encodeURIComponent(String(s ?? '')));
-    const u8 = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i) & 0xff;
-    return u8;
-  };
-}
-if (typeof globalThis.TextDecoder === 'undefined') {
-  globalThis.TextDecoder = function () {};
-  globalThis.TextDecoder.prototype.decode = function (u8) {
-    try {
-      let bin = '';
-      const arr = (u8 && u8.length !== undefined) ? u8 : [];
-      for (let i = 0; i < arr.length; i++) bin += String.fromCharCode(arr[i]);
-      return decodeURIComponent(escape(bin));
-    } catch (_) { return ''; }
-  };
-}
-if (typeof globalThis.setInterval === 'undefined') {
-  globalThis.setInterval = function (fn, ms) { return 0; };
-}
-if (typeof globalThis.clearInterval === 'undefined') {
-  globalThis.clearInterval = function () {};
-}
-
-globalThis.__executeSource__ = async function (jsCode, sourceId) {  const sandboxProto = {
+globalThis.__executeSource__ = async function (jsCode, sourceId) {
+  const sandboxProto = {
     ComicSource, Network, Convert, randomInt,
     Comic, ComicDetails, ComicList, Cookie, PageJumpTarget, Comment, HtmlDocument,
-    APP: { version: '9.9.9' },
     console, setTimeout, clearTimeout, setInterval, clearInterval,
     TextEncoder, TextDecoder, URLSearchParams, URL,
     createUuid: () => (globalThis.crypto && globalThis.crypto.randomUUID ? globalThis.crypto.randomUUID() : 'id-' + randomInt(10000, 99999)),
-    btoa: (s) => btoa(String(s)),
-    atob: (s) => atob(String(s)),
+    btoa: (s) => {
+      const S = String(s); const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      let out = '';
+      for (let i = 0; i < S.length; i += 3) {
+        const b = [S.charCodeAt(i), S.charCodeAt(i + 1), S.charCodeAt(i + 2)];
+        out += CH[b[0] >> 2] + CH[((b[0] & 3) << 4) | ((isNaN(b[1]) ? 0 : b[1]) >> 4)] + (isNaN(b[1]) ? '=' : CH[((b[1] & 15) << 2) | ((isNaN(b[2]) ? 0 : b[2]) >> 6)]) + (isNaN(b[2]) ? '=' : CH[b[2] & 63]);
+      }
+      return out;
+    },
+    atob: (s) => {
+      const S = String(s).replace(/[^A-Za-z0-9+\/=]/g, ''); const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      let out = '';
+      for (let i = 0; i < S.length; i += 4) {
+        const e = [CH.indexOf(S[i]), CH.indexOf(S[i + 1]), CH.indexOf(S[i + 2]), CH.indexOf(S[i + 3])];
+        out += String.fromCharCode((e[0] << 2) | ((e[1] === -1 ? 0 : e[1]) >> 4));
+        if (e[2] !== -1 && S[i + 2] !== '=') out += String.fromCharCode(((e[1] & 15) << 4) | (e[2] >> 2));
+        if (e[3] !== -1 && S[i + 3] !== '=') out += String.fromCharCode(((e[2] & 3) << 6) | e[3]);
+      }
+      return out;
+    },
     Date, Math, JSON, Promise, RegExp, String, Number, Boolean, Array, Object, Map, Set, Error,
     encodeURIComponent, decodeURIComponent, encodeURI, decodeURI,
   };
   // 全局挂载（QuickJS 中 globalThis 即全局）
   Object.assign(globalThis, sandboxProto);
 
-  // 执行源代码（捕获语法/运行错误，供宿主读取）
-  globalThis.__sourceLoadError__ = null;
+  // 执行源代码
   const classMatch = jsCode.match(/class\s+([A-Za-z_$][\w$]*)\s+extends\s+ComicSource/);
   let execCode = jsCode;
   if (classMatch) execCode += `\n;globalThis.__sourceClass = ${classMatch[1]};`;
-  try {
-    eval(execCode);
-  } catch (e) {
-    globalThis.__sourceLoadError__ = String(e && e.message ? e.message : e) + (e && e.stack ? ' | ' + String(e.stack).split('\n')[1] : '');
-    throw e;
-  }
+  try { eval(execCode); } catch (e) { globalThis.__sourceLoadError__ = 'eval: ' + String(e && e.message ? e.message : e); throw e; }
 
   let SourceClass = globalThis.__sourceClass || null;
   if (!SourceClass) {
@@ -522,3 +867,9 @@ globalThis.__pages__ = async function (sourceId, comicId, epId) {
   }
   return { pages: [] };
 };
+
+// ===== 显式挂载到全局（保证跨 script 可见）=====
+try {
+  const __g = globalThis;
+  ['SimpleElement','SimpleDocument','HtmlDocument','Comic','ComicDetails','ComicList','Cookie','PageJumpTarget','Comment','ComicSource','parseSelector','matchSelectorPart','htmlToText','extractAttr','randomInt','Network','Convert'].forEach(n => { if (__g[n] === undefined) { try { __g[n] = eval(n); } catch (_) {} } });
+} catch (_) {}

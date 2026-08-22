@@ -35,8 +35,12 @@ class SourceDataService {
     try {
       final dir = await SourceInstaller.ensureSourceDir();
       if (dir == null) return false;
-      final file = File('$dir/$sourceId.js');
-      if (!await file.exists()) return false;
+      var file = File('$dir/$sourceId.js');
+      if (!await file.exists()) {
+        final lower = File('$dir/${sourceId.toLowerCase()}.js');
+        if (!await lower.exists()) return false;
+        file = lower;
+      }
       final code = await file.readAsString();
       final err = await engine.executeSource(sourceId, code, settings: SourceRoutesService.instance.getOverrides(sourceId));
       if (err != null) {

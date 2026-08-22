@@ -667,7 +667,7 @@ class ComicSource {
 globalThis.__executeSourceB64__ = async function (b64, sourceId) {
   globalThis.__sourceLoadError__ = null;
   try {
-    const code = Convert.decodeBase64(b64);
+    const code = Convert.decodeUtf8(Convert.decodeBase64(b64));
     await globalThis.__executeSource__(code, sourceId);
     if (!globalThis.__sources__ || !globalThis.__sources__[sourceId]) {
       globalThis.__sourceLoadError__ = '执行完成但源未注册（类检测失败或 init 抛错）';

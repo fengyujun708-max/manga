@@ -130,8 +130,9 @@ class _MarketCardState extends State<_MarketCard> {
   Future<void> _check() async {
     final prefs = await SharedPreferences.getInstance();
     final json = prefs.getString('installed_sources') ?? '[]';
+    final want = widget.manifest.id.toLowerCase();
     final ok = (jsonDecode(json) as List).any((e) {
-      try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == widget.manifest.id; } catch (_) { return false; }
+      try { return SourceManifest.fromJson(e as Map<String, dynamic>).id.toLowerCase() == want; } catch (_) { return false; }
     });
     if (mounted) setState(() => _installed = ok);
   }
@@ -144,7 +145,7 @@ class _MarketCardState extends State<_MarketCard> {
       final api = GetIt.instance<ApiClient>();
       final res = await api.get('/sources/${widget.manifest.id}');
       if (res.statusCode == 200 && res.data != null) {
-        final m = SourceManifest.fromJson(res.data as Map<String, dynamic>);
+        var m = SourceManifest.fromJson(res.data as Map<String, dynamic>);
         final dir = await SourceInstaller.ensureSourceDir();
         final jsOk = dir != null && await SourceInstaller.install(m, dir);
         if (!jsOk) {
@@ -167,6 +168,7 @@ class _MarketCardState extends State<_MarketCard> {
         final json = prefs.getString('installed_sources') ?? '[]';
         final list = jsonDecode(json) as List;
         if (!list.any((e) { try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == m.id; } catch (_) { return false; } })) {
+          if (m.id != m.id.toLowerCase()) m = SourceManifest.fromJson({...m.toJson(), 'id': m.id.toLowerCase()});
           list.add(m.toJson());
           await prefs.setString('installed_sources', jsonEncode(list));
         }

@@ -66,7 +66,7 @@ class SourceSetupDialog {
     for (var i = 0; i < total; i++) {
       final id = SourceInstaller.vettedSources[i];
       onProgress(i, total, _names[id] ?? id);
-      final m = _manifest(id);
+      final m = _manifest(id.toLowerCase());
       if (await SourceInstaller.install(m, dir)) {
         if (!list.any((e) { try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == id; } catch (_) { return false; } })) {
           list.add(m.toJson());
