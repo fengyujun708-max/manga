@@ -65,7 +65,8 @@ class VeneraEngine {
   }
 
   /// 执行源 JS（每次重置全局，保证隔离）
-  Future<bool> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
+  /// 返回 null=成功；否则返回错误信息
+  Future<String?> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
     await init();
     // 注入宿主侧设置覆盖（线路选择等）
     if (settings != null && settings.isNotEmpty) {
@@ -77,19 +78,22 @@ class VeneraEngine {
     _runtime!.evaluate('''
       try { delete globalThis.__sourceClass; } catch(_) {}
       try { delete globalThis.__sources__; } catch(_) {}
+      try { delete globalThis.__sourceLoadError__; } catch(_) {}
     ''');
-    // 通过 __executeSource__ 工厂执行（含实例化 + init）
-    final esc = jsCode.replaceAll('\\', '\\\\').replaceAll("'", "\\'").replaceAll('\n', '\\n');
-    _runtime!.evaluate("globalThis.__executeSource__('" + esc + "', '" + sourceId + "');");
-    // 泵送 Promise 直到源注册
+    // base64 注入，避免字符串转义损坏源代码
+    final b64 = base64.encode(utf8.encode(jsCode));
+    _runtime!.evaluate("globalThis.__executeSourceB64__('$b64', '$sourceId');");
+    // 泵送 Promise 直到源注册（用字符串比较，规避对象转换差异）
     for (var i = 0; i < 300; i++) {
       _runtime!.executePendingJob();
-      final r = _runtime!.evaluate('globalThis.__sources__');
-      final m = r.rawResult;
-      if (m is Map && m[sourceId] != null) return true;
+      final r = _runtime!.evaluate('JSON.stringify(Object.keys(globalThis.__sources__ || {}))');
+      if (r.rawResult.toString().contains('"$sourceId"')) return null;
       await Future.delayed(const Duration(milliseconds: 30));
     }
-    return false;
+    // 超时未注册 → 取出 runtime 捕获的错误
+    final err = _runtime!.evaluate('globalThis.__sourceLoadError__');
+    final msg = err.rawResult.toString();
+    return (msg == 'null' || msg.isEmpty) ? '源加载超时（未找到 ComicSource 或 init 卡住）' : msg;
   }
 
   /// 求值 JS 并等待 Promise 完成

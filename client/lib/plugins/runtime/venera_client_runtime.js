@@ -302,8 +302,18 @@ class ComicSource {
 // 注意：QuickJS 中直接运行，无法用 vm。我们用全局注册表模式：
 // executeSource 在 host 侧调用（Dart 桥接），这里定义工厂
 
-globalThis.__executeSource__ = async function (jsCode, sourceId) {
-  const sandboxProto = {
+// base64 注入入口：避免宿主字符串转义损坏（\r、引号等）
+globalThis.__executeSourceB64__ = function (b64, sourceId) {
+  try {
+    const code = Convert.decodeBase64(b64);
+    const p = globalThis.__executeSource__(code, sourceId);
+    return { ok: true, promise: true };
+  } catch (e) {
+    return { ok: false, error: String(e && e.message ? e.message : e) };
+  }
+};
+
+globalThis.__executeSource__ = async function (jsCode, sourceId) {  const sandboxProto = {
     ComicSource, Network, Convert, randomInt,
     Comic, ComicDetails, ComicList, Cookie, PageJumpTarget, Comment, HtmlDocument,
     APP: { version: '9.9.9' },
@@ -318,11 +328,17 @@ globalThis.__executeSource__ = async function (jsCode, sourceId) {
   // 全局挂载（QuickJS 中 globalThis 即全局）
   Object.assign(globalThis, sandboxProto);
 
-  // 执行源代码
+  // 执行源代码（捕获语法/运行错误，供宿主读取）
+  globalThis.__sourceLoadError__ = null;
   const classMatch = jsCode.match(/class\s+([A-Za-z_$][\w$]*)\s+extends\s+ComicSource/);
   let execCode = jsCode;
   if (classMatch) execCode += `\n;globalThis.__sourceClass = ${classMatch[1]};`;
-  eval(execCode);
+  try {
+    eval(execCode);
+  } catch (e) {
+    globalThis.__sourceLoadError__ = String(e && e.message ? e.message : e) + (e && e.stack ? ' | ' + String(e.stack).split('\n')[1] : '');
+    throw e;
+  }
 
   let SourceClass = globalThis.__sourceClass || null;
   if (!SourceClass) {

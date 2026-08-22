@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../../../plugins/source_data_service.dart';
+import '../../../plugins/source_installer.dart';
 
 /// 源引擎分层自诊断：JS 引擎 → 加密桥 → 网络层 → 完整源执行
 class SourceDiagPage extends StatefulWidget {
@@ -59,16 +60,23 @@ class _SourceDiagPageState extends State<SourceDiagPage> {
 
     // 4. 完整链路：copy_manga explore
     try {
-      final has = await svc.hasLocalJs('copy_manga');
-      if (!has) {
-        log('④ copy_manga 全链路', '❌ 本地无 copy_manga.js，请先在市场安装');
+      final dir = await SourceInstaller.ensureSourceDir();
+      final f = File('$dir/copy_manga.js');
+      if (f == null || !await f.exists()) {
+        log('④ copy_manga 全链路', '❌ 本地无 copy_manga.js，请先一键安装源');
       } else {
-        final res = await svc.explore('copy_manga');
-        if (res['error'] != null) {
-          log('④ copy_manga 全链路', '❌ ${res['error']}');
+        final code = await f.readAsString();
+        final err = await engine.executeSource('copy_manga', code);
+        if (err != null) {
+          log('④ copy_manga 全链路', '❌ 源执行失败: $err');
         } else {
-          final secs = res['sections'] as List? ?? [];
-          log('④ copy_manga 全链路', '✅ ${secs.length} 个板块加载成功');
+          final res = await svc.explore('copy_manga');
+          if (res['error'] != null) {
+            log('④ copy_manga 全链路', '❌ ${res['error']}');
+          } else {
+            final secs = res['sections'] as List? ?? [];
+            log('④ copy_manga 全链路', '✅ ${secs.length} 个板块加载成功');
+          }
         }
       }
     } catch (e) {

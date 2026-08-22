@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/material.dart' show debugPrint;
 import 'source_installer.dart';
 import 'source_routes_service.dart';
 import 'runtime/venera_engine.dart';
@@ -37,7 +38,11 @@ class SourceDataService {
       final file = File('$dir/$sourceId.js');
       if (!await file.exists()) return false;
       final code = await file.readAsString();
-      await engine.executeSource(sourceId, code, settings: SourceRoutesService.instance.getOverrides(sourceId));
+      final err = await engine.executeSource(sourceId, code, settings: SourceRoutesService.instance.getOverrides(sourceId));
+      if (err != null) {
+        debugPrint('[SourceLoad] $sourceId failed: $err');
+        return false;
+      }
       return true;
     } catch (_) {
       return false;
