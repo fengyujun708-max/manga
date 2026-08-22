@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/widgets/comic_widgets.dart';
+import '../../../app/widgets/comic_widgets.dart' hide EmptyState;
 import '../../../plugins/source_data_service.dart';
 import '../../../app/ds.dart';
 

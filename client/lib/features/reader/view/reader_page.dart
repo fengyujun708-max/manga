@@ -348,7 +348,7 @@ class _ReaderPageState extends State<ReaderPage> {
                   final isCurrent = i == _currentChapterIndex;
                   return ListTile(
                     selected: isCurrent,
-                    selectedTileColor: const DS.accent.withValues(alpha: 0.15),
+                    selectedTileColor: DS.accent.withValues(alpha: 0.15),
                     title: Text(
                       widget.chapters[i].title,
                       style: TextStyle(

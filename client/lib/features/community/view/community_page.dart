@@ -27,7 +27,7 @@ class _CommunityPageState extends State<CommunityPage> {
             title: Row(children: [
               const Text('社区', style: DS.headline),
               const Spacer(),
-              _iconBtn(Icons.edit_square_rounded, () => context.push('/community/create')),
+              _iconBtn(Icons.edit_rounded, () => context.push('/community/create')),
             ]),
           ),
 

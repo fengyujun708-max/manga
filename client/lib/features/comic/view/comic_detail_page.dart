@@ -64,7 +64,7 @@ class _ComicDetailPageState extends State<ComicDetailPage> {
             pinned: true, stretch: true,
             backgroundColor: DS.bg, elevation: 0,
             leading: _circleBtn(Icons.arrow_back_ios_new_rounded, () => Navigator.of(context).pop()),
-            actions: [_circleBtn(Icons.share_rounded, ())],
+            actions: [_circleBtn(Icons.share_rounded, () {})],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(fit: StackFit.expand, children: [
                 // 封面占位背景
