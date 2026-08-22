@@ -56,7 +56,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/venera_client_runtime.js
-    - assets/sources/
     - assets/images/
     - assets/fonts/
     - assets/i18n/

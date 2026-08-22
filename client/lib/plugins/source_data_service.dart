@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/services.dart' show rootBundle;
 import 'source_installer.dart';
 import 'source_routes_service.dart';
 import 'runtime/venera_engine.dart';
@@ -35,20 +34,8 @@ class SourceDataService {
     try {
       final dir = await SourceInstaller.ensureSourceDir();
       if (dir == null) return false;
-      var file = File('$dir/$sourceId.js');
-      if (!await file.exists()) {
-        // 自愈：从 APK 内置资产补装（旧安装缺失/损坏时无需手动重装）
-        try {
-          final bundled = await rootBundle.loadString('assets/sources/${sourceId.toLowerCase()}.js');
-          if (bundled.contains('ComicSource')) {
-            await file.writeAsString(bundled);
-          } else {
-            return false;
-          }
-        } catch (_) {
-          return false;
-        }
-      }
+      final file = File('$dir/$sourceId.js');
+      if (!await file.exists()) return false;
       final code = await file.readAsString();
       await engine.executeSource(sourceId, code, settings: SourceRoutesService.instance.getOverrides(sourceId));
       return true;
