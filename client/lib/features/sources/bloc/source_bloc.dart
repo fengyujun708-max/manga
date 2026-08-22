@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../plugins/manga_source.dart' hide SourceManager;
 import '../../../plugins/source_manager.dart';
+import '../../../plugins/vetted_sources.dart';
 import '../../../core/network/api_client.dart';
 import 'source_event.dart';
 import 'source_state.dart';
@@ -94,6 +95,7 @@ class SourceBloc extends Bloc<SourceEvent, SourceState> {
       final data = response.data;
       final marketSources = ((data?['sources'] as List?) ?? [])
           .map((e) => SourceManifest.fromJson(e as Map<String, dynamic>))
+          .where((m) => VettedSources.ids.contains(m.id.toLowerCase()))
           .toList();
       emit(SourceMarketLoaded(sources: marketSources));
     } catch (e) {
