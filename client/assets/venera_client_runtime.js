@@ -2,6 +2,137 @@
 // 网络通过宿主 fetch（Dart 实现），HTML 解析用简易 DOM 引擎
 'use strict';
 
+// ===== 宿主缺失对象兜底（QuickJS 无 TextEncoder/setInterval/btoa 等）=====
+if (typeof globalThis.setInterval === 'undefined') { globalThis.setInterval = function () { return 0; }; }
+if (typeof globalThis.clearInterval === 'undefined') { globalThis.clearInterval = function () {}; }
+if (typeof globalThis.TextEncoder === 'undefined') {
+  globalThis.TextEncoder = function () {};
+  globalThis.TextEncoder.prototype.encode = function (s) {
+    const bin = unescape(encodeURIComponent(String(s == null ? '' : s)));
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i) & 0xff;
+    return u8;
+  };
+}
+if (typeof globalThis.TextDecoder === 'undefined') {
+  globalThis.TextDecoder = function () {};
+  globalThis.TextDecoder.prototype.decode = function (u8) {
+    try {
+      let bin = '';
+      const arr = (u8 && u8.length !== undefined) ? u8 : [];
+      for (let i = 0; i < arr.length; i++) bin += String.fromCharCode(arr[i]);
+      return decodeURIComponent(escape(bin));
+    } catch (_) { return ''; }
+  };
+}
+if (typeof globalThis.btoa === 'undefined') {
+  const B64C = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  globalThis.btoa = function (s) {
+    s = String(s); let out = '', i;
+    for (i = 0; i < s.length; i += 3) {
+      const b = [s.charCodeAt(i), s.charCodeAt(i + 1), s.charCodeAt(i + 2)];
+      out += B64C[b[0] >> 2] + B64C[((b[0] & 3) << 4) | ((b[1] || 0) >> 4)] +
+             (isNaN(b[1]) ? '=' : B64C[((b[1] & 15) << 2) | ((b[2] || 0) >> 6)]) +
+             (isNaN(b[2]) ? '=' : B64C[b[2] & 63]);
+    }
+    return out;
+  };
+}
+if (typeof globalThis.atob === 'undefined') {
+  globalThis.atob = function (s) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    s = String(s).replace(/=+$/, ''); let out = '';
+    for (let i = 0; i < s.length; i += 4) {
+      const e = [chars.indexOf(s[i]), chars.indexOf(s[i + 1]), chars.indexOf(s[i + 2]), chars.indexOf(s[i + 3])];
+      out += String.fromCharCode((e[0] << 2) | (e[1] >> 4), ((e[1] & 15) << 4) | (e[2] >> 2), ((e[2] & 3) << 6) | e[3]);
+    }
+    return out;
+  };
+}
+
+
+
+// ===== URL / URLSearchParams 最小实现（QuickJS 缺失）=====
+if (typeof globalThis.URLSearchParams === 'undefined') {
+  globalThis.URLSearchParams = function (init) {
+    this._pairs = [];
+    if (typeof init === 'string') {
+      const q = init.replace(/^\?/, '');
+      const parts = q ? q.split('&') : [];
+      for (let i = 0; i < parts.length; i++) {
+        if (!parts[i]) continue;
+        const eq = parts[i].indexOf('=');
+        try {
+          this._pairs.push([decodeURIComponent(eq < 0 ? parts[i] : parts[i].slice(0, eq)),
+                            eq < 0 ? '' : decodeURIComponent(parts[i].slice(eq + 1))]);
+        } catch (_) {}
+      }
+    } else if (init && typeof init === 'object' && init._pairs) {
+      this._pairs = init._pairs.slice();
+    } else if (init && typeof init === 'object') {
+      const ks = Object.keys(init);
+      for (let i = 0; i < ks.length; i++) this._pairs.push([ks[i], String(init[ks[i]])]);
+    }
+  };
+  globalThis.URLSearchParams.prototype.append = function (k, v) { this._pairs.push([String(k), String(v)]); };
+  globalThis.URLSearchParams.prototype.get = function (k) { k = String(k); for (const p of this._pairs) if (p[0] === k) return p[1]; return null; };
+  globalThis.URLSearchParams.prototype.getAll = function (k) { k = String(k); return this._pairs.filter(p => p[0] === k).map(p => p[1]); };
+  globalThis.URLSearchParams.prototype.has = function (k) { return this.get(k) !== null; };
+  globalThis.URLSearchParams.prototype.set = function (k, v) {
+    k = String(k); const nv = String(v); const out = []; let seen = false;
+    for (const p of this._pairs) { if (p[0] === k) { if (!seen) { out.push([k, nv]); seen = true; } } else out.push(p); }
+    if (!seen) out.push([k, nv]); this._pairs = out;
+  };
+  globalThis.URLSearchParams.prototype.delete = function (k) { k = String(k); this._pairs = this._pairs.filter(p => p[0] !== k); };
+  globalThis.URLSearchParams.prototype.forEach = function (cb, self) { for (const p of this._pairs) cb.call(self || null, p[1], p[0], this); };
+  Object.defineProperty(globalThis.URLSearchParams.prototype, 'toString', { value: function () {
+    const enc = (s) => encodeURIComponent(s);
+    return this._pairs.map(p => enc(p[0]) + '=' + enc(p[1])).join('&');
+  }});
+  Object.defineProperty(globalThis.URLSearchParams.prototype, 'size', { get: function () { return this._pairs.length; }});
+}
+if (typeof globalThis.URL === 'undefined') {
+  const _URL_RE = /^([a-zA-Z][a-zA-Z0-9+.-]*:)\/\/([^@\/?#]*@)?([^\/?#]*)([^?#]*)(\?[^#]*)?(#.*)?/;
+  const _def = (obj, name, val) => Object.defineProperty(obj, name, { value: val, writable: false });
+  globalThis.URL = function (url, base) {
+    url = String(url == null ? '' : url);
+    let m = url.match(_URL_RE);
+    if (!m && base) { // 相对路径 → 与 base 合并
+      const bm = String(base).match(_URL_RE);
+      if (bm) {
+        let path = url.split('#')[0].split('?')[0];
+        const bpath = bm[4] || '/';
+        let merged;
+        if (path.startsWith('/')) merged = path;
+        else if (path === '') merged = bpath;
+        else merged = (bpath.slice(0, bpath.lastIndexOf('/') + 1) || '/') + path;
+        url = bm[1] + '//' + (bm[2] || '') + bm[3] + merged + (url.includes('?') ? url.slice(url.indexOf('?')).split('#')[0] : '') + (url.includes('#') ? url.slice(url.indexOf('#')) : '');
+        m = url.match(_URL_RE);
+      }
+    }
+    if (!m) throw new TypeError('Invalid URL: ' + url);
+    const auth = m[2] ? m[2].slice(0, -1) : '';
+    const hostPart = m[3];
+    const colon = hostPart.lastIndexOf(':');
+    const hasPort = colon > -1 && /^\d+$/.test(hostPart.slice(colon + 1));
+    _def(this, 'protocol', m[1]);
+    _def(this, 'username', auth.split(':')[0] || '');
+    _def(this, 'password', auth.split(':')[1] || '');
+    _def(this, 'hostname', hasPort ? hostPart.slice(0, colon) : hostPart);
+    _def(this, 'port', hasPort ? hostPart.slice(colon + 1) : '');
+    _def(this, 'pathname', m[4] || '/');
+    _def(this, 'search', m[5] || '');
+    _def(this, 'hash', m[6] || '');
+    _def(this, 'origin', m[1] + '//' + hostPart);
+    _def(this, 'host', hasPort ? hostPart : hostPart);
+    _def(this, 'href', url);
+    _def(this, 'searchParams', new globalThis.URLSearchParams(m[5] || ''));
+  };
+  globalThis.URL.prototype.toString = function () { return this.href; };
+  if (typeof globalThis.URL.createObjectURL !== 'function') globalThis.URL.createObjectURL = function () { return ''; };
+  if (typeof globalThis.URL.revokeObjectURL !== 'function') globalThis.URL.revokeObjectURL = function () {};
+}
+
 // ===== Venera 宿主全局（源 JS 常引用）=====
 globalThis.APP = {
   locale: 'zh_CN',
@@ -521,6 +652,20 @@ class ComicSource {
 // 注意：QuickJS 中直接运行，无法用 vm。我们用全局注册表模式：
 // executeSource 在 host 侧调用（Dart 桥接），这里定义工厂
 
+// base64 注入入口（宿主传整份源码，避免字符串转义损坏）
+globalThis.__executeSourceB64__ = async function (b64, sourceId) {
+  globalThis.__sourceLoadError__ = null;
+  try {
+    const code = Convert.decodeBase64(b64);
+    await globalThis.__executeSource__(code, sourceId);
+    if (!globalThis.__sources__ || !globalThis.__sources__[sourceId]) {
+      globalThis.__sourceLoadError__ = '执行完成但源未注册（类检测失败或 init 抛错）';
+    }
+  } catch (e) {
+    globalThis.__sourceLoadError__ = String(e && e.message ? e.message : e) + (e && e.stack ? ' @ ' + String(e.stack).split('\n')[1] : '');
+  }
+};
+
 globalThis.__executeSource__ = async function (jsCode, sourceId) {
   const sandboxProto = {
     ComicSource, Network, Convert, randomInt,
@@ -558,7 +703,7 @@ globalThis.__executeSource__ = async function (jsCode, sourceId) {
   const classMatch = jsCode.match(/class\s+([A-Za-z_$][\w$]*)\s+extends\s+ComicSource/);
   let execCode = jsCode;
   if (classMatch) execCode += `\n;globalThis.__sourceClass = ${classMatch[1]};`;
-  eval(execCode);
+  try { eval(execCode); } catch (e) { globalThis.__sourceLoadError__ = 'eval: ' + String(e && e.message ? e.message : e); throw e; }
 
   let SourceClass = globalThis.__sourceClass || null;
   if (!SourceClass) {
