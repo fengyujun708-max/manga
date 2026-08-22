@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/ds.dart';
 import '../../../app/components/manjie_card.dart';
 import '../../../app/components/manjie_toast.dart';
+import 'source_diag_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -182,6 +183,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 _ActionTile(icon: Icons.description, title: '开源许可', value: '', onTap: () => context.push('/licenses')),
                 _Divider(),
                 _ActionTile(icon: Icons.shield_outlined, title: '隐私政策', value: '', onTap: () {}),
+                _Divider(),
+                _ActionTile(icon: Icons.bug_report_outlined, title: '源引擎诊断', value: '', onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SourceDiagPage()),
+                )),
               ],
             ),
           ),
