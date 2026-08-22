@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/ds.dart';
-import '../../plugins/source_installer.dart';
-import '../../plugins/manga_source.dart';
+import '../../../plugins/source_installer.dart';
+import '../../../plugins/manga_source.dart';
 
 /// 首次启动源配置检测 — 强制弹窗，一键安装 20 个可用源
 class SourceSetupDialog {
