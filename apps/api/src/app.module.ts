@@ -16,6 +16,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { AnnouncementModule } from './modules/announcement/announcement.module';
 import { UpdateModule } from './modules/update/update.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { OfficialModule } from './modules/official/official.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { AdminModule } from './modules/admin/admin.module';
     AnnouncementModule,
     UpdateModule,
     AdminModule,
+    OfficialModule,
   ],
   providers: [
     {
