@@ -829,32 +829,61 @@ globalThis.__categoryComics__ = async function (sourceId, category, param, optio
   return { items: [] };
 };
 
-// 搜索
+// 搜索（Venera 规范: search.load(keyword, options, page)；兼容旧函数式）
+const __normComics = (res) => {
+  if (Array.isArray(res)) return { items: res, hasMore: false };
+  if (res && typeof res === 'object') {
+    let items = res.comics || res.items || res.list || [];
+    if (!Array.isArray(items)) items = [];
+    return { items, hasMore: res.hasMore === true || res.hasNextPage === true || res.maxPage > (res.page || 1) };
+  }
+  return { items: [], hasMore: false };
+};
 globalThis.__search__ = async function (sourceId, keyword, page) {
   const src = globalThis.__sources__ && globalThis.__sources__[sourceId];
-  if (!src || typeof src.search !== 'function') return { error: 'no search' };
-  const res = await src.search(keyword, page || 1);
-  if (Array.isArray(res)) return { items: res };
-  if (res && typeof res === 'object') {
-    const items = res.comics || res.items || res.list || [];
-    return { items, hasMore: res.hasMore === true || res.hasNextPage === true };
+  if (!src) return { error: 'source not loaded' };
+  let res;
+  if (src.search && typeof src.search.load === 'function') {
+    res = await src.search.load(keyword, {}, page || 1);
+  } else if (typeof src.search === 'function') {
+    res = await src.search(keyword, page || 1);
+  } else {
+    return { error: 'no search method' };
   }
-  return { items: [] };
+  return __normComics(res);
 };
 
-// 详情 + 章节
+// 详情 + 章节（Venera 规范: comic.loadInfo(id)）
 globalThis.__comic__ = async function (sourceId, comicId) {
   const src = globalThis.__sources__ && globalThis.__sources__[sourceId];
-  if (!src || typeof src.comic !== 'function') return { error: 'no comic method' };
-  const d = await src.comic(comicId);
-  return d || {};
+  if (!src) return { error: 'source not loaded' };
+  if (!src.comic || typeof src.comic.loadInfo !== 'function') return { error: 'no comic method' };
+  const d = await src.comic.loadInfo(comicId);
+  if (!d || typeof d !== 'object') return { error: '详情返回为空' };
+  // chapters 规范化为 [{id,title}]（Venera: {epId|id, title} 或数组）
+  let chapters = d.chapters || d.eps || [];
+  if (!Array.isArray(chapters)) chapters = [];
+  const normChapters = chapters.map((c, i) => ({
+    id: String(c.id ?? c.epId ?? c.ep_id ?? i),
+    title: String(c.title || c.name || ('第' + (i + 1) + '话')),
+  }));
+  return { ...d, chapters: normChapters };
 };
 
-// 图片页
+// 图片页（Venera 规范: comic.loadEp(comicId, epId)；兼容 loadImages / 旧 pages 函数）
 globalThis.__pages__ = async function (sourceId, comicId, epId) {
   const src = globalThis.__sources__ && globalThis.__sources__[sourceId];
-  if (!src || typeof src.pages !== 'function') return { error: 'no pages method' };
-  const p = await src.pages(comicId, epId);
+  if (!src) return { error: 'source not loaded' };
+  let p;
+  if (src.comic && typeof src.comic.loadEp === 'function') {
+    p = await src.comic.loadEp(comicId, epId === '' ? null : epId);
+  } else if (src.comic && typeof src.comic.loadImages === 'function') {
+    p = await src.comic.loadImages(comicId, epId === '' ? null : epId);
+  } else if (typeof src.pages === 'function') {
+    p = await src.pages(comicId, epId);
+  } else {
+    return { error: 'no pages method' };
+  }
   if (Array.isArray(p)) return { pages: p };
   if (p && typeof p === 'object') {
     const pages = p.pages || p.urls || p.images || (typeof p.next === 'object' && Array.isArray(p.next.pages) ? p.next.pages : []);

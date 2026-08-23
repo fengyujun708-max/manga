@@ -63,9 +63,7 @@ class CopyManga extends ComicSource {
             "Accept": "application/json",
             "region": this.copyRegion,
             "authorization": `Token${token}`,
-            "umstring": "b4c89ca4104ea9a97750314d791520ac",
-            "x-auth-timestamp": ts,
-            "x-auth-signature": sig,
+            // 2026-08: umstring/x-auth-* 静态值已被服务端拉黑（返回字面量 error），移除
         }
     }
 
