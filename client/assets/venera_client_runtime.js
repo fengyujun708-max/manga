@@ -716,14 +716,11 @@ globalThis.__executeSource__ = async function (jsCode, sourceId) {
   if (classMatch) execCode += `\n;globalThis.__sourceClass = ${classMatch[1]};`;
   try { eval(execCode); } catch (e) { globalThis.__sourceLoadError__ = 'eval: ' + String(e && e.message ? e.message : e); throw e; }
 
+  // 直接用正则匹配到的类名（QuickJS 中 instanceof 不可靠，跳过原型链检查）
   let SourceClass = globalThis.__sourceClass || null;
-  if (!SourceClass) {
-    for (const key of Object.keys(globalThis)) {
-      const val = globalThis[key];
-      if (typeof val === 'function' && val.prototype instanceof ComicSource && val !== ComicSource) {
-        SourceClass = val; break;
-      }
-    }
+  if (!SourceClass && classMatch) {
+    // 正则匹配到了但 __sourceClass 未设置（可能 eval 作用域问题），直接取全局变量
+    SourceClass = globalThis[classMatch[1]] || null;
   }
   if (!SourceClass) {
     if (globalThis.source && globalThis.source instanceof ComicSource) return globalThis.source;
