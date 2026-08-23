@@ -14,8 +14,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
-  final _phoneCtrl = TextEditingController(text: 'guest');
-  final _pwdCtrl = TextEditingController(text: 'guest');
+  final _phoneCtrl = TextEditingController(text: '13800000000');
+  final _pwdCtrl = TextEditingController(text: 'guest123');
   final _confirmCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   bool _isRegister = false;
