@@ -75,9 +75,9 @@ class CopyManga extends ComicSource {
 
     static defaultImageQuality = "1500"
 
-    static defaultApiUrl = 'api.copy3000.com'
+    static defaultApiUrl = 'api.copy2000.online'
     // 备选 API 域名池（kototoro 维护的年度滚动域名），refreshAppApi 失败时按序 fallback
-    static fallbackApiUrls = ['api.2026copy.com','api.copy202601.com','api.mangacopy.com','api.copy3000.online','api.copy2000.online']
+    static fallbackApiUrls = ['api.copy3000.com','api.2026copy.com','api.copy202601.com','api.mangacopy.com','api.copy3000.online']
 
     static searchApi = "/api/kb/web/searchb/comics"
 
@@ -1123,7 +1123,12 @@ class CopyManga extends ComicSource {
                 }
             } catch (_) {}
         }
-        // 所有域名都没有数据，用第一个至少返回有效 JSON 的
-        if (fallbackHost) this.settings.base_url = fallbackHost;
+        // 所有域名都没有数据，保持默认域名不变（不切换到空数据域名）
+        if (fallbackHost) {
+            // 仅在当前 base_url 也无效时才 fallback
+            if (!this.settings.base_url || this.settings.base_url === 't66y.com') {
+                this.settings.base_url = fallbackHost;
+            }
+        }
     }
 }
