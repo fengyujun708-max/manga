@@ -50,20 +50,31 @@ class _LibraryPageState extends State<LibraryPage> {
     return Scaffold(
       backgroundColor: DS.bg,
       appBar: AppBar(backgroundColor: Colors.transparent, title: Text('书架', style: DS.headline)),
-      body: RefreshIndicator(onRefresh: _load, color: DS.accent, child: Column(children: [
-        Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 12), child: Container(
-          padding: EdgeInsets.all(3), decoration: BoxDecoration(color: DS.surface1, borderRadius: BorderRadius.circular(14)),
-          child: Row(children: [
-            for (var i = 0; i < _tabs.length; i++)
-              Expanded(child: GestureDetector(
-                onTap: () { HapticFeedback.selectionClick(); setState(() => _tab = i); },
-                child: AnimatedContainer(duration: Duration(milliseconds: 200), padding: EdgeInsets.symmetric(vertical: 9),
-                  decoration: BoxDecoration(color: _tab == i ? DS.surface3 : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-                  child: Center(child: Text(_tabs[i], style: TextStyle(fontSize: 13.5, fontWeight: _tab == i ? FontWeight.w700 : FontWeight.w400, color: _tab == i ? DS.textPrimary : DS.textTertiary))))),
-          ]))),
+            body: RefreshIndicator(onRefresh: _load, color: DS.accent, child: Column(children: [
+        _buildTabBar(),
         Expanded(child: body),
       ])),
     );
+  }
+
+  Widget _buildTabBar() {
+    return Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 12), child: Container(
+      padding: EdgeInsets.all(3), decoration: BoxDecoration(color: DS.surface1, borderRadius: BorderRadius.circular(14)),
+      child: Row(children: _buildTabItems()),
+    ));
+  }
+
+  List<Widget> _buildTabItems() {
+    final items = <Widget>[];
+    for (var i = 0; i < _tabs.length; i++) {
+      items.add(Expanded(child: GestureDetector(
+        onTap: () { HapticFeedback.selectionClick(); setState(() => _tab = i); },
+        child: AnimatedContainer(duration: Duration(milliseconds: 200), padding: EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(color: _tab == i ? DS.surface3 : Colors.transparent, borderRadius: BorderRadius.circular(10)),
+          child: Center(child: Text(_tabs[i], style: TextStyle(fontSize: 13.5, fontWeight: _tab == i ? FontWeight.w700 : FontWeight.w400, color: _tab == i ? DS.textPrimary : DS.textTertiary)))),
+      )));
+    }
+    return items;
   }
 
   Widget favCard(Map<String, dynamic> item) {
