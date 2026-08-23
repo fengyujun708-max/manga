@@ -13,6 +13,10 @@ class Komiic extends ComicSource {
     // 更新链接
     url = "https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/komiic.js"
 
+    // API 域名候选（2026-08：主域 komiic.com，备选 komiic.cc）
+    _apiHost = "komiic.com";
+    get apiHost() { return this._apiHost; }
+
     get headers() {
         let token = this.loadData('token')
         let headers = {
@@ -28,10 +32,18 @@ class Komiic extends ComicSource {
 
     async queryJson(query) {
         let res = await Network.post(
-            'https://komiic.com/api/query',
+            'https://' + this.apiHost + '/api/query',
             this.headers,
             query
         )
+
+        if (res.status !== 200) {
+            // 域名 failover：komiic.com 失败时切 komiic.cc 重试
+            if (this._apiHost === 'komiic.com') {
+                this._apiHost = 'komiic.cc';
+                res = await Network.post('https://' + this.apiHost + '/api/query', this.headers, query);
+            }
+        }
 
         if (res.status !== 200) {
             throw `Invalid Status Code ${res.status}`
@@ -428,7 +440,7 @@ class Komiic extends ComicSource {
             let json = await this.queryJson({ "operationName": "imagesByChapterId", "variables": { "chapterId": epId }, "query": "query imagesByChapterId($chapterId: ID!) {\n  imagesByChapterId(chapterId: $chapterId) {\n    id\n    kid\n    height\n    width\n    __typename\n  }\n}" })
             return {
                 images: json.data.imagesByChapterId.map((i) => {
-                    return `https://komiic.com/api/image/${i.kid}`
+                    return 'https://' + this.apiHost + '/api/image/' + i.kid
                 })
             }
         },
@@ -437,7 +449,7 @@ class Komiic extends ComicSource {
             return {
                 headers: {
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-                    'referer': `https://komiic.com/comic/${comicId}/chapter/${epId}/images/all`
+                    'referer': 'https://' + this.apiHost + '/comic/' + comicId + '/chapter/' + epId + '/images/all'
                 }
             }
         },

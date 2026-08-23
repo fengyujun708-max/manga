@@ -15,8 +15,13 @@ class ManWaBa extends ComicSource {
   // update url
   url = "https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/manwaba.js";
 
-  //修改域名不能用问题
-  api = "https://mwuu.cc/api";
+  // 修改域名不能用问题（2026-08：主域切换 manwa.me，失败自动切换）
+  apiCandidates = ["https://manwa.me/api", "https://mwuu.cc/api", "https://www.manwa.me/api", "https://m.manwa.me/api"];
+  _apiIdx = 0;
+
+  get api() {
+    return this.apiCandidates[this._apiIdx] || this.apiCandidates[0];
+  }
 
   init() {
     /**
@@ -39,6 +44,13 @@ class ManWaBa extends ComicSource {
         url += `?${params_str}`;
       }
       let res = await Network.sendRequest(method, url, headers, payload);
+      if (res.status !== 200 && this._apiIdx < this.apiCandidates.length - 1) {
+        // 域名 failover：换下一个候选域名重试一次
+        const oldApi = this.apiCandidates[this._apiIdx];
+        this._apiIdx++;
+        const newApi = this.apiCandidates[this._apiIdx];
+        res = await Network.sendRequest(method, url.replace(oldApi, newApi), headers, payload);
+      }
       if (res.status !== 200) {
         throw `Invalid status code: ${res.status}, body: ${res.body}`;
       }

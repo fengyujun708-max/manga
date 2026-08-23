@@ -75,7 +75,9 @@ class CopyManga extends ComicSource {
 
     static defaultImageQuality = "1500"
 
-    static defaultApiUrl = 'api.copy2000.online'
+    static defaultApiUrl = 'api.copy3000.com'
+    // 备选 API 域名池（kototoro 维护的年度滚动域名），refreshAppApi 失败时按序 fallback
+    static fallbackApiUrls = ['api.2026copy.com','api.copy202601.com','api.mangacopy.com','api.copy3000.online','api.copy2000.online']
 
     static searchApi = "/api/kb/web/searchb/comics"
 
@@ -1093,11 +1095,22 @@ class CopyManga extends ComicSource {
     }
 
     async refreshAppApi() {
-        const url = "https://api.copy-manga.com/api/v3/system/network2?platform=3"
-        const res = await fetch(url, { headers: this.headers });
-        if (res.status === 200) {
-            let data = await res.json();
-            this.settings.base_url = data.results.api[0][0];
+        // 只信候选池实测：逐个探测 homeIndex，第一个返回有效 JSON 的域名即为可用域名。
+        // 注：network2 接口已返回死域名 t66y.com，不能信任动态发现。
+        const candidates = [this.settings.base_url, CopyManga.defaultApiUrl, ...CopyManga.fallbackApiUrls];
+        const tried = new Set();
+        for (const host0 of candidates) {
+            if (!host0 || typeof host0 !== 'string' || host0.startsWith('[')) continue;
+            const host = host0.replace(/^https?:\/\//, '');
+            if (tried.has(host)) continue;
+            tried.add(host);
+            try {
+                const r = await fetch('https://' + host + '/api/v3/h5/homeIndex', { headers: this.headers });
+                if (r.status === 200) {
+                    const t = await r.text();
+                    if (t && t !== 'error' && t.trim().startsWith('{')) { this.settings.base_url = host; return; }
+                }
+            } catch (_) {}
         }
     }
 }

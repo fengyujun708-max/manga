@@ -8,6 +8,7 @@ import '../../../app/ds.dart';
 import '../../../plugins/manga_source.dart';
 import '../../../plugins/source_installer.dart';
 import '../../../plugins/vetted_sources.dart';
+import 'source_setup_dialog.dart';
 import '../../../core/network/api_client.dart';
 
 /// 源市场 — 分类筛选 + 搜索 + 液态玻璃卡片
@@ -73,6 +74,16 @@ class _SourceMarketPageState extends State<SourceMarketPage> {
               child: Container(margin: const EdgeInsets.all(8), decoration: BoxDecoration(color: DS.glassFill, shape: BoxShape.circle), child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: DS.textPrimary)),
             ),
             title: const Text('源市场', style: DS.headline),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: DS.sp12),
+                child: TextButton.icon(
+                  onPressed: _reinstallAll,
+                  icon: const Icon(Icons.sync_rounded, size: 16, color: DS.accent),
+                  label: const Text('重装全部源', style: TextStyle(fontSize: 13, color: DS.accent, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
           ),
           // 搜索
           SliverToBoxAdapter(
@@ -123,6 +134,7 @@ class _MarketCard extends StatefulWidget {
 class _MarketCardState extends State<_MarketCard> {
   bool _installing = false;
   bool _installed = false;
+  bool _reinstalling = false;
 
   @override
   void initState() { super.initState(); _check(); }
@@ -135,6 +147,25 @@ class _MarketCardState extends State<_MarketCard> {
       try { return SourceManifest.fromJson(e as Map<String, dynamic>).id.toLowerCase() == want; } catch (_) { return false; }
     });
     if (mounted) setState(() => _installed = ok);
+  }
+
+  /// 重新下载覆盖安装全部 vetted 源（服务器源更新后刷新缓存）
+  Future<void> _reinstallAll() async {
+    if (_reinstalling) return;
+    setState(() => _reinstalling = true);
+    HapticFeedback.mediumImpact();
+    try {
+      final ok = await SourceSetupDialog.installAll((done, total, name) {});
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: DS.surface1,
+        content: Text(ok > 0 ? '已重装 $ok 个源' : '重装失败，请检查网络', style: const TextStyle(color: DS.textPrimary, fontSize: 13)),
+      ));
+    } finally {
+      if (mounted) setState(() => _reinstalling = false);
+    }
+    _load();
   }
 
   Future<void> _install() async {
