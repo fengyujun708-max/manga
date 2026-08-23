@@ -75,6 +75,42 @@ class _SourceComicPageState extends State<SourceComicPage> {
 
   String get _title => (_info['title'] ?? _info['name'] ?? widget.comicId).toString();
   String get _cover => (_info['cover'] ?? _info['coverUrl'] ?? '').toString();
+  String get _referer { final u = Uri.tryParse(_cover); return 'https://' + (u?.host ?? '') + '/'; }
+
+
+  Widget _buildHeroBackground() {
+    return Stack(fit: StackFit.expand, children: [
+      if (_cover.isNotEmpty)
+        CachedNetworkImage(imageUrl: _cover, fit: BoxFit.cover, httpHeaders: {'Referer': _referer},
+          errorWidget: (_, __, ___) => Container(color: DS.surface1))
+      else
+        Container(color: DS.surface1),
+      Positioned.fill(child: DecoratedBox(
+        decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
+          colors: [Colors.transparent, Colors.transparent, DS.bg.withValues(alpha: 0.95)])))),
+      Positioned(left: DS.sp16, right: DS.sp16, bottom: DS.sp12,
+        child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+          Container(width: 100, height: 140,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(DS.rMd), color: DS.surface2, boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 12)]),
+            clipBehavior: Clip.antiAlias,
+            child: _cover.isNotEmpty
+              ? CachedNetworkImage(imageUrl: _cover, fit: BoxFit.cover, httpHeaders: {'Referer': _referer},
+                  errorWidget: (_, __, ___) => Icon(Icons.menu_book_rounded, size: 40, color: DS.textDisabled))
+              : Icon(Icons.menu_book_rounded, size: 40, color: DS.textDisabled)),
+          SizedBox(width: DS.sp12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(_title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: DS.textPrimary)),
+            if ((_info['author'] ?? '').toString().isNotEmpty)
+              Padding(padding: EdgeInsets.only(top: 4), child: Text(_info['author'], style: TextStyle(fontSize: 13, color: DS.textSecondary))),
+            if (genres.isNotEmpty)
+              Padding(padding: EdgeInsets.only(top: 8), child: Wrap(spacing: 6, runSpacing: 4,
+                children: genres.take(4).map((g) => Container(padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: DS.glassFill, borderRadius: BorderRadius.circular(DS.rSm)),
+                  child: Text(g, style: TextStyle(fontSize: 11, color: DS.textSecondary)))).toList())),
+          ])),
+        ])),
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,37 +152,7 @@ class _SourceComicPageState extends State<SourceComicPage> {
               child: Icon(_isFavorited ? Icons.favorite_rounded : Icons.favorite_border_rounded, size: 20,
                 color: _isFavorited ? DS.accent : DS.textPrimary))),
           ],
-          flexibleSpace: FlexibleSpaceBar(background: Stack(fit: StackFit.expand, children: [
-            // 封面背景
-            if (_cover.isNotEmpty)
-              CachedNetworkImage(imageUrl: _cover, fit: BoxFit.cover,
-                httpHeaders: {'Referer': 'https://${Uri.tryParse(_cover)?.host ?? ''}/'},
-                errorWidget: (_, __, ___) => Container(color: DS.surface1))
-            else Container(color: DS.surface1),
-            // 渐变遮罩
-            Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
-              gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.transparent, DS.bg.withValues(alpha: 0.95)]))))),
-            // 信息区
-            Positioned(left: DS.sp16, right: DS.sp16, bottom: DS.sp12, child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              // 封面缩略图
-              Container(width: 100, height: 140, decoration: BoxDecoration(borderRadius: BorderRadius.circular(DS.rMd), color: DS.surface2, boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 12)]),
-                clipBehavior: Clip.antiAlias,
-                child: _cover.isNotEmpty ? CachedNetworkImage(imageUrl: _cover, fit: BoxFit.cover,
-                    httpHeaders: {'Referer': 'https://${Uri.tryParse(_cover)?.host ?? ''}/'},
-                    errorWidget: (_, __, ___) => Icon(Icons.menu_book_rounded, size: 40, color: DS.textDisabled))
-                  : Icon(Icons.menu_book_rounded, size: 40, color: DS.textDisabled)),
-              SizedBox(width: DS.sp12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(_title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: DS.textPrimary)),
-                if (author.isNotEmpty) ...[SizedBox(height: 4), Text(author, style: TextStyle(fontSize: 13, color: DS.textSecondary))],
-                if (genres.isNotEmpty) ...[SizedBox(height: 8),
-                  Wrap(spacing: 6, runSpacing: 4, children: genres.take(4).map((g) => Container(padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: DS.glassFill, borderRadius: BorderRadius.circular(DS.rSm)),
-                    child: Text(g, style: TextStyle(fontSize: 11, color: DS.textSecondary)))).toList())],
-              ])),
-            ])),
-          ]))),
+          flexibleSpace: FlexibleSpaceBar(background: _buildHeroBackground())),
         ),
 
         // ===== 开始阅读 =====
@@ -192,7 +198,7 @@ class _SourceComicPageState extends State<SourceComicPage> {
                   Expanded(child: Text(chTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: DS.textPrimary))),
                   Icon(Icons.chevron_right_rounded, size: 18, color: DS.textTertiary),
                 ])));
-          }, childCount: _chapters.length))),
+          }, childCount: _chapters.length)),
       ]);
   }
 
