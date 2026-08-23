@@ -765,20 +765,47 @@ globalThis.__exploreAll__ = async function (sourceId) {
       const title = sec.title || sec.name || '首页';
       if (typeof sec.load === 'function') {
         const result = await sec.load(1);
-        let items = [];
-        if (Array.isArray(result)) {
-          items = result;
-        } else if (result && typeof result === 'object') {
-          // {板块名: [comic,...]} → 拆成多个 section
-          const keys = Object.keys(result);
-          for (const k of keys) {
-            if (Array.isArray(result[k]) && result[k].length > 0) {
-              out.push({ title: k, type: sec.type || 'singlePageWithMultiPart', items: result[k] });
+        if (!result) { continue; }
+
+        // 1) multiPartPage: [{title:"热门", comics:[...], viewMore:...}]
+        if (Array.isArray(result) && result.length > 0 && result[0] && typeof result[0] === 'object' && (result[0].comics || result[0].items)) {
+          for (const part of result) {
+            const partTitle = part.title || part.name || title;
+            const partItems = part.comics || part.items || [];
+            if (partItems.length > 0) {
+              out.push({ title: partTitle, type: part.type || sec.type || 'singlePageWithMultiPart', items: partItems, viewMore: part.viewMore || null });
             }
           }
           continue;
         }
-        out.push({ title, type: sec.type || 'singlePageWithMultiPart', items });
+
+        // 2) Simple array: [{id, title, cover}, ...]
+        if (Array.isArray(result)) {
+          if (result.length > 0 && result[0] && typeof result[0] === 'object' && (result[0].id || result[0].title)) {
+            out.push({ title, type: sec.type || 'singlePageWithMultiPart', items: result });
+          }
+          continue;
+        }
+
+        // 3) Object with section keys: {热门: [...], 最新: [...]}
+        if (result && typeof result === 'object') {
+          const keys = Object.keys(result);
+          let pushedAny = false;
+          for (const k of keys) {
+            if (Array.isArray(result[k]) && result[k].length > 0) {
+              out.push({ title: k, type: sec.type || 'singlePageWithMultiPart', items: result[k] });
+              pushedAny = true;
+            }
+          }
+          if (pushedAny) continue;
+
+          // 4) multiPageComicList: {comics: [...], maxPage: N}
+          const comics = result.comics || result.items || result.list || result.data;
+          if (Array.isArray(comics) && comics.length > 0) {
+            out.push({ title, type: sec.type || 'singlePageWithMultiPart', items: comics });
+          }
+          continue;
+        }
       }
     } catch (e) {
       out.push({ title: sec.title || '板块', type: sec.type || '', items: [], error: String(e && e.message ? e.message : e) });

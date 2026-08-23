@@ -28,6 +28,8 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
     _tabCtrl = TabController(length: 2, vsync: this);
     _loadExplore();
     _loadCategories();
+    // 预加载源到 QuickJS（修复首次点击不加载）
+    SourceDataService.instance.loadLocal(widget.sourceId);
   }
 
   @override
@@ -85,6 +87,19 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
         ]),
       ),
     );
+  }
+
+
+  String _fixUrl(String url) {
+    if (url.startsWith('//')) return 'https:' + url;
+    if (url.startsWith('/')) return 'https://' + widget.sourceId + url;
+    return url;
+  }
+
+  Map<String, String> _imgHeaders(String url) {
+    final u = Uri.tryParse(_fixUrl(url));
+    if (u != null && u.host.isNotEmpty) return {'Referer': 'https://' + u.host + '/'};
+    return {};
   }
 
   // ===== 首页（explore 板块）=====
