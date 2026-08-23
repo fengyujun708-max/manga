@@ -77,7 +77,7 @@ class CopyManga extends ComicSource {
 
     static defaultApiUrl = 'api.copy2000.online'
     // 备选 API 域名池（kototoro 维护的年度滚动域名），refreshAppApi 失败时按序 fallback
-    static fallbackApiUrls = ['api.copy3000.com','api.2026copy.com','api.copy202601.com','api.mangacopy.com','api.copy3000.online']
+    static fallbackApiUrls = ['api.copy3000.com','api.2026copy.com','api.copy202601.com','api.mangacopy.com','api.manga2025.com','mapi.copy20.com','mapi.copy2000.site','mapi.hotmangasd.com','mapi.hotmangasf.com','mapi.hotmangasg.com','mapi.elfgjfghkk.club','mapi.fgjfghkk.club','mapi.fgjfghkkcenter.club','api.copy2000.online','api.copy3000.online']
 
     static searchApi = "/api/kb/web/searchb/comics"
 
@@ -1082,16 +1082,18 @@ class CopyManga extends ComicSource {
     }
 
     async refreshSearchApi() {
-        let url = "https://www.copy20.com/search"
-        let res = await fetch(url)
-        let searchApi = ""
-        if (res.status === 200) {
-            let text = await res.text()
-            let match = text.match(/const countApi = "([^"]+)"/)
-            if (match && match[1]) {
-                CopyManga.searchApi = match[1]
+        try {
+            let url = "https://www.copy20.com/search"
+            let res = await fetch(url)
+            let searchApi = ""
+            if (res.status === 200) {
+                let text = await res.text()
+                let match = text.match(/const countApi = "([^"]+)"/)
+                if (match && match[1]) {
+                    CopyManga.searchApi = match[1]
+                }
             }
-        }
+        } catch (_) {}
     }
 
     async refreshAppApi() {

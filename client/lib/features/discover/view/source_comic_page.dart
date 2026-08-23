@@ -93,7 +93,9 @@ class _SourceComicPageState extends State<SourceComicPage> {
                         return GestureDetector(
                           onTap: () {
                             HapticFeedback.selectionClick();
-                            GoRouter.of(context).push('/source/${widget.sourceId}/reader/${widget.comicId}/$chId');
+                            if (chId.isNotEmpty) {
+              GoRouter.of(context).push('/source/${widget.sourceId}/reader/${widget.comicId}/$chId');
+            }
                           },
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 8),

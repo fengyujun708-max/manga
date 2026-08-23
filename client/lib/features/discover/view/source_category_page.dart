@@ -109,6 +109,7 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
   }
 
   void _enterComic(String id) {
+    if (id.isEmpty) return;
     GoRouter.of(context).push('/source/${widget.sourceId}/comic/$id');
   }
 

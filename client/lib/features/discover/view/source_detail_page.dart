@@ -55,7 +55,10 @@ class _SourceDetailPageState extends State<SourceDetailPage> {
     setState(() { _searchResults = result['items'] ?? []; _searching = false; });
   }
 
-  void _enterComic(String id) => GoRouter.of(context).push('/source/${widget.sourceId}/comic/$id');
+  void _enterComic(String id) {
+    if (id.isEmpty) return;
+    GoRouter.of(context).push('/source/${widget.sourceId}/comic/$id');
+  }
 
   @override
   Widget build(BuildContext context) {
