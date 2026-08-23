@@ -173,6 +173,18 @@ class SourceInstaller {
       return body;
     } catch (_) { return null; }
   }
+  /// 安装单个源（下载 JS 并保存到本地）
+  static Future<bool> install(SourceManifest manifest, String sourceDir) async {
+    try {
+      final id = manifest.id.toLowerCase();
+      final code = await _httpGet('$serverBase/sources/$id.js');
+      if (code == null || !code.contains('ComicSource')) return false;
+      final dir = Directory(sourceDir);
+      if (!await dir.exists()) await dir.create(recursive: true);
+      await File('$sourceDir/$id.js').writeAsString(code);
+      return true;
+    } catch (_) { return false; }
+  }
 }
 
 class SourceUpdate {

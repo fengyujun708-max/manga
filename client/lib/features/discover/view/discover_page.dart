@@ -82,7 +82,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                     SizedBox(width: DS.sp16),
                     Container(padding: EdgeInsets.all(10), decoration: BoxDecoration(color: DS.accentDim, borderRadius: BorderRadius.circular(DS.rMd)),
                       child: Icon(Icons.auto_stories_rounded, color: DS.accent, size: 28)),
-                    SizedBox(width: DS.sp14),
+                    SizedBox(width: DS.sp12),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
                       Text('漫界官方', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: DS.textPrimary)),
                       SizedBox(height: 4),
