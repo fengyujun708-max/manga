@@ -922,4 +922,174 @@ globalThis.__pages__ = async function (sourceId, comicId, epId) {
 try {
   const __g = globalThis;
   ['SimpleElement','SimpleDocument','HtmlDocument','Comic','ComicDetails','ComicList','Cookie','PageJumpTarget','Comment','ComicSource','parseSelector','matchSelectorPart','htmlToText','extractAttr','randomInt','Network','Convert'].forEach(n => { if (__g[n] === undefined) { try { __g[n] = eval(n); } catch (_) {} } });
-} catch (_) {}
+} catch (_) {}// ===== Venera 完整 API Surface（ManjieSourceSDK v2）=====
+
+// ===== Account =====
+globalThis.__account__ = async function (sourceId, action, params) {
+  const src = globalThis.__sources__[sourceId];
+  if (!src) return { error: 'source not loaded' };
+  const account = src.account;
+  if (!account) return { error: 'no account' };
+  try {
+    switch (action) {
+      case 'login':
+        if (typeof account.login === 'function') {
+          const res = await account.login(params.account, params.password);
+          return { result: res };
+        }
+        break;
+      case 'logout':
+        if (typeof account.logout === 'function') {
+          await account.logout();
+          return { result: 'ok' };
+        }
+        break;
+      case 'registerWebsite':
+        return { url: account.registerWebsite || null };
+      case 'loginWithWebview':
+        if (typeof account.loginWithWebview === 'function') {
+          const res = await account.loginWithWebview(crypto.randomUUID());
+          return { result: res };
+        }
+        break;
+      case 'loginWithCookies':
+        if (typeof account.loginWithCookies === 'function') {
+          const res = await account.loginWithCookies(params.cookies || '');
+          return { result: res };
+        }
+        break;
+    }
+    return { error: 'unknown action: ' + action };
+  } catch (e) {
+    return { error: String(e && e.message ? e.message : e) };
+  }
+};
+
+// ===== Favorites（远程收藏）=====
+globalThis.__favorites__ = async function (sourceId, action, params) {
+  const src = globalThis.__sources__[sourceId];
+  if (!src) return { error: 'source not loaded' };
+  try {
+    // explore favorites folders
+    if (action === 'folders') {
+      if (typeof src.exploreFavorites === 'function') {
+        return { folders: await src.exploreFavorites() };
+      }
+      return { folders: [] };
+    }
+    // 源内收藏列表
+    if (src.favoritesData) {
+      if (action === 'list' && typeof src.favoritesData.load === 'function') {
+        const res = await src.favoritesData.load(params.page || 1, params.folder || '');
+        return __normComics(res);
+      }
+    }
+    // 添加/删除收藏
+    if (typeof src.addFavorite === 'function' && action === 'add') {
+      await src.addComicToFolder(params.comicId, params.folder);
+      return { result: 'ok' };
+    }
+    if (typeof src.removeComicFromFolder === 'function' && action === 'remove') {
+      await src.removeComicFromFolder(params.comicId, params.folder);
+      return { result: 'ok' };
+    }
+    return { items: [] };
+  } catch (e) {
+    return { error: String(e && e.message ? e.message : e) };
+  }
+};
+
+// ===== Comments =====
+globalThis.__comments__ = async function (sourceId, comicId, epId, page, replyTo) {
+  const src = globalThis.__sources__[sourceId];
+  if (!src) return { error: 'source not loaded' };
+  try {
+    if (!src.comic || !src.comic.loadComments) return { comments: [] };
+    const res = await src.comic.loadComments(comicId, subId || '', page || 1, replyTo);
+    if (res && res.comments) {
+      return {
+        comments: res.comments.map((c) => ({
+          id: c.id || '',
+          userName: c.userName || '',
+          avatar: c.avatar || '',
+          content: c.content || '',
+          time: c.time || '',
+          replyCount: c.replyCount || 0,
+          score: c.score || null,
+        })),
+        hasMore: !!res.next,
+      };
+    }
+    return { comments: [] };
+  } catch (e) {
+    return { error: String(e && e.message ? e.message : e) };
+  }
+};
+
+// ===== Settings =====
+globalThis.__settings__ = function (sourceId) {
+  const src = globalThis.__sources__[sourceId];
+  if (!src) return { error: 'source not loaded' };
+  const settings = src.settings || {};
+  const result = [];
+  for (const key of Object.keys(settings)) {
+    const s = settings[key];
+    result.push({
+      key,
+      title: s.title || key,
+      type: s.type || 'input',
+      default: s.default !== undefined ? s.default : null,
+      options: s.options || null,
+      value: src.loadSetting(key),
+    });
+  }
+  return { settings: result };
+};
+
+// ===== onImageLoad — 自定义图片请求头 =====
+globalThis.__onImageLoad__ = function (sourceId, url, comicId, epId) {
+  const src = globalThis.__sources__[sourceId];
+  if (!src) return {};
+  try {
+    if (typeof src.onImageLoad === 'function') {
+      const res = src.onImageLoad(url, comicId, epId);
+      if (res && res.headers) return { headers: res.headers };
+    }
+    // fallback: 使用源的默认 headers
+    if (src.headers) return { headers: src.headers };
+  } catch (_) {}
+  return {};
+};
+
+// ===== Download =====
+globalThis.__downloadInfo__ = async function (sourceId, comicId, epId) {
+  const src = globalThis.__sources__[sourceId];
+  if (!src) return { error: 'source not loaded' };
+  try {
+    const pages = await globalThis.__pages__(sourceId, comicId, epId);
+    return {
+      images: pages.pages || [],
+      next: pages.next || '',
+      total: (pages.pages || []).length,
+    };
+  } catch (e) {
+    return { error: String(e && e.message ? e.message : e) };
+  }
+};
+
+// ===== 源能力探测 =====
+globalThis.__features__ = function (sourceId) {
+  const src = globalThis.__sources__[sourceId];
+  if (!src) return { features: [] };
+  const f = [];
+  if (src.search) f.push('search');
+  if (src.explore) f.push('explore');
+  if (src.category) f.push('category');
+  if (src.comic && src.comic.loadComments) f.push('comments');
+  if (src.account) f.push('account');
+  if (src.favoritesData || src.exploreFavorites) f.push('favorites');
+  if (src.settings && Object.keys(src.settings).length > 0) f.push('settings');
+  if (typeof src.onImageLoad === 'function') f.push('onImageLoad');
+  if (src.download) f.push('download');
+  return { features: f };
+};
