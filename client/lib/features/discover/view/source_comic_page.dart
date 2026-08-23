@@ -8,6 +8,7 @@ import '../../../core/network/api_client.dart';
 import '../../../plugins/source_data_service.dart';
 import '../../../app/widgets/comic_widgets.dart';
 import '../../../app/ds.dart';
+import 'source_reader_page.dart';
 
 /// 源内漫画详情页 — 从服务器代理执行源 JS 获取真实详情 + 章节
 class SourceComicPage extends StatefulWidget {
@@ -94,8 +95,14 @@ class _SourceComicPageState extends State<SourceComicPage> {
                           onTap: () {
                             HapticFeedback.selectionClick();
                             if (chId.isNotEmpty) {
-              GoRouter.of(context).push('/source/${widget.sourceId}/reader/${widget.comicId}/$chId');
-            }
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => SourceReaderPage(
+                                sourceId: widget.sourceId,
+                                comicId: widget.comicId,
+                                comicTitle: (widget.comicData?['title'] ?? widget.comicId).toString(),
+                                chapters: _chapters.map((c) => c is Map ? Map<String, dynamic>.from(c) : {'id': c.toString(), 'title': c.toString()}).toList(),
+                                initialChapter: i,
+                              )));
+                            }
                           },
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 8),
