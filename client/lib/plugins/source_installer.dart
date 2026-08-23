@@ -8,7 +8,7 @@ import 'manga_source.dart';
 /// 源安装器：内置源自动提取（加密）+ 版本检测 + 服务器更新下载
 class SourceInstaller {
   static const String serverBase = 'http://39.106.192.137';
-  static const List<int> _key = utf8.encode('ManjieSourceKey2026');
+  static final List<int> _key = List<int>.from('ManjieSourceKey2026'.codeUnits);
 
   /// 解密源 JS（XOR + Base64）
   static String _decrypt(String encoded) {
