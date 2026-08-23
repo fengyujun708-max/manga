@@ -65,6 +65,36 @@ class _DiscoverPageState extends State<DiscoverPage> {
             ),
           ),
 
+          // ===== 漫界官方（最显眼位置） =====
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(DS.sp16, 0, DS.sp16, DS.sp16),
+              child: GestureDetector(
+                onTap: () {},
+                child: Container(
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [Color(0xFF1A1A2E), Color(0xFF16213E)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                    borderRadius: BorderRadius.circular(DS.rLg),
+                    border: Border.all(color: DS.accentDim),
+                  ),
+                  child: Row(children: [
+                    SizedBox(width: DS.sp16),
+                    Container(padding: EdgeInsets.all(10), decoration: BoxDecoration(color: DS.accentDim, borderRadius: BorderRadius.circular(DS.rMd)),
+                      child: Icon(Icons.auto_stories_rounded, color: DS.accent, size: 28)),
+                    SizedBox(width: DS.sp14),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Text('漫界官方', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: DS.textPrimary)),
+                      SizedBox(height: 4),
+                      Text('精选漫画 · 官方聚合 · 每日更新', style: TextStyle(fontSize: 12.5, color: DS.textSecondary)),
+                    ])),
+                    Padding(padding: EdgeInsets.only(right: DS.sp16), child: Icon(Icons.chevron_right_rounded, color: DS.textTertiary)),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+
           if (_loading)
             SliverPadding(
               padding: const EdgeInsets.all(DS.sp16),
