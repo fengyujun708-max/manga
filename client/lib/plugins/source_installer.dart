@@ -5,15 +5,33 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'manga_source.dart';
 
-/// 源安装器：内置源自动提取 + 版本检测 + 服务器更新下载
+/// 源安装器：内置源自动提取（加密）+ 版本检测 + 服务器更新下载
 class SourceInstaller {
   static const String serverBase = 'http://39.106.192.137';
+  static const List<int> _key = utf8.encode('ManjieSourceKey2026');
+
+  /// 解密源 JS（XOR + Base64）
+  static String _decrypt(String encoded) {
+    final encrypted = base64.decode(encoded);
+    final decrypted = List<int>.generate(encrypted.length, (i) => encrypted[i] ^ _key[i % _key.length]);
+    return utf8.decode(decrypted);
+  }
+
+  /// 加载加密的内置源代码
+  static Future<String?> loadBundledSource(String id) async {
+    try {
+      final raw = await rootBundle.loadString('assets/sources/${id.toLowerCase()}.js.enc');
+      return _decrypt(raw);
+    } catch (_) { return null; }
+  }
 
   /// 内置源清单（id → 文件名）
   static const List<String> vettedSources = [
     'copy_manga','jm','komiic','comick','manga_dex','baozi','ccc','zaimanhua',
     'manhuagui','manhuaren','manwaba','hot_manga','jcomic','goda','mh18','mxs',
     'nhentai','wnacg','lanraragi','hcomic',
+    'picacg','comic_walker','shonen_jump_plus','hitomi','ykmh','ikmmh',
+    'ehentai','mh1234','kavita','happy','komga','mycomic',
   ];
 
   static Map<String, SourceManifest>? _bundledManifests;
@@ -28,8 +46,8 @@ class SourceInstaller {
 
     for (final id in vettedSources) {
       try {
-        final code = await rootBundle.loadString('assets/sources/$id.js');
-        if (!code.contains('ComicSource')) continue;
+        final code = await loadBundledSource(id);
+        if (code == null || !code.contains('ComicSource')) continue;
         final file = File('$dir/$id.js');
         await file.writeAsString(code);
         // 注册 manifest

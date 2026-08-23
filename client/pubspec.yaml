@@ -57,6 +57,7 @@ flutter:
   assets:
     - assets/venera_client_runtime.js
     - assets/sources/
+    #- assets/sources/*.js.enc  # dart 不支持 glob，用目录
     - assets/images/
     - assets/fonts/
     - assets/i18n/
