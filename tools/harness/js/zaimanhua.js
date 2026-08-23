@@ -207,14 +207,15 @@ class Zaimanhua extends ComicSource {
       if (category.includes("排行")) {
         let res = await Network.get(
           this.buildUrl(
-            `comic/rank/list?page=${page}&rank_type=${options}&by_time=${param}`
+            `comic/rank/list?page=${page}&rank_type=${options[0] || ''}&by_time=${param}`
           ),
           this.headers
         );
+        const _data = JSON.parse(res.body).data;
         return {
-          comics: JSON.parse(res.body).data.map((item) =>
+          comics: Array.isArray(_data) ? _data.map((item) =>
             this.parseComic(item)
-          ),
+          ) : [],
           maxPage: 10,
         };
       } else {
