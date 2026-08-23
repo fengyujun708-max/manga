@@ -87,6 +87,7 @@ class _ComicCardState extends State<ComicCard> with SingleTickerProviderStateMix
                         ? CachedNetworkImage(
                             imageUrl: widget.cover!,
                             fit: BoxFit.cover,
+                            httpHeaders: {'Referer': 'https://${Uri.parse(widget.cover!).host}/'},
                             placeholder: (_, __) => ShimmerBox(width: double.infinity, height: 200),
                             errorWidget: (_, __, ___) => _coverPlaceholder(),
                           )

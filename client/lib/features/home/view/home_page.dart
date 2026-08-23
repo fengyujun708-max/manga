@@ -192,7 +192,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 children: [
                   // 封面图
                   if (cover.isNotEmpty)
-                    CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover,
+                    CachedNetworkImage(
+                        imageUrl: cover, fit: BoxFit.cover,
+                        httpHeaders: {'Referer': 'https://\${Uri.parse(cover).host}/'},
                       errorWidget: (_, __, ___) => Container(color: DS.surface2))
                   else
                     Container(color: DS.surface2),

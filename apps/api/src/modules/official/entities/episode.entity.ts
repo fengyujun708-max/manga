@@ -7,43 +7,43 @@ export class OfficialEpisode {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'series_id' })
   seriesId: string;
 
   @ManyToOne(() => OfficialSeries, series => series.episodes)
-  @JoinColumn({ name: 'seriesId' })
+  @JoinColumn({ name: 'series_id' })
   series: OfficialSeries;
 
-  @Column({ type: 'int' })
+  @Column({ name: 'ep_number' })
   epNumber: number;
 
-  @Column({ type: 'varchar', length: 512, nullable: true })
+  @Column({ name: 'title', nullable: true })
   title: string;
 
-  @Column({ type: 'varchar', length: 512, nullable: true })
+  @Column({ name: 'sub_title', nullable: true })
   subTitle: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ name: 'published_at', type: 'timestamptz', nullable: true })
   publishedAt: Date;
 
-  @Column({ type: 'varchar', length: 16, default: 'AVAILABLE' })
+  @Column({ name: 'availability', default: 'AVAILABLE' })
   availability: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'external_url', nullable: true })
   externalUrl: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'asset_url', nullable: true })
   assetUrl: string;
 
-  @Column({ type: 'varchar', length: 16, default: 'image' })
+  @Column({ name: 'asset_type', default: 'image' })
   assetType: string;
 
-  @Column({ type: 'jsonb', default: {} })
+  @Column({ name: 'metadata', type: 'jsonb', default: '{}' })
   metadata: Record<string, unknown>;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

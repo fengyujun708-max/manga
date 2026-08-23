@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
 import { OfficialService } from './official.service';
 
-@Controller('v1/official')
+@Controller('official')
 export class OfficialController {
   constructor(private readonly svc: OfficialService) {}
 

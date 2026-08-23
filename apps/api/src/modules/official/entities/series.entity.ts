@@ -8,55 +8,55 @@ export class OfficialSeries {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'channel_id' })
   channelId: string;
 
   @ManyToOne(() => OfficialChannel, channel => channel.series)
-  @JoinColumn({ name: 'channelId' })
+  @JoinColumn({ name: 'channel_id' })
   channel: OfficialChannel;
 
-  @Column({ type: 'varchar', length: 128 })
+  @Column({ name: 'provider_id' })
   providerId: string;
 
-  @Column({ type: 'varchar', length: 512 })
+  @Column({ name: 'title' })
   title: string;
 
-  @Column({ type: 'varchar', length: 512, nullable: true })
+  @Column({ name: 'alt_title', nullable: true })
   altTitle: string;
 
-  @Column({ type: 'varchar', length: 256, nullable: true })
+  @Column({ name: 'author', nullable: true })
   author: string;
 
-  @Column({ type: 'varchar', length: 256, nullable: true })
+  @Column({ name: 'artist', nullable: true })
   artist: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'description', nullable: true })
   description: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'cover_url', nullable: true })
   coverUrl: string;
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ name: 'genres', type: 'simple-array', nullable: true })
   genres: string[];
 
-  @Column({ type: 'varchar', length: 16, default: 'ONGOING' })
+  @Column({ name: 'status', default: 'ONGOING' })
   status: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'provider_url', nullable: true })
   providerUrl: string;
 
-  @Column({ type: 'varchar', length: 8, default: 'zh' })
+  @Column({ name: 'language', default: 'zh' })
   language: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'mature', default: false })
   mature: boolean;
 
   @OneToMany(() => OfficialEpisode, episode => episode.series)
   episodes: OfficialEpisode[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

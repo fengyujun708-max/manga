@@ -215,7 +215,9 @@ class ComicCard extends StatelessWidget {
                   child: AspectRatio(
                     aspectRatio: 0.72,
                     child: cover.isNotEmpty
-                      ? Image.network(cover, fit: BoxFit.cover,
+                      ? Image.network(
+                          cover, fit: BoxFit.cover,
+                          headers: {'Referer': 'https://${Uri.parse(cover).host}/'},
                           errorBuilder: (_, __, ___) => _coverFallback())
                       : _coverFallback(),
                   ),
@@ -300,7 +302,9 @@ class ContinueReadingCard extends StatelessWidget {
               child: SizedBox(
                 width: 64, height: 90,
                 child: cover.isNotEmpty
-                  ? Image.network(cover, fit: BoxFit.cover,
+                  ? Image.network(
+                          cover, fit: BoxFit.cover,
+                          headers: {'Referer': 'https://${Uri.parse(cover).host}/'},
                       errorBuilder: (_, __, ___) => Container(color: DS.surface2))
                   : Container(color: DS.surface2),
               ),

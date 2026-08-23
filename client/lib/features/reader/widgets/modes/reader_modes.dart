@@ -138,6 +138,7 @@ class _PageImageState extends State<_PageImage> {
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
+      httpHeaders: {'Referer': 'https://\${Uri.parse(widget.imageUrl).host}/'},
       imageUrl: widget.url,
       fit: BoxFit.contain,
       width: double.infinity,
@@ -246,6 +247,7 @@ class _SinglePageModeState extends State<SinglePageMode> {
             minScale: 1.0,
             maxScale: 3.0,
             child: CachedNetworkImage(
+                httpHeaders: {'Referer': 'https://\${Uri.parse(widget.imageUrl).host}/'},
               imageUrl: widget.pageUrls[index],
               fit: BoxFit.contain,
               width: double.infinity,

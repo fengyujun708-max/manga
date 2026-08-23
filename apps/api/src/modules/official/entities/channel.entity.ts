@@ -6,33 +6,33 @@ export class OfficialChannel {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 64, unique: true })
+  @Column({ name: 'slug' })
   slug: string;
 
-  @Column({ type: 'varchar', length: 128 })
+  @Column({ name: 'display_name' })
   displayName: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'description', nullable: true })
   description: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'logo_url', nullable: true })
   logoUrl: string;
 
-  @Column({ type: 'varchar', length: 64 })
+  @Column({ name: 'provider' })
   provider: string;
 
-  @Column({ type: 'varchar', length: 16, default: 'ACTIVE' })
+  @Column({ name: 'status', default: 'ACTIVE' })
   status: string;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ name: 'priority', default: 0 })
   priority: number;
 
   @OneToMany(() => OfficialSeries, series => series.channel)
   series: OfficialSeries[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

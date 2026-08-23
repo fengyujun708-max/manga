@@ -34,7 +34,7 @@ export class CreateOfficialTables1730000000000 implements MigrationInterface {
         { name: 'artist', type: 'varchar', length: '256', isNullable: true },
         { name: 'description', type: 'text', isNullable: true },
         { name: 'cover_url', type: 'text', isNullable: true },
-        { name: 'genres', type: 'simple-array', isNullable: true },
+        { name: 'genres', type: 'text', isNullable: true },
         { name: 'status', type: 'varchar', length: '16', default: "'ONGOING'" },
         { name: 'provider_url', type: 'text', isNullable: true },
         { name: 'language', type: 'varchar', length: '8', default: "'zh'" },
