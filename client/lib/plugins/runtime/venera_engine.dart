@@ -97,7 +97,7 @@ class VeneraEngine {
   }
 
   /// 求值 JS 并等待 Promise 完成
-  Future<dynamic> evaluateAwait(String js) async {
+  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 8000}) async {
     _runtime!.evaluate('''
 globalThis.__evalResult__ = null;
 globalThis.__evalDone__ = false;
@@ -111,11 +111,17 @@ globalThis.__evalDone__ = false;
   globalThis.__evalDone__ = true;
 })();
 ''');
-    for (var i = 0; i < 600; i++) {
+    final maxIter = timeoutMs ~/ 30;
+    for (var i = 0; i < maxIter; i++) {
       _runtime!.executePendingJob();
       final done = _runtime!.evaluate('globalThis.__evalDone__').rawResult;
       if (done == true) break;
       await Future.delayed(const Duration(milliseconds: 30));
+    }
+    final done = _runtime!.evaluate('globalThis.__evalDone__').rawResult;
+    if (done != true) {
+      // 超时未完成 → 强制返回错误
+      _runtime!.evaluate('globalThis.__evalDone__ = true; globalThis.__evalResult__ = { __error: "请求超时（源站无响应或被墙）" };');
     }
     final r = _runtime!.evaluate('globalThis.__evalResult__');
     final val = r.rawResult;
