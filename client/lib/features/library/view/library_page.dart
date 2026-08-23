@@ -42,7 +42,7 @@ class _LibraryPageState extends State<LibraryPage> {
         children.add(SliverFillRemaining(child: _empty(Icons.favorite_border_rounded, '还没有收藏')));
       } else {
         children.add(SliverPadding(padding: EdgeInsets.fromLTRB(DS.sp12, 0, DS.sp12, 100), sliver: SliverGrid(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 0.62, crossAxisSpacing: DS.sp10, mainAxisSpacing: DS.sp10),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 0.62, crossAxisSpacing: DS.sp12, mainAxisSpacing: DS.sp12),
           delegate: SliverChildBuilderDelegate((_, i) => _favCard(_favorites[i]), childCount: _favorites.length))));
       }
     } else {
@@ -100,3 +100,4 @@ class _LibraryPageState extends State<LibraryPage> {
   Widget _empty(IconData icon, String msg) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
     Icon(icon, size: 56, color: DS.textDisabled), SizedBox(height: DS.sp12),
     Text(msg, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: DS.textSecondary))]));
+}
