@@ -57,13 +57,13 @@ class SourceDataService {
   Future<Map<String, dynamic>> explore(String sourceId) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__exploreAll__("$sourceId")');
+        final raw = await engine.evaluateAwait('globalThis.__exploreAll__("$sourceId")').timeout(const Duration(seconds: 20), onTimeout: () => { throw Exception('探索超时（网络不通或源站被墙）'); });
         if (raw is Map && raw['error'] != null) {
           return {'sections': [], 'mode': 'local', 'error': raw['error'].toString()};
         } else if (raw is List && raw.isNotEmpty) {
           return {'sections': raw, 'mode': 'local'};
         }
-        return {'sections': [], 'mode': 'local', 'error': '板块为空，请检查网络或开 VPN 后重试'};
+        return {'sections': [], 'mode': 'local', 'error': raw is Map && raw['error'] != null ? raw['error'].toString() : '板块为空，请检查网络或开VPN后重试'};
       } catch (e) {
         return {'sections': [], 'mode': 'local', 'error': e.toString()};
       }
@@ -93,7 +93,7 @@ class SourceDataService {
   Future<List<Map<String, dynamic>>> categories(String sourceId) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__categories__("$sourceId")');
+        final raw = await engine.evaluateAwait('globalThis.__categories__("$sourceId")').timeout(const Duration(seconds: 15), onTimeout: () => { throw Exception('分类加载超时'); });
         if (raw is List && raw.isNotEmpty) {
           return (raw as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
         }
