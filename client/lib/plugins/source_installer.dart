@@ -28,12 +28,14 @@ class SourceInstaller {
   /// 优先从自建服务器下载源 JS（国内可达），兜底 jsdelivr
   static Future<String> resolveJsUrl(SourceManifest m) async {
     final id = m.id.toLowerCase();
-    // 0) 自建服务器（20 个白名单源）
+    // 0) 自建服务器（20 个白名单源），带重试
     final serverUrl = '$_serverBase/sources/$id.js';
-    try {
-      final r = await _httpGet(serverUrl);
-      if (r != null && r.contains('ComicSource')) return serverUrl;
-    } catch (_) {}
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        final r = await _httpGet(serverUrl);
+        if (r != null && r.contains('ComicSource')) return serverUrl;
+      } catch (_) {}
+    }
     // 1) downloadUrl/repositoryUrl 直链
     final direct = m.downloadUrl.isNotEmpty ? m.downloadUrl : m.repositoryUrl;
     if (direct.startsWith('http')) {
@@ -53,7 +55,7 @@ class SourceInstaller {
 
   static Future<String?> _httpGet(String url) async {
     try {
-      final client = HttpClient()..connectionTimeout = const Duration(seconds: 12);
+      final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
       try {
         final req = await client.getUrl(Uri.parse(url));
         req.headers.set('User-Agent', 'Mozilla/5.0 (Linux; Android 13) Chrome/120.0 Mobile');

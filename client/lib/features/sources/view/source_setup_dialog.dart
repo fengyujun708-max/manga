@@ -60,21 +60,25 @@ class SourceSetupDialog {
     final dir = await SourceInstaller.ensureSourceDir();
     if (dir == null) return 0;
     final prefs = await SharedPreferences.getInstance();
-    final list = (jsonDecode(prefs.getString('installed_sources') ?? '[]') as List).toList();
     var ok = 0;
     final total = SourceInstaller.vettedSources.length;
     for (var i = 0; i < total; i++) {
       final id = SourceInstaller.vettedSources[i];
       onProgress(i, total, _names[id] ?? id);
       final m = _manifest(id.toLowerCase());
-      if (await SourceInstaller.install(m, dir)) {
-        if (!list.any((e) { try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == id; } catch (_) { return false; } })) {
-          list.add(m.toJson());
+      try {
+        if (await SourceInstaller.install(m, dir)) {
+          // 逐个保存，避免中途失败丢全部
+          final json = prefs.getString('installed_sources') ?? '[]';
+          final list = (jsonDecode(json) as List).toList();
+          if (!list.any((e) { try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == m.id; } catch (_) { return false; } })) {
+            list.add(m.toJson());
+            await prefs.setString('installed_sources', jsonEncode(list));
+          }
+          ok++;
         }
-        ok++;
-      }
+      } catch (_) {}
     }
-    await prefs.setString('installed_sources', jsonEncode(list));
     await prefs.setBool(_flag, true);
     return ok;
   }

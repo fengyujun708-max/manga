@@ -1095,10 +1095,10 @@ class CopyManga extends ComicSource {
     }
 
     async refreshAppApi() {
-        // 只信候选池实测：逐个探测 homeIndex，第一个返回有效 JSON 的域名即为可用域名。
-        // 注：network2 接口已返回死域名 t66y.com，不能信任动态发现。
-        const candidates = [this.settings.base_url, CopyManga.defaultApiUrl, ...CopyManga.fallbackApiUrls];
+        // 候选池实测：找到第一个返回真实漫画数据的域名（不只是有效 JSON）
+        const candidates = [CopyManga.defaultApiUrl, ...CopyManga.fallbackApiUrls, this.settings.base_url];
         const tried = new Set();
+        let fallbackHost = '';
         for (const host0 of candidates) {
             if (!host0 || typeof host0 !== 'string' || host0.startsWith('[')) continue;
             const host = host0.replace(/^https?:\/\//, '');
@@ -1108,9 +1108,22 @@ class CopyManga extends ComicSource {
                 const r = await fetch('https://' + host + '/api/v3/h5/homeIndex', { headers: this.headers });
                 if (r.status === 200) {
                     const t = await r.text();
-                    if (t && t !== 'error' && t.trim().startsWith('{')) { this.settings.base_url = host; return; }
+                    if (t && t !== 'error' && t.trim().startsWith('{')) {
+                        try {
+                            const d = JSON.parse(t);
+                            const rec = (d.results && d.results.recComics && d.results.recComics.list) || [];
+                            const hot = (d.results && d.results.hotComics) || [];
+                            if (rec.length > 0 || hot.length > 0) {
+                                this.settings.base_url = host; return;
+                            }
+                            // 有效但空列表，记为兜底
+                            if (!fallbackHost) fallbackHost = host;
+                        } catch (_) {}
+                    }
                 }
             } catch (_) {}
         }
+        // 所有域名都没有数据，用第一个至少返回有效 JSON 的
+        if (fallbackHost) this.settings.base_url = fallbackHost;
     }
 }
