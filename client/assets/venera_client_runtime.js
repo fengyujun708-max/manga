@@ -802,13 +802,21 @@ globalThis.__categories__ = async function (sourceId) {
     const name = p.name || '';
     const cats = Array.isArray(p.categories) ? p.categories : [];
     const params = Array.isArray(p.categoryParams) ? p.categoryParams : [];
-    out.push({
-      name,
-      categories: cats.map((c, i) => ({
-        name: typeof c === 'string' ? c : (c.name || c.title || String(c)),
-        param: params[i] !== undefined ? String(params[i]) : '',
-      })),
-    });
+    let outCats;
+    try {
+      outCats = cats.map((c, i) => {
+        let cname, cparam;
+        if (typeof c === 'string') { cname = c; cparam = params[i] !== undefined ? String(params[i]) : ''; }
+        else if (c && typeof c === 'object') {
+          // 兼容 {label, target:{attributes:{category, param}}} 结构（如 hcomic）
+          cname = c.label || c.name || c.title || String(c);
+          const attrs = (c.target && c.target.attributes) || c.attributes || {};
+          cparam = (params[i] !== undefined ? String(params[i]) : (attrs.param || attrs.category || ''));
+        } else { cname = String(c); cparam = params[i] !== undefined ? String(params[i]) : ''; }
+        return { name: cname, param: cparam };
+      });
+    } catch (_) { outCats = []; }
+    out.push({ name, categories: outCats });
   }
   return out;
 };
@@ -817,14 +825,30 @@ globalThis.__categories__ = async function (sourceId) {
 globalThis.__categoryComics__ = async function (sourceId, category, param, options, page) {
   const src = globalThis.__sources__ && globalThis.__sources__[sourceId];
   if (!src) return { error: 'source not loaded' };
-  if (typeof src.categoryComics !== 'object' || !src.categoryComics || typeof src.categoryComics.load !== 'function') {
+  if (!src.categoryComics || typeof src.categoryComics.load !== 'function') {
     return { items: [] };
   }
-  const res = await src.categoryComics.load(category, param, options || [], page || 1);
+  // options 为空时，从 category.optionList / search.optionList 取默认值（第一个 option 的 "-" 前段）
+  let opts = (Array.isArray(options) && options.length > 0) ? options : null;
+  if (!opts) {
+    try {
+      const ol = (src.categoryComics && Array.isArray(src.categoryComics.optionList) ? src.categoryComics.optionList : [])
+                 .concat(src.category && Array.isArray(src.category.optionList) ? src.category.optionList : [])
+                 .concat(src.search && Array.isArray(src.search.optionList) ? src.search.optionList : []);
+      opts = ol.map((g) => {
+        const arr = (g && g.options) || [];
+        if (!arr.length) return '';
+        const first = String(arr[0]);
+        const i = first.indexOf('-');
+        return i > 0 ? first.slice(0, i) : '';
+      });
+    } catch (_) { opts = []; }
+  }
+  const res = await src.categoryComics.load(category, param, opts || [], page || 1);
   if (Array.isArray(res)) return { items: res };
   if (res && typeof res === 'object') {
     const items = res.comics || res.items || res.list || [];
-    return { items, hasMore: res.hasMore === true || res.hasNextPage === true };
+    return { items, hasMore: res.hasMore === true || res.hasNextPage === true || (res.maxPage && (page || 1) < res.maxPage) };
   }
   return { items: [] };
 };
