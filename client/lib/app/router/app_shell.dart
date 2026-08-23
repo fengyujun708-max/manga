@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../ds.dart';
-import '../../features/sources/view/source_setup_dialog.dart';
+import '../../plugins/source_installer.dart';
 
 /// 漫界 App Shell — 浮动液态玻璃底栏
 /// 滚动下滑隐藏 + 上滑/停止显示 + 选中微动效
@@ -38,8 +39,21 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     _barCtrl = AnimationController(duration: DS.durEmphasis, vsync: this);
     _barOffset = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _barCtrl, curve: DS.cEmphasis));
     _barOpacity = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(parent: _barCtrl, curve: Curves.easeOut));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) SourceSetupDialog.maybeShow(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      // 内置源自动提取（首次）
+      final prefs = await SharedPreferences.getInstance();
+      if (!(prefs.getBool('sources_extracted') ?? false)) {
+        await SourceInstaller.extractBundledSources();
+        await prefs.setBool('sources_extracted', true);
+      }
+      // 版本更新检测
+      try {
+        final updates = await SourceInstaller.checkUpdates();
+        if (updates.isNotEmpty && mounted) {
+          _showUpdateDialog(updates);
+        }
+      } catch (_) {}
     });
   }
 
@@ -56,6 +70,43 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     } else if (n is ScrollEndNotification) {
       if (!_visible) { _visible = true; _barCtrl.reverse(); }
     }
+  }
+
+  void _showUpdateDialog(List<SourceUpdate> updates) {
+    showDialog(context: context, barrierDismissible: false, builder: (_) => AlertDialog(
+      backgroundColor: DS.surface2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DS.rLg)),
+      title: Row(children: [
+        Icon(Icons.system_update_rounded, color: DS.accent, size: 22),
+        SizedBox(width: 8),
+        Text('漫画源更新', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: DS.textPrimary)),
+      ]),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        ...updates.take(5).map((u) => Padding(
+          padding: EdgeInsets.symmetric(vertical: 4),
+          child: Row(children: [
+            Icon(Icons.extension_rounded, size: 16, color: DS.textTertiary),
+            SizedBox(width: 8),
+            Expanded(child: Text('${u.name}  ${u.currentVersion} → ${u.newVersion}', style: TextStyle(fontSize: 13, color: DS.textSecondary))),
+          ]),
+        )),
+        if (updates.length > 5) Text('...等 ${updates.length} 个源', style: TextStyle(fontSize: 12, color: DS.textTertiary)),
+      ]),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text('稍后', style: TextStyle(color: DS.textTertiary))),
+        FilledButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            final count = await SourceInstaller.updateAll(updates);
+            if (mounted && count > 0) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已更新 $count 个源'), behavior: SnackBarBehavior.floating));
+            }
+          },
+          style: FilledButton.styleFrom(backgroundColor: DS.accent),
+          child: Text('立即更新'),
+        ),
+      ],
+    ));
   }
 
   @override

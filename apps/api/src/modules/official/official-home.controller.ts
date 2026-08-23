@@ -1,12 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
-import { OfficialService } from './official.service';
+import { AggregateService } from './aggregate.service';
 
 @Controller('home')
 export class OfficialHomeController {
-  constructor(private readonly svc: OfficialService) {}
+  constructor(private readonly aggregate: AggregateService) {}
 
   @Get()
-  async home() {
-    return this.svc.getHomeFeed();
+  async home(): Promise<any> {
+    return this.aggregate.getHome();
   }
 }
