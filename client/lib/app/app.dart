@@ -66,7 +66,8 @@ class ManjieApp extends StatelessWidget {
           builder: (_, state) => SourceReaderPage(
             sourceId: state.pathParameters['sourceId']!,
             comicId: state.pathParameters['comicId']!,
-            epId: state.pathParameters['epId']!,
+            comicTitle: state.uri.queryParameters['title'] ?? '',
+            chapters: [],
           ),
         ),
         GoRoute(

@@ -182,7 +182,7 @@ class _CardRow extends StatelessWidget {
                     placeholder: (_, __) => Container(color: DS.surface2), errorWidget: (_, __, ___) => Container(color: DS.surface2))
                   : Container(color: DS.surface2)),
             ),
-            SizedBox(height: DS.sp6),
+            SizedBox(height: DS.sp8),
             Text(card['title'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: DS.textPrimary)),
             if (card['tag'] != null) Text(card['tag'], style: TextStyle(fontSize: 11, color: card['tag'] == 'NEW' ? Color(0xFF34D399) : DS.textTertiary)),
           ])),

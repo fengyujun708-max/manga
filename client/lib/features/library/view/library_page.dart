@@ -56,13 +56,10 @@ class _LibraryPageState extends State<LibraryPage> {
         // 内容
         if (_loading)
           SliverPadding(padding: EdgeInsets.all(DS.sp16), sliver: SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 0.65, crossAxisSpacing: DS.sp10, mainAxisSpacing: DS.sp10),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 0.65, crossAxisSpacing: DS.sp12, mainAxisSpacing: DS.sp12),
             delegate: SliverChildBuilderDelegate((_, __) => Container(decoration: BoxDecoration(color: DS.surface1, borderRadius: BorderRadius.circular(DS.rMd)))))),
         else
-          switch (_tab) {
-            0 => _buildFavorites(),
-            _ => _buildHistory(),
-          },
+          _tab == 0 ? _buildFavorites() : _buildHistory(),
       ]))),
     );
   }
@@ -70,7 +67,7 @@ class _LibraryPageState extends State<LibraryPage> {
   Widget _buildFavorites() {
     if (_favorites.isEmpty) return SliverFillRemaining(child: _emptyState(Icons.favorite_border_rounded, '还没有收藏', '浏览漫画时点击❤️即可收藏'));
     return SliverPadding(padding: EdgeInsets.fromLTRB(DS.sp12, 0, DS.sp12, 100), sliver: SliverGrid(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 0.62, crossAxisSpacing: DS.sp10, mainAxisSpacing: DS.sp10),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 0.62, crossAxisSpacing: DS.sp12, mainAxisSpacing: DS.sp12),
       delegate: SliverChildBuilderDelegate((_, i) {
         final item = _favorites[i];
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -78,7 +75,7 @@ class _LibraryPageState extends State<LibraryPage> {
             child: CachedNetworkImage(imageUrl: item['cover'] ?? '', fit: BoxFit.cover, width: double.infinity,
               placeholder: (_, __) => Container(color: DS.surface2),
               errorWidget: (_, __, ___) => Icon(Icons.menu_book_rounded, size: 32, color: DS.textDisabled)))),
-          SizedBox(height: DS.sp6),
+          SizedBox(height: DS.sp8),
           Text(item['title'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: DS.textPrimary)),
         ]);
       }, childCount: _favorites.length)));
