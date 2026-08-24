@@ -1,443 +1,476 @@
 /*
- * VComic comic-source JavaScript runtime (init.js)
- *
- * Copyright 2026 VComic
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * ---------------------------------------------------------------------------
- * CLEAN-ROOM IMPLEMENTATION
- * ---------------------------------------------------------------------------
- * This file is an original VComic implementation of the comic-source host API
- * surface expected by community `.js` sources (globals / method names /
- * sendMessage shapes documented in VComic docs and host bridges).
- *
- * It does NOT contain code copied from Venera or any other third-party
- * comic-reader project. API names are retained solely for source compatibility.
- *
- * Host contract (native): global `sendMessage(object) -> any` is injected by
- * QuickJS/JNI before this script runs. Global `appVersion` may also be set.
+Venera JavaScript Library
+
+This library provides a set of APIs for interacting with the Venera app.
+*/
+
+/**
+ * @function sendMessage
+ * @global
+ * @param {Object} message
+ * @returns {any}
  */
 
-/* global sendMessage, appVersion */
-
-// ---------------------------------------------------------------------------
-// JSON bridge: ArrayBuffer <-> { __type: 'ArrayBuffer', data: base64 }
-// Host encodes binary the same way (JsEngine.encodeBinaryTree).
-// ---------------------------------------------------------------------------
-(function installBinarySafeSendMessage() {
-    var nativeSend = sendMessage;
-    var B64 =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    function u8ToBase64(u8) {
-        var out = "";
-        var i = 0;
-        var n = u8.length;
-        while (i < n) {
-            var a = u8[i++];
-            var hasB = i < n;
-            var b = hasB ? u8[i++] : 0;
-            var hasC = i < n;
-            var c = hasC ? u8[i++] : 0;
-            var triple = (a << 16) | (b << 8) | c;
-            out += B64.charAt((triple >> 18) & 63);
-            out += B64.charAt((triple >> 12) & 63);
-            out += hasB ? B64.charAt((triple >> 6) & 63) : "=";
-            out += hasC ? B64.charAt(triple & 63) : "=";
-        }
-        return out;
-    }
-
-    function base64ToU8(b64) {
-        var s = String(b64).replace(/[\s\r\n]/g, "");
-        var pad = s.endsWith("==") ? 2 : s.endsWith("=") ? 1 : 0;
-        var outLen = Math.floor((s.length * 3) / 4) - pad;
-        var bytes = new Uint8Array(outLen);
-        var o = 0;
-        for (var i = 0; i < s.length; i += 4) {
-            var e1 = B64.indexOf(s.charAt(i));
-            var e2 = B64.indexOf(s.charAt(i + 1));
-            var c3 = s.charAt(i + 2);
-            var c4 = s.charAt(i + 3);
-            var e3 = c3 === "=" || c3 === "" ? -1 : B64.indexOf(c3);
-            var e4 = c4 === "=" || c4 === "" ? -1 : B64.indexOf(c4);
-            if (e1 < 0 || e2 < 0) continue;
-            bytes[o++] = (e1 << 2) | (e2 >> 4);
-            if (e3 >= 0) bytes[o++] = ((e2 & 15) << 4) | (e3 >> 2);
-            if (e4 >= 0) bytes[o++] = ((e3 & 3) << 6) | e4;
-        }
-        return o === bytes.length ? bytes : bytes.subarray(0, o);
-    }
-
-    function pack(value, seen) {
-        if (value == null) return value;
-        if (value instanceof ArrayBuffer) {
-            return {
-                __type: "ArrayBuffer",
-                data: u8ToBase64(new Uint8Array(value)),
-            };
-        }
-        if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView && ArrayBuffer.isView(value)) {
-            var v = value;
-            var sliced = v.buffer.slice(v.byteOffset, v.byteOffset + v.byteLength);
-            return {
-                __type: "ArrayBuffer",
-                data: u8ToBase64(new Uint8Array(sliced)),
-            };
-        }
-        if (typeof value === "object") {
-            var set = seen || new Set();
-            if (set.has(value)) return null;
-            set.add(value);
-            if (Array.isArray(value)) {
-                return value.map(function (item) {
-                    return pack(item, set);
-                });
-            }
-            var obj = {};
-            var keys = Object.keys(value);
-            for (var i = 0; i < keys.length; i++) {
-                obj[keys[i]] = pack(value[keys[i]], set);
-            }
-            return obj;
-        }
-        return value;
-    }
-
-    function unpack(value, seen) {
-        if (value == null) return value;
-        if (typeof value !== "object") return value;
-        var set = seen || new Set();
-        if (set.has(value)) return null;
-        set.add(value);
-        if (Array.isArray(value)) {
-            return value.map(function (item) {
-                return unpack(item, set);
-            });
-        }
-        if (value.__type === "ArrayBuffer" && typeof value.data === "string") {
-            var view = base64ToU8(value.data);
-            var ab = new ArrayBuffer(view.byteLength);
-            new Uint8Array(ab).set(view);
-            return ab;
-        }
-        var obj = {};
-        var keys = Object.keys(value);
-        for (var i = 0; i < keys.length; i++) {
-            obj[keys[i]] = unpack(value[keys[i]], set);
-        }
-        return obj;
-    }
-
-    sendMessage = function (message) {
-        var raw = nativeSend(pack(message));
-        if (raw && typeof raw.then === "function") {
-            return raw.then(unpack);
-        }
-        return unpack(raw);
-    };
-})();
-
-// ---------------------------------------------------------------------------
-// Timers (host delay is synchronous; callback runs after delay returns)
-// ---------------------------------------------------------------------------
-
-function setTimeout(callback, delayMs) {
-    var result = sendMessage({ method: "delay", time: delayMs });
-    if (result && typeof result.then === "function") {
-        result.then(callback);
-    } else {
-        Promise.resolve().then(callback);
-    }
+/**
+ * Set a timeout to execute a callback function after a specified delay.
+ * @param callback {Function}
+ * @param delay {number} - delay in milliseconds
+ */
+function setTimeout(callback, delay) {
+    sendMessage({
+        method: 'delay',
+        time: delay,
+    }).then(callback);
 }
 
-function IntervalHandle(periodMs, fn) {
-    this._period = periodMs;
-    this._fn = fn;
-    this._alive = false;
-}
-
-IntervalHandle.prototype._tick = function () {
-    if (!this._alive) return;
-    this._fn();
-    setTimeout(this._tick.bind(this), this._period);
-};
-
-IntervalHandle.prototype.run = function () {
-    this._alive = true;
-    this._tick();
-};
-
-IntervalHandle.prototype.cancel = function () {
-    this._alive = false;
-};
-
-function setInterval(callback, delayMs) {
-    var handle = new IntervalHandle(delayMs, callback);
-    handle.run();
-    return handle;
-}
-
-// ---------------------------------------------------------------------------
-// Convert — encoding / hashing / AES (host: ConvertBridge)
-// ---------------------------------------------------------------------------
-
-var Convert = {
-    encodeUtf8: function (str) {
+/// encode, decode, hash, decrypt
+let Convert = {
+    /**
+     * @param str {string}
+     * @returns {ArrayBuffer}
+     */
+    encodeUtf8: (str) => {
         return sendMessage({
             method: "convert",
             type: "utf8",
             value: str,
-            isEncode: true,
+            isEncode: true
         });
     },
-    decodeUtf8: function (buf) {
+
+    /**
+     * @param value {ArrayBuffer}
+     * @returns {string}
+     */
+    decodeUtf8: (value) => {
         return sendMessage({
             method: "convert",
             type: "utf8",
-            value: buf,
-            isEncode: false,
+            value: value,
+            isEncode: false
         });
     },
-    encodeGbk: function (str) {
+
+    /**
+     * @param str {string}
+     * @returns {ArrayBuffer}
+     */
+    encodeGbk: (str) => {
         return sendMessage({
             method: "convert",
             type: "gbk",
             value: str,
-            isEncode: true,
+            isEncode: true
         });
     },
-    decodeGbk: function (buf) {
+
+    /**
+     * @param value {ArrayBuffer}
+     * @returns {string}
+     */
+    decodeGbk: (value) => {
         return sendMessage({
             method: "convert",
             type: "gbk",
-            value: buf,
-            isEncode: false,
+            value: value,
+            isEncode: false
         });
     },
-    encodeBase64: function (buf) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @returns {string}
+     */
+    encodeBase64: (value) => {
         return sendMessage({
             method: "convert",
             type: "base64",
-            value: buf,
-            isEncode: true,
+            value: value,
+            isEncode: true
         });
     },
-    decodeBase64: function (str) {
+
+    /**
+     * @param {string} value
+     * @returns {ArrayBuffer}
+     */
+    decodeBase64: (value) => {
         return sendMessage({
             method: "convert",
             type: "base64",
-            value: str,
-            isEncode: false,
+            value: value,
+            isEncode: false
         });
     },
-    md5: function (buf) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @returns {ArrayBuffer}
+     */
+    md5: (value) => {
         return sendMessage({
             method: "convert",
             type: "md5",
-            value: buf,
-            isEncode: true,
+            value: value,
+            isEncode: true
         });
     },
-    sha1: function (buf) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @returns {ArrayBuffer}
+     */
+    sha1: (value) => {
         return sendMessage({
             method: "convert",
             type: "sha1",
-            value: buf,
-            isEncode: true,
+            value: value,
+            isEncode: true
         });
     },
-    sha256: function (buf) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @returns {ArrayBuffer}
+     */
+    sha256: (value) => {
         return sendMessage({
             method: "convert",
             type: "sha256",
-            value: buf,
-            isEncode: true,
+            value: value,
+            isEncode: true
         });
     },
-    sha512: function (buf) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @returns {ArrayBuffer}
+     */
+    sha512: (value) => {
         return sendMessage({
             method: "convert",
             type: "sha512",
-            value: buf,
-            isEncode: true,
+            value: value,
+            isEncode: true
         });
     },
-    hmac: function (key, buf, hashName) {
+
+    /**
+     * @param key {ArrayBuffer}
+     * @param value {ArrayBuffer}
+     * @param hash {string} - md5, sha1, sha256, sha512
+     * @returns {ArrayBuffer}
+     */
+    hmac: (key, value, hash) => {
         return sendMessage({
             method: "convert",
             type: "hmac",
-            value: buf,
+            value: value,
             key: key,
-            hash: hashName,
-            isEncode: true,
+            hash: hash,
+            isEncode: true
         });
     },
-    hmacString: function (key, buf, hashName) {
+
+    /**
+     * @param key {ArrayBuffer}
+     * @param value {ArrayBuffer}
+     * @param hash {string} - md5, sha1, sha256, sha512
+     * @returns {string} - hex string
+     */
+    hmacString: (key, value, hash) => {
         return sendMessage({
             method: "convert",
             type: "hmac",
-            value: buf,
+            value: value,
             key: key,
-            hash: hashName,
+            hash: hash,
             isEncode: true,
-            isString: true,
+            isString: true
         });
     },
-    encryptAesEcb: function (buf, key) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @returns {ArrayBuffer}
+     */
+    encryptAesEcb: (value, key) => {
         return sendMessage({
             method: "convert",
             type: "aes-ecb",
-            value: buf,
+            value: value,
             key: key,
-            isEncode: true,
+            isEncode: true
         });
     },
-    decryptAesEcb: function (buf, key) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @returns {ArrayBuffer}
+     */
+    decryptAesEcb: (value, key) => {
         return sendMessage({
             method: "convert",
             type: "aes-ecb",
-            value: buf,
+            value: value,
             key: key,
-            isEncode: false,
+            isEncode: false
         });
     },
-    encryptAesCbc: function (buf, key, iv) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @param {ArrayBuffer} iv
+     * @returns {ArrayBuffer}
+     */
+    encryptAesCbc: (value, key, iv) => {
         return sendMessage({
             method: "convert",
             type: "aes-cbc",
-            value: buf,
+            value: value,
             key: key,
             iv: iv,
-            isEncode: true,
+            isEncode: true
         });
     },
-    decryptAesCbc: function (buf, key, iv) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @param {ArrayBuffer} iv
+     * @returns {ArrayBuffer}
+     */
+    decryptAesCbc: (value, key, iv) => {
         return sendMessage({
             method: "convert",
             type: "aes-cbc",
-            value: buf,
+            value: value,
             key: key,
             iv: iv,
-            isEncode: false,
+            isEncode: false
         });
     },
-    encryptAesCfb: function (buf, key, iv, blockSize) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @param {ArrayBuffer} iv
+     * @param {number} blockSize
+     * @returns {ArrayBuffer}
+     */
+    encryptAesCfb: (value, key, iv, blockSize) => {
         return sendMessage({
             method: "convert",
             type: "aes-cfb",
-            value: buf,
+            value: value,
             key: key,
             iv: iv,
             blockSize: blockSize,
-            isEncode: true,
+            isEncode: true
         });
     },
-    decryptAesCfb: function (buf, key, iv, blockSize) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @param {ArrayBuffer} iv
+     * @param {number} blockSize
+     * @returns {ArrayBuffer}
+     */
+    decryptAesCfb: (value, key, iv, blockSize) => {
         return sendMessage({
             method: "convert",
             type: "aes-cfb",
-            value: buf,
+            value: value,
             key: key,
             iv: iv,
             blockSize: blockSize,
-            isEncode: false,
+            isEncode: false
         });
     },
-    encryptAesOfb: function (buf, key, blockSize) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @param {number} blockSize
+     * @returns {ArrayBuffer}
+     */
+    encryptAesOfb: (value, key, blockSize) => {
         return sendMessage({
             method: "convert",
             type: "aes-ofb",
-            value: buf,
+            value: value,
             key: key,
             blockSize: blockSize,
-            isEncode: true,
+            isEncode: true
         });
     },
-    decryptAesOfb: function (buf, key, blockSize) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @param {number} blockSize
+     * @returns {ArrayBuffer}
+     */
+    decryptAesOfb: (value, key, blockSize) => {
         return sendMessage({
             method: "convert",
             type: "aes-ofb",
-            value: buf,
+            value: value,
             key: key,
             blockSize: blockSize,
-            isEncode: false,
+            isEncode: false
         });
     },
-    decryptRsa: function (buf, key) {
+
+    /**
+     * @param {ArrayBuffer} value
+     * @param {ArrayBuffer} key
+     * @returns {ArrayBuffer}
+     */
+    decryptRsa: (value, key) => {
         return sendMessage({
             method: "convert",
             type: "rsa",
-            value: buf,
+            value: value,
             key: key,
-            isEncode: false,
+            isEncode: false
         });
     },
-    /** Bytes → lowercase hex string (implemented in JS; host also has type "hex"). */
-    hexEncode: function (buf) {
-        var digits = "0123456789abcdef";
-        var u8 = new Uint8Array(buf);
-        var parts = new Array(u8.length * 2);
-        for (var i = 0; i < u8.length; i++) {
-            var b = u8[i];
-            parts[i * 2] = digits.charAt((b >> 4) & 0xf);
-            parts[i * 2 + 1] = digits.charAt(b & 0xf);
+    /** Encode bytes to hex string
+     * @param bytes {ArrayBuffer}
+     * @return {string}
+     */
+    hexEncode: (bytes) => {
+        const hexDigits = '0123456789abcdef';
+        const view = new Uint8Array(bytes);
+        let charCodes = new Uint8Array(view.length * 2);
+        let j = 0;
+
+        for (let i = 0; i < view.length; i++) {
+            let byte = view[i];
+            charCodes[j++] = hexDigits.charCodeAt((byte >> 4) & 0xF);
+            charCodes[j++] = hexDigits.charCodeAt(byte & 0xF);
         }
-        return parts.join("");
+
+        return String.fromCharCode(...charCodes);
     },
-};
-
-// ---------------------------------------------------------------------------
-// Random / UUID
-// ---------------------------------------------------------------------------
-
-function createUuid() {
-    return sendMessage({ method: "uuid" });
 }
 
+/**
+ * create a time-based uuid
+ *
+ * Note: the engine will generate a new uuid every time it is called
+ *
+ * To get the same uuid, please save it to the local storage
+ *
+ * @returns {string}
+ */
+function createUuid() {
+    return sendMessage({
+        method: "uuid"
+    });
+}
+
+/**
+ * Generate a random integer between min and max
+ * @param min {number}
+ * @param max {number}
+ * @returns {number}
+ */
 function randomInt(min, max) {
     return sendMessage({
-        method: "random",
-        type: "int",
+        method: 'random',
+        type: 'int',
         min: min,
-        max: max,
+        max: max
     });
 }
 
+/**
+ * Generate a random double between min and max
+ * @param min {number}
+ * @param max {number}
+ * @returns {number}
+ */
 function randomDouble(min, max) {
     return sendMessage({
-        method: "random",
-        type: "double",
+        method: 'random',
+        type: 'double',
         min: min,
-        max: max,
+        max: max
     });
 }
 
-// ---------------------------------------------------------------------------
-// Cookie + Network
-// ---------------------------------------------------------------------------
+class _Timer {
+    delay = 0;
 
-function Cookie(fields) {
-    this.name = fields.name;
-    this.value = fields.value;
-    this.domain = fields.domain;
+    callback = () => { };
+
+    status = false;
+
+    constructor(delay, callback) {
+        this.delay = delay;
+        this.callback = callback;
+    }
+
+    run() {
+        this.status = true;
+        this._interval();
+    }
+
+    _interval() {
+        if (!this.status) {
+            return;
+        }
+        this.callback();
+        setTimeout(this._interval.bind(this), this.delay);
+    }
+
+    cancel() {
+        this.status = false;
+    }
 }
 
-var Network = {
-    fetchBytes: async function (method, url, headers, data, extra) {
-        var result = await sendMessage({
-            method: "http",
+function setInterval(callback, delay) {
+    let timer = new _Timer(delay, callback);
+    timer.run();
+    return timer;
+}
+
+/**
+ * Create a cookie object.
+ * @param name {string}
+ * @param value {string}
+ * @param domain {string}
+ * @constructor
+ */
+function Cookie({name, value, domain}) {
+    this.name = name;
+    this.value = value;
+    this.domain = domain;
+}
+
+/**
+ * Network object for sending HTTP requests and managing cookies.
+ * @namespace Network
+ */
+let Network = {
+    /**
+     * Sends an HTTP request.
+     * @param {string} method - The HTTP method (e.g., GET, POST, PUT, PATCH, DELETE).
+     * @param {string} url - The URL to send the request to.
+     * @param {Object} headers - The headers to include in the request.
+     * @param data - The data to send with the request.
+     * @param {Object} extra - Extra options to pass to the interceptor.
+     * @returns {Promise<{status: number, headers: {}, body: ArrayBuffer}>} The response from the request.
+     */
+    async fetchBytes(method, url, headers, data, extra) {
+        let result = await sendMessage({
+            method: 'http',
             http_method: method,
             bytes: true,
             url: url,
@@ -445,729 +478,1043 @@ var Network = {
             data: data,
             extra: extra,
         });
-        if (result && result.error) throw result.error;
+
+        if (result.error) {
+            throw result.error;
+        }
+
         return result;
     },
 
-    sendRequest: async function (method, url, headers, data, extra) {
-        var result = await sendMessage({
-            method: "http",
+    /**
+     * Sends an HTTP request.
+     * @param {string} method - The HTTP method (e.g., GET, POST, PUT, PATCH, DELETE).
+     * @param {string} url - The URL to send the request to.
+     * @param {Object} headers - The headers to include in the request.
+     * @param data - The data to send with the request.
+     * @param {Object} extra - Extra options to pass to the interceptor.
+     * @returns {Promise<{status: number, headers: {}, body: string}>} The response from the request.
+     */
+    async sendRequest(method, url, headers, data, extra) {
+        let result = await sendMessage({
+            method: 'http',
             http_method: method,
             url: url,
             headers: headers,
             data: data,
             extra: extra,
         });
-        if (result && result.error) throw result.error;
+
+        if (result.error) {
+            throw result.error;
+        }
+
         return result;
     },
 
-    // Historical call shape: 4th positional arg is treated as `data` by sendRequest.
-    get: async function (url, headers, extra) {
-        return this.sendRequest("GET", url, headers, extra);
+    /**
+     * Sends an HTTP GET request.
+     * @param {string} url - The URL to send the request to.
+     * @param {Object} headers - The headers to include in the request.
+     * @param {Object} extra - Extra options to pass to the interceptor.
+     * @returns {Promise<{status: number, headers: {}, body: string}>} The response from the request.
+     */
+    async get(url, headers, extra) {
+        return this.sendRequest('GET', url, headers, extra);
     },
 
-    post: async function (url, headers, data, extra) {
-        return this.sendRequest("POST", url, headers, data, extra);
+    /**
+     * Sends an HTTP POST request.
+     * @param {string} url - The URL to send the request to.
+     * @param {Object} headers - The headers to include in the request.
+     * @param data - The data to send with the request.
+     * @param {Object} extra - Extra options to pass to the interceptor.
+     * @returns {Promise<{status: number, headers: {}, body: string}>} The response from the request.
+     */
+    async post(url, headers, data, extra) {
+        return this.sendRequest('POST', url, headers, data, extra);
     },
 
-    put: async function (url, headers, data, extra) {
-        return this.sendRequest("PUT", url, headers, data, extra);
+    /**
+     * Sends an HTTP PUT request.
+     * @param {string} url - The URL to send the request to.
+     * @param {Object} headers - The headers to include in the request.
+     * @param data - The data to send with the request.
+     * @param {Object} extra - Extra options to pass to the interceptor.
+     * @returns {Promise<{status: number, headers: {}, body: string}>} The response from the request.
+     */
+    async put(url, headers, data, extra) {
+        return this.sendRequest('PUT', url, headers, data, extra);
     },
 
-    patch: async function (url, headers, data, extra) {
-        return this.sendRequest("PATCH", url, headers, data, extra);
+    /**
+     * Sends an HTTP PATCH request.
+     * @param {string} url - The URL to send the request to.
+     * @param {Object} headers - The headers to include in the request.
+     * @param data - The data to send with the request.
+     * @param {Object} extra - Extra options to pass to the interceptor.
+     * @returns {Promise<{status: number, headers: {}, body: string}>} The response from the request.
+     */
+    async patch(url, headers, data, extra) {
+        return this.sendRequest('PATCH', url, headers, data, extra);
     },
 
-    delete: async function (url, headers, extra) {
-        return this.sendRequest("DELETE", url, headers, extra);
+    /**
+     * Sends an HTTP DELETE request.
+     * @param {string} url - The URL to send the request to.
+     * @param {Object} headers - The headers to include in the request.
+     * @param {Object} extra - Extra options to pass to the interceptor.
+     * @returns {Promise<{status: number, headers: {}, body: string}>} The response from the request.
+     */
+    async delete(url, headers, extra) {
+        return this.sendRequest('DELETE', url, headers, extra);
     },
 
-    setCookies: function (url, cookies) {
+    /**
+     * Sets cookies for a specific URL.
+     * @param {string} url - The URL to set the cookies for.
+     * @param {Cookie[]} cookies - The cookies to set.
+     */
+    setCookies(url, cookies) {
         sendMessage({
-            method: "cookie",
-            function: "set",
+            method: 'cookie',
+            function: 'set',
             url: url,
             cookies: cookies,
         });
     },
 
-    getCookies: function (url) {
+    /**
+     * Retrieves cookies for a specific URL.
+     * @param {string} url - The URL to get the cookies from.
+     * @returns {Promise<Cookie[]>} The cookies for the given URL.
+     */
+    getCookies(url) {
         return sendMessage({
-            method: "cookie",
-            function: "get",
+            method: 'cookie',
+            function: 'get',
             url: url,
         });
     },
 
-    deleteCookies: function (url) {
+    /**
+     * Deletes cookies for a specific URL.
+     * @param {string} url - The URL to delete the cookies from.
+     */
+    deleteCookies(url) {
         sendMessage({
-            method: "cookie",
-            function: "delete",
+            method: 'cookie',
+            function: 'delete',
             url: url,
         });
     },
 };
 
 /**
- * Browser-like fetch (status helpers + body readers).
+ * [fetch] function for sending HTTP requests. Same api as the browser fetch.
+ * @param url {string}
+ * @param [options] {{method?: string, headers?: Object, body?: any}}
+ * @returns {Promise<{ok: boolean, status: number, statusText: string, headers: {}, arrayBuffer: (function(): Promise<ArrayBuffer>), text: (function(): Promise<string>), json: (function(): Promise<any>)}>}
+ * @since 1.2.0
  */
 async function fetch(url, options) {
-    var method = "GET";
-    var headers = {};
-    var body = null;
+    let method = 'GET';
+    let headers = {};
+    let data = null;
+
     if (options) {
-        if (options.method) method = options.method;
-        if (options.headers) headers = options.headers;
-        if (options.body !== undefined) body = options.body;
+        method = options.method || method;
+        headers = options.headers || headers;
+        data = options.body || data;
     }
-    var res = await Network.fetchBytes(method, url, headers, body);
+
+    let result = await Network.fetchBytes(method, url, headers, data);
+
     return {
-        ok: res.status >= 200 && res.status < 300,
-        status: res.status,
-        statusText: "",
-        headers: res.headers,
-        arrayBuffer: async function () {
-            return res.body;
-        },
-        text: async function () {
-            return Convert.decodeUtf8(res.body);
-        },
-        json: async function () {
-            return JSON.parse(Convert.decodeUtf8(res.body));
-        },
-    };
+        ok: result.status >= 200 && result.status < 300,
+        status: result.status,
+        statusText: '',
+        headers: result.headers,
+        arrayBuffer: async () => result.body,
+        text: async () => Convert.decodeUtf8(result.body),
+        json: async () => JSON.parse(Convert.decodeUtf8(result.body)),
+    }
 }
 
-// ---------------------------------------------------------------------------
-// HTML DOM facade (host: HtmlBridge)
-// ---------------------------------------------------------------------------
+/**
+ * HtmlDocument class for parsing HTML and querying elements.
+ */
+class HtmlDocument {
+    static _key = 0;
 
-function HtmlDocument(html) {
-    this.key = HtmlDocument._nextId++;
-    sendMessage({
-        method: "html",
-        function: "parse",
-        key: this.key,
-        data: html,
-    });
+    key = 0;
+
+    /**
+     * Constructor for HtmlDocument.
+     * @param {string} html - The HTML string to parse.
+     */
+    constructor(html) {
+        this.key = HtmlDocument._key;
+        HtmlDocument._key++;
+        sendMessage({
+            method: "html",
+            function: "parse",
+            key: this.key,
+            data: html
+        })
+    }
+
+    /**
+     * Query a single element from the HTML document.
+     * @param {string} query - The query string.
+     * @returns {HtmlElement | null} The first matching element.
+     */
+    querySelector(query) {
+        let k = sendMessage({
+            method: "html",
+            function: "querySelector",
+            key: this.key,
+            query: query
+        })
+        if(k == null) return null;
+        return new HtmlElement(k, this.key);
+    }
+
+    /**
+     * Query all matching elements from the HTML document.
+     * @param {string} query - The query string.
+     * @returns {HtmlElement[]} An array of matching elements.
+     */
+    querySelectorAll(query) {
+        let ks = sendMessage({
+            method: "html",
+            function: "querySelectorAll",
+            key: this.key,
+            query: query
+        })
+        return ks.map(k => new HtmlElement(k, this.key));
+    }
+
+    /**
+     * Dispose the HTML document.
+     * This should be called when the document is no longer needed.
+     */
+    dispose() {
+        sendMessage({
+            method: "html",
+            function: "dispose",
+            key: this.key
+        })
+    }
+
+    /**
+     * Get the element by its id.
+     * @param id {string}
+     * @returns {HtmlElement|null}
+     */
+    getElementById(id) {
+        let k = sendMessage({
+            method: "html",
+            function: "getElementById",
+            key: this.key,
+            id: id
+        })
+        if(k == null) return null;
+        return new HtmlElement(k, this.key);
+    }
 }
-HtmlDocument._nextId = 0;
 
-HtmlDocument.prototype.querySelector = function (query) {
-    var id = sendMessage({
-        method: "html",
-        function: "querySelector",
-        key: this.key,
-        query: query,
-    });
-    return id == null ? null : new HtmlElement(id, this.key);
-};
+/**
+ * HtmlDom class for interacting with HTML elements.
+ */
+class HtmlElement {
+    key = 0;
 
-HtmlDocument.prototype.querySelectorAll = function (query) {
-    var ids = sendMessage({
-        method: "html",
-        function: "querySelectorAll",
-        key: this.key,
-        query: query,
-    });
-    if (!ids) return [];
-    return ids.map(function (id) {
-        return new HtmlElement(id, this.key);
-    }.bind(this));
-};
+    doc = 0;
 
-HtmlDocument.prototype.getElementById = function (elementId) {
-    var id = sendMessage({
-        method: "html",
-        function: "getElementById",
-        key: this.key,
-        id: elementId,
-    });
-    return id == null ? null : new HtmlElement(id, this.key);
-};
+    /**
+     * Constructor for HtmlDom.
+     * @param {number} k - The key of the element.
+     * @param {number} doc - The key of the document.
+     */
+    constructor(k, doc) {
+        this.key = k;
+        this.doc = doc;
+    }
 
-HtmlDocument.prototype.dispose = function () {
-    sendMessage({
-        method: "html",
-        function: "dispose",
-        key: this.key,
-    });
-};
-
-function HtmlElement(elementKey, documentKey) {
-    this.key = elementKey;
-    this.doc = documentKey;
-}
-
-Object.defineProperty(HtmlElement.prototype, "text", {
-    get: function () {
+    /**
+     * Get the text content of the element.
+     * @returns {string} The text content.
+     */
+    get text() {
         return sendMessage({
             method: "html",
             function: "getText",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-Object.defineProperty(HtmlElement.prototype, "attributes", {
-    get: function () {
+    /**
+     * Get the attributes of the element.
+     * @returns {Object} The attributes.
+     */
+    get attributes() {
         return sendMessage({
             method: "html",
             function: "getAttributes",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-HtmlElement.prototype.querySelector = function (query) {
-    var id = sendMessage({
-        method: "html",
-        function: "dom_querySelector",
-        key: this.key,
-        query: query,
-        doc: this.doc,
-    });
-    return id == null ? null : new HtmlElement(id, this.doc);
-};
+    /**
+     * Query a single element from the current element.
+     * @param {string} query - The query string.
+     * @returns {HtmlElement} The first matching element.
+     */
+    querySelector(query) {
+        let k = sendMessage({
+            method: "html",
+            function: "dom_querySelector",
+            key: this.key,
+            query: query,
+            doc: this.doc,
+        })
+        if(k == null) return null;
+        return new HtmlElement(k, this.doc);
+    }
 
-HtmlElement.prototype.querySelectorAll = function (query) {
-    var ids = sendMessage({
-        method: "html",
-        function: "dom_querySelectorAll",
-        key: this.key,
-        query: query,
-        doc: this.doc,
-    });
-    if (!ids) return [];
-    return ids.map(function (id) {
-        return new HtmlElement(id, this.doc);
-    }.bind(this));
-};
+    /**
+     * Query all matching elements from the current element.
+     * @param {string} query - The query string.
+     * @returns {HtmlElement[]} An array of matching elements.
+     */
+    querySelectorAll(query) {
+        let ks = sendMessage({
+            method: "html",
+            function: "dom_querySelectorAll",
+            key: this.key,
+            query: query,
+            doc: this.doc,
+        })
+        return ks.map(k => new HtmlElement(k, this.doc));
+    }
 
-Object.defineProperty(HtmlElement.prototype, "children", {
-    get: function () {
-        var ids = sendMessage({
+    /**
+     * Get the children of the current element.
+     * @returns {HtmlElement[]} An array of child elements.
+     */
+    get children() {
+        let ks = sendMessage({
             method: "html",
             function: "getChildren",
             key: this.key,
             doc: this.doc,
-        });
-        if (!ids) return [];
-        return ids.map(function (id) {
-            return new HtmlElement(id, this.doc);
-        }.bind(this));
-    },
-});
+        })
+        return ks.map(k => new HtmlElement(k, this.doc));
+    }
 
-Object.defineProperty(HtmlElement.prototype, "nodes", {
-    get: function () {
-        var ids = sendMessage({
+    /**
+     * Get the nodes of the current element.
+     * @returns {HtmlNode[]} An array of nodes.
+     */
+    get nodes() {
+        let ks = sendMessage({
             method: "html",
             function: "getNodes",
             key: this.key,
             doc: this.doc,
-        });
-        if (!ids) return [];
-        return ids.map(function (id) {
-            return new HtmlNode(id, this.doc);
-        }.bind(this));
-    },
-});
+        })
+        return ks.map(k => new HtmlNode(k, this.doc));
+    }
 
-Object.defineProperty(HtmlElement.prototype, "innerHTML", {
-    get: function () {
+    /**
+     * Get inner HTML of the element.
+     * @returns {string} The inner HTML.
+     */
+    get innerHTML() {
         return sendMessage({
             method: "html",
             function: "getInnerHTML",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-Object.defineProperty(HtmlElement.prototype, "parent", {
-    get: function () {
-        var id = sendMessage({
+    /**
+     * Get parent element of the element. If the element has no parent, return null.
+     * @returns {HtmlElement|null}
+     */
+    get parent() {
+        let k = sendMessage({
             method: "html",
             function: "getParent",
             key: this.key,
             doc: this.doc,
-        });
-        return id == null ? null : new HtmlElement(id, this.doc);
-    },
-});
+        })
+        if(k == null) return null;
+        return new HtmlElement(k, this.doc);
+    }
 
-Object.defineProperty(HtmlElement.prototype, "classNames", {
-    get: function () {
+    /**
+     * Get class names of the element.
+     * @returns {string[]} An array of class names.
+     */
+    get classNames() {
         return sendMessage({
             method: "html",
             function: "getClassNames",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-Object.defineProperty(HtmlElement.prototype, "id", {
-    get: function () {
+    /**
+     * Get id of the element.
+     * @returns {string | null} The id of the element.
+     */
+    get id() {
         return sendMessage({
             method: "html",
             function: "getId",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-Object.defineProperty(HtmlElement.prototype, "localName", {
-    get: function () {
+    /**
+     * Get local name of the element.
+     * @returns {string} The tag name of the element.
+     */
+    get localName() {
         return sendMessage({
             method: "html",
             function: "getLocalName",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-Object.defineProperty(HtmlElement.prototype, "previousElementSibling", {
-    get: function () {
-        var id = sendMessage({
+    /**
+     * Get the previous sibling element of the element. If the element has no previous sibling, return null.
+     * @returns {HtmlElement|null}
+     */
+    get previousElementSibling() {
+        let k = sendMessage({
             method: "html",
             function: "getPreviousSibling",
             key: this.key,
             doc: this.doc,
-        });
-        return id == null ? null : new HtmlElement(id, this.doc);
-    },
-});
+        })
+        if(k == null) return null;
+        return new HtmlElement(k, this.doc);
+    }
 
-Object.defineProperty(HtmlElement.prototype, "nextElementSibling", {
-    get: function () {
-        var id = sendMessage({
+    /**
+     * Get the next sibling element of the element. If the element has no next sibling, return null.
+     * @returns {HtmlElement|null}
+     */
+    get nextElementSibling() {
+        let k = sendMessage({
             method: "html",
             function: "getNextSibling",
             key: this.key,
             doc: this.doc,
-        });
-        return id == null ? null : new HtmlElement(id, this.doc);
-    },
-});
-
-function HtmlNode(nodeKey, documentKey) {
-    this.key = nodeKey;
-    this.doc = documentKey;
+        })
+        if (k == null) return null;
+        return new HtmlElement(k, this.doc);
+    }
 }
 
-Object.defineProperty(HtmlNode.prototype, "text", {
-    get: function () {
+class HtmlNode {
+    key = 0;
+
+    doc = 0;
+
+    constructor(k, doc) {
+        this.key = k;
+        this.doc = doc;
+    }
+
+    /**
+     * Get the text content of the node.
+     * @returns {string} The text content.
+     */
+    get text() {
         return sendMessage({
             method: "html",
             function: "node_text",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-Object.defineProperty(HtmlNode.prototype, "type", {
-    get: function () {
+    /**
+     * Get the type of the node.
+     * @returns {string} The type of the node. ("text", "element", "comment", "document", "unknown")
+     */
+    get type() {
         return sendMessage({
             method: "html",
             function: "node_type",
             key: this.key,
             doc: this.doc,
-        });
-    },
-});
+        })
+    }
 
-HtmlNode.prototype.toElement = function () {
-    // Host HtmlBridge name is snake_case.
-    var id = sendMessage({
-        method: "html",
-        function: "node_to_element",
-        key: this.key,
-        doc: this.doc,
-    });
-    return id == null ? null : new HtmlElement(id, this.doc);
-};
-
-// ---------------------------------------------------------------------------
-// Logging
-// ---------------------------------------------------------------------------
+    /**
+     * Convert the node to an HtmlElement. If the node is not an element, return null.
+     * @returns {HtmlElement|null}
+     */
+    toElement() {
+        let k = sendMessage({
+            method: "html",
+            function: "node_toElement",
+            key: this.key,
+            doc: this.doc,
+        })
+        if(k == null) return null;
+        return new HtmlElement(k, this.doc);
+    }
+}
 
 function log(level, title, content) {
     sendMessage({
-        method: "log",
+        method: 'log',
         level: level,
         title: title,
         content: content,
-    });
+    })
 }
 
-var console = {
-    log: function (content) {
-        log("info", "JS Console", content);
+let console = {
+    log: (content) => {
+        log('info', 'JS Console', content)
     },
-    warn: function (content) {
-        log("warning", "JS Console", content);
+    warn: (content) => {
+        log('warning', 'JS Console', content)
     },
-    error: function (content) {
-        log("error", "JS Console", content);
+    error: (content) => {
+        log('error', 'JS Console', content)
     },
 };
 
-// ---------------------------------------------------------------------------
-// Model constructors (plain data objects for host JSON)
-// ---------------------------------------------------------------------------
-
-function Comic(fields) {
-    this.id = fields.id;
-    this.title = fields.title;
-    this.subtitle = fields.subtitle;
-    this.subTitle = fields.subTitle;
-    this.cover = fields.cover;
-    this.tags = fields.tags;
-    this.description = fields.description;
-    this.maxPage = fields.maxPage;
-    this.language = fields.language;
-    this.favoriteId = fields.favoriteId;
-    this.stars = fields.stars;
+/**
+ * Create a comic object
+ * @param id {string}
+ * @param title {string}
+ * @param subtitle {string}
+ * @param subTitle {string} - equal to subtitle
+ * @param cover {string}
+ * @param tags {string[]}
+ * @param description {string}
+ * @param maxPage {number?}
+ * @param language {string?}
+ * @param favoriteId {string?} - Only set this field if the comic is from favorites page
+ * @param stars {number?} - 0-5, double
+ * @constructor
+ */
+function Comic({id, title, subtitle, subTitle, cover, tags, description, maxPage, language, favoriteId, stars}) {
+    this.id = id;
+    this.title = title;
+    this.subtitle = subtitle;
+    this.subTitle = subTitle;
+    this.cover = cover;
+    this.tags = tags;
+    this.description = description;
+    this.maxPage = maxPage;
+    this.language = language;
+    this.favoriteId = favoriteId;
+    this.stars = stars;
 }
 
-/** Recursively turn Map (and nested Maps) into plain objects for the host bridge. */
-function __mapToPlainObject(value) {
-    if (value == null) return value;
-    if (typeof Map !== "undefined" && value instanceof Map) {
-        var plain = {};
-        value.forEach(function (v, k) {
-            plain[String(k)] = __mapToPlainObject(v);
-        });
-        return plain;
-    }
-    if (Array.isArray(value)) {
-        return value.map(__mapToPlainObject);
-    }
-    if (typeof value === "object") {
-        if (
-            (typeof ArrayBuffer !== "undefined" && value instanceof ArrayBuffer) ||
-            (ArrayBuffer.isView && ArrayBuffer.isView(value))
-        ) {
-            return value;
-        }
-        var out = {};
-        var keys = Object.keys(value);
-        for (var i = 0; i < keys.length; i++) {
-            out[keys[i]] = __mapToPlainObject(value[keys[i]]);
-        }
-        return out;
-    }
-    return value;
+/**
+ * Create a comic details object
+ * @param title {string}
+ * @param subtitle {string}
+ * @param subTitle {string} - equal to subtitle
+ * @param cover {string}
+ * @param description {string?}
+ * @param tags {Map<string, string[]> | {} | null | undefined}
+ * @param chapters {Map<string, string> | {} | null | undefined} - key: chapter id, value: chapter title
+ * @param isFavorite {boolean | null | undefined} - favorite status.
+ * @param subId {string?} - a param which is passed to comments api
+ * @param thumbnails {string[]?} - for multiple page thumbnails, set this to null, and use `loadThumbnails` api to load thumbnails
+ * @param recommend {Comic[]?} - related comics
+ * @param commentCount {number?}
+ * @param likesCount {number?}
+ * @param isLiked {boolean?}
+ * @param uploader {string?}
+ * @param updateTime {string?}
+ * @param uploadTime {string?}
+ * @param url {string?}
+ * @param stars {number?} - 0-5, double
+ * @param maxPage {number?}
+ * @param comments {Comment[]?}- `since 1.0.7` App will display comments in the details page.
+ * @constructor
+ */
+function ComicDetails({title, subtitle, subTitle, cover, description, tags, chapters, isFavorite, subId, thumbnails, recommend, commentCount, likesCount, isLiked, uploader, updateTime, uploadTime, url, stars, maxPage, comments}) {
+    this.title = title;
+    this.subtitle = subtitle ?? subTitle;
+    this.cover = cover;
+    this.description = description;
+    this.tags = tags;
+    this.chapters = chapters;
+    this.isFavorite = isFavorite;
+    this.subId = subId;
+    this.thumbnails = thumbnails;
+    this.recommend = recommend;
+    this.commentCount = commentCount;
+    this.likesCount = likesCount;
+    this.isLiked = isLiked;
+    this.uploader = uploader;
+    this.updateTime = updateTime;
+    this.uploadTime = uploadTime;
+    this.url = url;
+    this.stars = stars;
+    this.maxPage = maxPage;
+    this.comments = comments;
 }
 
-function ComicDetails(fields) {
-    this.title = fields.title;
-    var sub = fields.subtitle;
-    if (sub === undefined || sub === null) sub = fields.subTitle;
-    this.subtitle = sub;
-    this.cover = fields.cover;
-    this.description = fields.description;
-    var mappedTags = __mapToPlainObject(fields.tags);
-    this.tags = mappedTags == null ? fields.tags : mappedTags;
-    var mappedChapters = __mapToPlainObject(fields.chapters);
-    this.chapters = mappedChapters == null ? fields.chapters : mappedChapters;
-    this.isFavorite = fields.isFavorite;
-    this.subId = fields.subId;
-    this.thumbnails = fields.thumbnails;
-    this.recommend = fields.recommend;
-    this.commentCount = fields.commentCount;
-    this.likesCount = fields.likesCount;
-    this.isLiked = fields.isLiked;
-    this.uploader = fields.uploader;
-    this.updateTime = fields.updateTime;
-    this.uploadTime = fields.uploadTime;
-    this.url = fields.url;
-    this.stars = fields.stars;
-    this.maxPage = fields.maxPage;
-    this.comments = fields.comments;
+/**
+ * Create a comment object
+ * @param userName {string}
+ * @param avatar {string?}
+ * @param content {string}
+ * @param time {string?}
+ * @param replyCount {number?}
+ * @param id {string?}
+ * @param isLiked {boolean?}
+ * @param score {number?}
+ * @param voteStatus {number?} - 1: upvote, -1: downvote, 0: none
+ * @constructor
+ */
+function Comment({userName, avatar, content, time, replyCount, id, isLiked, score, voteStatus}) {
+    this.userName = userName;
+    this.avatar = avatar;
+    this.content = content;
+    this.time = time;
+    this.replyCount = replyCount;
+    this.id = id;
+    this.isLiked = isLiked;
+    this.score = score;
+    this.voteStatus = voteStatus;
 }
 
-function Comment(fields) {
-    this.userName = fields.userName;
-    this.avatar = fields.avatar;
-    this.content = fields.content;
-    this.time = fields.time;
-    this.replyCount = fields.replyCount;
-    this.id = fields.id;
-    this.isLiked = fields.isLiked;
-    this.score = fields.score;
-    this.voteStatus = fields.voteStatus;
+/**
+ * Create image loading config
+ * @param url {string?}
+ * @param method {string?} - http method, uppercase
+ * @param data {any} - request data, may be null
+ * @param headers {Object?} - request headers
+ * @param onResponse {((ArrayBuffer) => ArrayBuffer)?} - modify response data
+ * @param modifyImage {string?}
+ *  A js script string.
+ *  The script will be executed in a new Isolate.
+ *  A function named `modifyImage` should be defined in the script, which receives an [Image] as the only argument, and returns an [Image]..
+ * @param onLoadFailed {(() => ImageLoadingConfig)?} - called when the image loading failed
+ * @constructor
+ * @since 1.0.5
+ *
+ * To keep the compatibility with the old version, do not use the constructor. Consider creating a new object with the properties directly.
+ */
+function ImageLoadingConfig({url, method, data, headers, onResponse, modifyImage, onLoadFailed}) {
+    this.url = url;
+    this.method = method;
+    this.data = data;
+    this.headers = headers;
+    this.onResponse = onResponse;
+    this.modifyImage = modifyImage;
+    this.onLoadFailed = onLoadFailed;
 }
-
-function ImageLoadingConfig(fields) {
-    this.url = fields.url;
-    this.method = fields.method;
-    this.data = fields.data;
-    this.headers = fields.headers;
-    this.onResponse = fields.onResponse;
-    this.modifyImage = fields.modifyImage;
-    this.onLoadFailed = fields.onLoadFailed;
-}
-
-// ---------------------------------------------------------------------------
-// ComicSource base class (sources: `class Foo extends ComicSource`)
-// ---------------------------------------------------------------------------
 
 class ComicSource {
-    constructor() {
-        this.name = "";
-        this.key = "";
-        this.version = "";
-        this.minAppVersion = "";
-        this.url = "";
-        this.translation = {};
-    }
+    name = ""
 
+    key = ""
+
+    version = ""
+
+    minAppVersion = ""
+
+    url = ""
+
+    /**
+     * load data with its key
+     * @param {string} dataKey
+     * @returns {any}
+     */
     loadData(dataKey) {
         return sendMessage({
-            method: "load_data",
+            method: 'load_data',
             key: this.key,
-            data_key: dataKey,
-        });
+            data_key: dataKey
+        })
     }
 
-    loadSetting(settingKey) {
+    /**
+     * load a setting with its key
+     * @param key {string}
+     * @returns {any}
+     */
+    loadSetting(key) {
         return sendMessage({
-            method: "load_setting",
+            method: 'load_setting',
             key: this.key,
-            setting_key: settingKey,
-        });
+            setting_key: key
+        })
     }
 
+    /**
+     * save data
+     * @param {string} dataKey
+     * @param data
+     */
     saveData(dataKey, data) {
         return sendMessage({
-            method: "save_data",
+            method: 'save_data',
             key: this.key,
             data_key: dataKey,
-            data: data,
-        });
+            data: data
+        })
     }
 
+    /**
+     * delete data
+     * @param {string} dataKey
+     */
     deleteData(dataKey) {
         return sendMessage({
-            method: "delete_data",
+            method: 'delete_data',
             key: this.key,
             data_key: dataKey,
-        });
+        })
     }
 
+    /**
+     *
+     * @returns {boolean}
+     */
     get isLogged() {
         return sendMessage({
-            method: "isLogged",
+            method: 'isLogged',
             key: this.key,
         });
     }
 
-    translate(textKey) {
-        var locale = APP.locale;
-        var table = this.translation && this.translation[locale];
-        if (table && table[textKey] != null) return table[textKey];
-        return textKey;
+    translation = {}
+
+    /**
+     * Translate given string with the current locale using the translation object.
+     * @param key {string}
+     * @returns {string}
+     * @since 1.2.5
+     */
+    translate(key) {
+        let locale = APP.locale;
+        return this.translation[locale]?.[key] ?? key;
     }
 
-    init() {}
+    init() { }
+
+    static sources = {}
 }
 
-ComicSource.sources = {};
+/// A reference to dart object.
+/// The api can only be used in the comic.onImageLoad.modifyImage function
+class Image {
+    key = 0;
 
-// ---------------------------------------------------------------------------
-// Image mutate API (modifyImage isolate; host: ImageBridge)
-// ---------------------------------------------------------------------------
+    constructor(key) {
+        this.key = key;
+    }
 
-function Image(imageKey) {
-    this.key = imageKey;
-}
+    /**
+     * Copy the specified range of the image
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @returns {Image|null}
+     */
+    copyRange(x, y, width, height) {
+        let key = sendMessage({
+            method: "image",
+            function: "copyRange",
+            key: this.key,
+            x: x,
+            y: y,
+            width: width,
+            height: height
+        })
+        if(key == null) return null;
+        return new Image(key);
+    }
 
-Image.prototype.copyRange = function (x, y, width, height) {
-    var id = sendMessage({
-        method: "image",
-        function: "copyRange",
-        key: this.key,
-        x: x,
-        y: y,
-        width: width,
-        height: height,
-    });
-    return id == null ? null : new Image(id);
-};
+    /**
+     * Copy the image and rotate 90 degrees
+     * @returns {Image|null}
+     */
+    copyAndRotate90() {
+        let key = sendMessage({
+            method: "image",
+            function: "copyAndRotate90",
+            key: this.key
+        })
+        if(key == null) return null;
+        return new Image(key);
+    }
 
-Image.prototype.copyAndRotate90 = function () {
-    var id = sendMessage({
-        method: "image",
-        function: "copyAndRotate90",
-        key: this.key,
-    });
-    return id == null ? null : new Image(id);
-};
+    /**
+     * fill [image] to this image at (x, y)
+     * @param x
+     * @param y
+     * @param image
+     */
+    fillImageAt(x, y, image) {
+        sendMessage({
+            method: "image",
+            function: "fillImageAt",
+            key: this.key,
+            x: x,
+            y: y,
+            image: image.key
+        })
+    }
 
-Image.prototype.fillImageAt = function (x, y, image) {
-    sendMessage({
-        method: "image",
-        function: "fillImageAt",
-        key: this.key,
-        x: x,
-        y: y,
-        image: image.key,
-    });
-};
+    /**
+     * fill [image] with range(srcX, srcY, width, height) to this image at (x, y)
+     * @param x
+     * @param y
+     * @param image
+     * @param srcX
+     * @param srcY
+     * @param width
+     * @param height
+     */
+    fillImageRangeAt(x, y, image, srcX, srcY, width, height) {
+        sendMessage({
+            method: "image",
+            function: "fillImageRangeAt",
+            key: this.key,
+            x: x,
+            y: y,
+            image: image.key,
+            srcX: srcX,
+            srcY: srcY,
+            width: width,
+            height: height
+        })
+    }
 
-Image.prototype.fillImageRangeAt = function (
-    x,
-    y,
-    image,
-    srcX,
-    srcY,
-    width,
-    height
-) {
-    sendMessage({
-        method: "image",
-        function: "fillImageRangeAt",
-        key: this.key,
-        x: x,
-        y: y,
-        image: image.key,
-        srcX: srcX,
-        srcY: srcY,
-        width: width,
-        height: height,
-    });
-};
-
-Object.defineProperty(Image.prototype, "width", {
-    get: function () {
+    get width() {
         return sendMessage({
             method: "image",
             function: "getWidth",
-            key: this.key,
-        });
-    },
-});
+            key: this.key
+        })
+    }
 
-Object.defineProperty(Image.prototype, "height", {
-    get: function () {
+    get height() {
         return sendMessage({
             method: "image",
             function: "getHeight",
-            key: this.key,
-        });
-    },
-});
+            key: this.key
+        })
+    }
 
-Image.empty = function (width, height) {
-    var id = sendMessage({
-        method: "image",
-        function: "emptyImage",
-        width: width,
-        height: height,
-    });
-    return new Image(id);
-};
+    static empty(width, height) {
+        let key = sendMessage({
+            method: "image",
+            function: "emptyImage",
+            width: width,
+            height: height
+        })
+        return new Image(key);
+    }
+}
 
-// ---------------------------------------------------------------------------
-// UI / APP / clipboard / compute
-// ---------------------------------------------------------------------------
-
-var UI = {
-    showMessage: function (message) {
+/**
+ * UI related apis
+ * @since 1.2.0
+ */
+let UI = {
+    /**
+     * Show a message
+     * @param message {string}
+     */
+    showMessage: (message) => {
         sendMessage({
-            method: "UI",
-            function: "showMessage",
+            method: 'UI',
+            function: 'showMessage',
             message: message,
-        });
+        })
     },
-    showDialog: function (title, content, actions) {
+
+    /**
+     * Show a dialog. Any action will close the dialog.
+     * @param title {string}
+     * @param content {string}
+     * @param actions {{text:string, callback: () => void | Promise<void>, style: "text"|"filled"|"danger"}[]} - If callback returns a promise, the button will show a loading indicator until the promise is resolved.
+     * @returns {Promise<void>} - Resolved when the dialog is closed.
+     * @since 1.2.1
+     */
+    showDialog: (title, content, actions) => {
         sendMessage({
-            method: "UI",
-            function: "showDialog",
+            method: 'UI',
+            function: 'showDialog',
             title: title,
             content: content,
             actions: actions,
-        });
+        })
     },
-    launchUrl: function (url) {
+
+    /**
+     * Open [url] in external browser
+     * @param url {string}
+     */
+    launchUrl: (url) => {
         sendMessage({
-            method: "UI",
-            function: "launchUrl",
+            method: 'UI',
+            function: 'launchUrl',
             url: url,
-        });
+        })
     },
-    showLoading: function (onCancel) {
+
+    /**
+     * Show a loading dialog.
+     * @param onCancel {() => void | null | undefined} - Called when the loading dialog is canceled. If [onCancel] is null, the dialog cannot be canceled by the user.
+     * @returns {number} - A number that can be used to cancel the loading dialog.
+     * @since 1.2.1
+     */
+    showLoading: (onCancel) => {
         return sendMessage({
-            method: "UI",
-            function: "showLoading",
-            onCancel: onCancel,
-        });
+            method: 'UI',
+            function: 'showLoading',
+            onCancel: onCancel
+        })
     },
-    cancelLoading: function (id) {
+
+    /**
+     * Cancel a loading dialog.
+     * @param id {number} - returned by [showLoading]
+     * @since 1.2.1
+     */
+    cancelLoading: (id) => {
         sendMessage({
-            method: "UI",
-            function: "cancelLoading",
-            id: id,
-        });
+            method: 'UI',
+            function: 'cancelLoading',
+            id: id
+        })
     },
-    showInputDialog: function (title, validator, image) {
+
+    /**
+     * Show an input dialog
+     * @param title {string}
+     * @param validator {(string) => string | null | undefined} - A function that validates the input. If the function returns a string, the dialog will show the error message.
+     * @param image {string | ArrayBuffer | null | undefined} - Since 1.4.6, you can pass an image url to show an image in the dialog. Since 1.5.3, you can also pass an ArrayBuffer to show a custom image.
+     * @returns {Promise<string | null>} - The input value. If the dialog is canceled, return null.
+     */
+    showInputDialog: (title, validator, image) => {
         return sendMessage({
-            method: "UI",
-            function: "showInputDialog",
+            method: 'UI',
+            function: 'showInputDialog',
             title: title,
             image: image,
-            validator: validator,
-        });
+            validator: validator
+        })
     },
-    showSelectDialog: function (title, options, initialIndex) {
+
+    /**
+     * Show a select dialog
+     * @param title {string}
+     * @param options {string[]}
+     * @param initialIndex {number?}
+     * @returns {Promise<number | null>} - The selected index. If the dialog is canceled, return null.
+     */
+    showSelectDialog: (title, options, initialIndex) => {
         return sendMessage({
-            method: "UI",
-            function: "showSelectDialog",
+            method: 'UI',
+            function: 'showSelectDialog',
             title: title,
             options: options,
-            initialIndex: initialIndex,
-        });
-    },
-};
+            initialIndex: initialIndex
+        })
+    }
+}
 
-var APP = {
+/**
+ * App related apis
+ * @since 1.2.1
+ */
+let APP = {
+    /**
+     * Get the app version
+     * @returns {string} - The app version
+     */
     get version() {
-        return typeof appVersion !== "undefined" ? appVersion : "";
+        return appVersion // defined in the engine
     },
-    get locale() {
-        return sendMessage({ method: "getLocale" });
-    },
-    get platform() {
-        return sendMessage({ method: "getPlatform" });
-    },
-};
 
+    /**
+     * Get current app locale
+     * @returns {string} - The app locale, in the format of [languageCode]_[countryCode]
+     */
+    get locale() {
+        return sendMessage({
+            method: 'getLocale'
+        })
+    },
+
+    /**
+     * Get current running platform
+     * @returns {string} - The platform name, "android", "ios", "windows", "macos", "linux"
+     */
+    get platform() {
+        return sendMessage({
+            method: 'getPlatform'
+        })
+    }
+}
+
+/**
+ * Set clipboard text
+ * @param text {string}
+ * @returns {Promise<void>}
+ * 
+ * @since 1.3.4
+ */
 function setClipboard(text) {
     return sendMessage({
-        method: "setClipboard",
-        text: text,
-    });
+        method: 'setClipboard',
+        text: text
+    })
 }
 
+/**
+ * Get clipboard text
+ * @returns {Promise<string>}
+ * 
+ * @since 1.3.4
+ */
 function getClipboard() {
-    return sendMessage({ method: "getClipboard" });
+    return sendMessage({
+        method: 'getClipboard'
+    })
 }
 
-function compute(funcSource) {
-    var rest = [];
-    for (var i = 1; i < arguments.length; i++) rest.push(arguments[i]);
+/**
+ * Compute a function with arguments. The function will be executed in the engine pool which is not in the main thread.
+ * @param func {string} - A js code string which can be evaluated to a function. The function will receive the args as its only argument.
+ * @param args {any[]} - The arguments to pass to the function.
+ * @returns {Promise<any>} - The result of the function.
+ * @since 1.5.0
+ */
+function compute(func, ...args) {
     return sendMessage({
-        method: "compute",
-        function: funcSource,
-        args: rest,
-    });
+        method: 'compute',
+        function: func,
+        args: args
+    })
 }
