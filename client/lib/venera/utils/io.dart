@@ -13,7 +13,7 @@ export 'dart:typed_data';
 
 // 桩定义 — 替代不存在的包
 class _FileType { static final images = null; static final any = null; }
-class _FlutterFileDialog { static saveFile(_) async => null; static importFile(_) async => null; }
+class _FlutterFileDialog { static saveFile({dynamic params}) async => null; static importFile({dynamic params}) async => null; }
 class _SaveFileDialogParams { _SaveFileDialogParams({String? fileName, dynamic fileBytes, dynamic fileType}); }
 
 class IO {
