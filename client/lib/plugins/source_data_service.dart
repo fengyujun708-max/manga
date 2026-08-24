@@ -50,6 +50,12 @@ class SourceDataService {
         LogReporter.instance.reportSourceError(sourceId, err);
         return false;
       }
+      // 缓存源 baseUrl（供封面相对路径修复）
+      try {
+        final u = await engine.evaluateAwait('globalThis.__sources__["$sourceId"].url', timeoutMs: 3000);
+        final us = u?.toString() ?? '';
+        if (us.startsWith('http')) _sourceBaseUrls[sourceId] = us;
+      } catch (_) {}
       return true;
     } catch (e) {
       LogReporter.instance.reportSourceError(sourceId, e.toString());
@@ -61,7 +67,12 @@ class SourceDataService {
   static dynamic _deepNormalize(dynamic v) {
     if (v == null) return null;
     if (v is Map) {
-      return v.map((k, val) => MapEntry(k.toString(), _deepNormalize(val)));
+      // 显式构造 Map<String, dynamic>，避免 Map<dynamic,dynamic> 强转崩溃
+      final out = <String, dynamic>{};
+      v.forEach((k, val) {
+        out[k.toString()] = _deepNormalize(val);
+      });
+      return out;
     }
     if (v is List) {
       return v.map(_deepNormalize).toList();
@@ -81,18 +92,15 @@ class SourceDataService {
         } else if (raw is List && raw.isNotEmpty) {
           // 深度规范化，确保 UI 渲染时 as Map/as List 不崩溃
           final normalized = _deepNormalize(raw) as List;
-          // debug：上报数据结构，定位 items 空问题
-          try {
-            final summary = normalized.take(3).map((s) {
-              if (s is Map) {
-                final items = s['items'];
-                final itemsLen = items is List ? items.length : 'non-list:${items.runtimeType}';
-                return '${s['title']}(items=$itemsLen)';
+          // 统一修复封面相对路径
+          for (final s in normalized) {
+            if (s is Map) {
+              final items = s['items'];
+              if (items is List) {
+                s['items'] = items.map((e) => e is Map ? _fixItemCover(sourceId, Map<String, dynamic>.from(e)) : e).toList();
               }
-              return 'non-map:${s.runtimeType}';
-            }).join(', ');
-            LogReporter.instance.report('info', 'explore数据[$sourceId]', '${normalized.length}板块: $summary');
-          } catch (_) {}
+            }
+          }
           return {'sections': normalized, 'mode': 'local'};
         }
         final msg = raw is Map && raw['error'] != null ? raw['error'].toString() : '板块为空: ${raw.toString().substring(0, raw.toString().length.clamp(0, 200))}';
@@ -137,6 +145,33 @@ class SourceDataService {
     return [];
   }
 
+  /// 修复 cover 相对路径（//xx、/xx），baseUrl 从源 JS 的 url 属性缓存
+  final Map<String, String> _sourceBaseUrls = {};
+
+  String? _baseUrl(String sourceId) => _sourceBaseUrls[sourceId];
+
+  String _fixCover(String sourceId, String cover) {
+    if (cover.isEmpty) return cover;
+    if (cover.startsWith('//')) return 'https:$cover';
+    if (cover.startsWith('/')) {
+      final base = _baseUrl(sourceId);
+      if (base != null && base.isNotEmpty) {
+        return base.endsWith('/') ? base.substring(0, base.length - 1) + cover : base + cover;
+      }
+    }
+    return cover;
+  }
+
+  Map<String, dynamic> _fixItemCover(String sourceId, Map<String, dynamic> m) {
+    final cover = (m['cover'] ?? m['coverUrl'] ?? '').toString();
+    if (cover.isNotEmpty) {
+      final fixed = _fixCover(sourceId, cover);
+      m['cover'] = fixed;
+      m['coverUrl'] = fixed;
+    }
+    return m;
+  }
+
   /// 分类漫画（分页）
   Future<Map<String, dynamic>> categoryComics(String sourceId, String name, int page,
       [String param = '', List<String> options = const [], bool ranking = false]) async {
@@ -145,7 +180,9 @@ class SourceDataService {
         final raw = await engine.evaluateAwait(
             'globalThis.__categoryComics__("$sourceId", "${_jsStr(name)}", "${_jsStr(param)}", ${options.map(_jsStr).toList()}, $page)');
         if (raw is Map && raw['error'] == null) {
-          return {'items': raw['items'] ?? [], 'hasMore': raw['hasMore'] == true, 'mode': 'local'};
+          final normalized = _deepNormalize({'items': raw['items'] ?? [], 'hasMore': raw['hasMore'] == true}) as Map;
+          final items = (normalized['items'] as List).map((e) => _fixItemCover(sourceId, Map<String, dynamic>.from(e as Map))).toList();
+          return {'items': items, 'hasMore': normalized['hasMore'] == true, 'mode': 'local'};
         }
         if (raw is Map) {
           return {'items': [], 'hasMore': false, 'mode': 'local', 'error': raw['error']?.toString()};
@@ -169,6 +206,13 @@ class SourceDataService {
           if (err != null && err.isNotEmpty) {
             LogReporter.instance.report('error', '详情失败[$sourceId]', '$comicId: $err');
             return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': err};
+          }
+          // 封面修复 + 章节数日志
+          if (normalized['detail'] == null) {
+            final cover = (normalized['cover'] ?? '').toString();
+            if (cover.isNotEmpty) _fixItemCover(sourceId, normalized);
+            final chs = normalized['chapters'];
+            LogReporter.instance.report('info', '详情数据[$sourceId]', '$comicId: chapters=${chs is List ? chs.length : chs?.runtimeType}, keys=${normalized.keys.take(12).join(",")}');
           }
           return {'detail': normalized, 'chapters': normalized['chapters'] ?? [], 'mode': 'local'};
         }

@@ -34,8 +34,9 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
     // 预加载源到引擎
     await SourceDataService.instance.loadLocal(widget.sourceId);
     if (!mounted) return;
-    // 源加载完成后再加载 explore 和 categories
-    _loadExplore();
+    // 串行加载（并发会争抢 JsEngine 串行锁导致详情排队过久）
+    await _loadExplore();
+    if (!mounted) return;
     _loadCategories();
   }
 
