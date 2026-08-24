@@ -57,6 +57,19 @@ class SourceDataService {
     }
   }
 
+  /// 深度规范化：把 flutter_qjs 返回的 JS 包装类型转成纯 Dart Map/List/基础类型
+  static dynamic _deepNormalize(dynamic v) {
+    if (v == null) return null;
+    if (v is Map) {
+      return v.map((k, val) => MapEntry(k.toString(), _deepNormalize(val)));
+    }
+    if (v is List) {
+      return v.map(_deepNormalize).toList();
+    }
+    if (v is num || v is bool || v is String) return v;
+    return v.toString();
+  }
+
   /// 获取首页板块
   Future<Map<String, dynamic>> explore(String sourceId) async {
     if (await loadLocal(sourceId)) {
@@ -66,7 +79,9 @@ class SourceDataService {
           LogReporter.instance.report('error', 'explore失败[$sourceId]', raw['error'].toString());
           return {'sections': [], 'mode': 'local', 'error': raw['error'].toString()};
         } else if (raw is List && raw.isNotEmpty) {
-          return {'sections': raw, 'mode': 'local'};
+          // 深度规范化，确保 UI 渲染时 as Map/as List 不崩溃
+          final normalized = _deepNormalize(raw) as List;
+          return {'sections': normalized, 'mode': 'local'};
         }
         final msg = raw is Map && raw['error'] != null ? raw['error'].toString() : '板块为空: ${raw.toString().substring(0, raw.toString().length.clamp(0, 200))}';
         LogReporter.instance.report('error', 'explore空[$sourceId]', msg);
@@ -137,12 +152,13 @@ class SourceDataService {
         final raw = await engine.evaluateAwait('globalThis.__comic__("$sourceId", "${_jsStr(comicId)}")')
             .timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('连接超时，请检查网络或 VPN 后重试'));
         if (raw is Map) {
-          final err = raw['error']?.toString();
+          final normalized = _deepNormalize(raw) as Map;
+          final err = normalized['error']?.toString();
           if (err != null && err.isNotEmpty) {
             LogReporter.instance.report('error', '详情失败[$sourceId]', '$comicId: $err');
             return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': err};
           }
-          return {'detail': raw, 'chapters': raw['chapters'] ?? [], 'mode': 'local'};
+          return {'detail': normalized, 'chapters': normalized['chapters'] ?? [], 'mode': 'local'};
         }
         LogReporter.instance.report('error', '详情空[$sourceId]', '$comicId raw=${raw.toString().substring(0, raw.toString().length.clamp(0, 200))}');
         return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': '详情返回为空'};

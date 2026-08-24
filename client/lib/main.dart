@@ -14,8 +14,9 @@ void main() async {
 
   // 全局错误捕获 → 上报服务器
   FlutterError.onError = (details) {
-    LogReporter.instance.report('error', 'FlutterError', details.toString());
-    if (kDebugMode) debugPrint('FlutterError: ${details.toString()}');
+    final msg = '${details.exception}\n${details.stack ?? ''}';
+    LogReporter.instance.report('error', 'FlutterError', msg.substring(0, msg.length.clamp(0, 2000)));
+    FlutterError.dumpErrorToConsole(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
     LogReporter.instance.report('error', 'Uncaught', '$error\n$stack');
