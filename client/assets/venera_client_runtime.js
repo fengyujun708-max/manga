@@ -531,12 +531,16 @@ const Network = {
       // Venera 官方语义：非字符串 body 自动 JSON 序列化
       let outBody = body;
       if (body !== undefined && body !== null && typeof body === 'object') outBody = JSON.stringify(body);
-      res = await fetch(url, {
-        method: method.toUpperCase(),
-        headers: h,
-        body: (outBody !== undefined && outBody !== null && method.toUpperCase() !== 'GET') ? outBody : undefined,
-        redirect: 'follow',
-      });
+      // Promise.race 超时兜底：15 秒内必须返回，否则 reject
+      res = await Promise.race([
+        fetch(url, {
+          method: method.toUpperCase(),
+          headers: h,
+          body: (outBody !== undefined && outBody !== null && method.toUpperCase() !== 'GET') ? outBody : undefined,
+          redirect: 'follow',
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('网络超时（15s）')), 15000)),
+      ]);
     } catch (e) {
       throw new Error('网络错误: ' + String(e && e.message ? e.message : e));
     }
@@ -590,7 +594,10 @@ const Network = {
       for (const [k, v] of Object.entries(hdrs || {})) {
         if (v !== undefined && v !== null) h[k] = String(v);
       }
-      const res2 = await fetch(realUrl, { method, headers: h, redirect: 'follow' });
+      const res2 = await Promise.race([
+        fetch(realUrl, { method, headers: h, redirect: 'follow' }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('图片下载超时（15s）')), 15000)),
+      ]);
       const ab = await res2.arrayBuffer();
       const bin = new Uint8Array(ab);
       return { status: res2.status, bytes: bin, body: bin, headers: {} };

@@ -26,10 +26,16 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   void initState() {
     super.initState();
     _tabCtrl = TabController(length: 2, vsync: this);
+    // 先预加载源到 QuickJS，完成后再加载 explore（串行，避免竞态）
+    _preloadAndLoad();
+  }
+
+  Future<void> _preloadAndLoad() async {
+    // 预加载源到引擎
+    await SourceDataService.instance.loadLocal(widget.sourceId);
+    // 源加载完成后再加载 explore 和 categories
     _loadExplore();
     _loadCategories();
-    // 预加载源到 QuickJS（修复首次点击不加载）
-    SourceDataService.instance.loadLocal(widget.sourceId);
   }
 
   @override
