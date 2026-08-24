@@ -53,7 +53,7 @@ class _SourceDiagPageState extends State<SourceDiagPage> {
     // 3. 网络层（XHR/fetch 直连）
     try {
       final r = await engine.evaluateAwait(
-        "fetch('https://api.copy2000.online/api/v3/h5/homeIndex', {method:'GET'}).then(r => r.status)");
+        "fetch('https://www.baidu.com', {method:'GET'}).then(r => r.status)");
       log('③ 网络层 fetch', r.toString() == '200' ? '✅ 通过 (HTTP 200)' : '⚠️ 状态码: $r');
     } catch (e) {
       log('③ 网络层 fetch', '❌ $e');
