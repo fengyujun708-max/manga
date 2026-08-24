@@ -343,8 +343,9 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
       await Future.delayed(const Duration(milliseconds: 20));
     }
     final err = _engine!.evaluate('globalThis.__sourceLoadError__');
-    final msg = err.toString();
-    return (msg == 'null' || msg.isEmpty) ? '源加载超时' : msg;
+      final msg = err.toString();
+      return (msg == 'null' || msg.isEmpty) ? '源加载超时' : msg;
+    });
   }
 
   /// 求值 JS 并等待 Promise 完成（flutter_qjs dispatch 自动处理事件循环）
