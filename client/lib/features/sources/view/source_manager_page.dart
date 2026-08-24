@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../plugins/manga_source.dart';
 import '../../../plugins/source_installer.dart';
 import '../../../core/network/api_client.dart';
+import '../../../app/theme/theme.dart';
 import '../bloc/source_bloc.dart';
 import '../bloc/source_event.dart';
 import '../bloc/source_state.dart';

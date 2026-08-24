@@ -1,5 +1,6 @@
 // (c) 2026 漫界 — JsUiApi 简化版（官方 venera ui 桥的占位实现）
 // 源中调用 showMessage/showDialog 等 UI 方法时安全空转，不中断执行。
+import 'package:flutter/foundation.dart' show protected;
 import 'package:flutter/material.dart' show BuildContext;
 import 'package:flutter_qjs/flutter_qjs.dart' show JSInvokable;
 
