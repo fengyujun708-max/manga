@@ -210,7 +210,9 @@ class SourceDataService {
           // 封面修复 + 章节数日志
           if (normalized['detail'] == null) {
             final cover = (normalized['cover'] ?? '').toString();
-            if (cover.isNotEmpty) _fixItemCover(sourceId, normalized);
+            if (cover.isNotEmpty) {
+              _fixItemCover(sourceId, Map<String, dynamic>.from(normalized));
+            }
             final chs = normalized['chapters'];
             LogReporter.instance.report('info', '详情数据[$sourceId]', '$comicId: chapters=${chs is List ? chs.length : chs?.runtimeType}, keys=${normalized.keys.take(12).join(",")}');
           }
