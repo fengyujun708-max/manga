@@ -37,12 +37,13 @@ dependencies:
   url_launcher: ^6.3.1
   share_plus: ^12.0.1
   webdav_client: ^1.2.0
-  rhttp: ^2.0.0
-  zip_flutter: ^0.0.17
+  rhttp: ^0.18.0
+  zip_flutter: ^0.0.13
   lodepng_flutter:
     git:
       url: https://github.com/venera-app/lodepng_flutter
       ref: ac7d05dde32e8d728102a9ff66e6b55f05d94ba1
+      path: .
   http: ^1.2.0
 
   # 本地存储
