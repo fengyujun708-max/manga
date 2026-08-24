@@ -2,7 +2,10 @@
 // 网络通过宿主 fetch（Dart 实现），HTML 解析用简易 DOM 引擎
 'use strict';
 
-// ===== 宿主缺失对象兜底（QuickJS 无 TextEncoder/setInterval/btoa 等）=====
+// ===== 宿主缺失对象兜底（QuickJS 无 console/TextEncoder/setInterval/btoa 等）=====
+if (typeof globalThis.console === 'undefined') {
+  globalThis.console = { log: function(){}, info: function(){}, warn: function(){}, error: function(){}, debug: function(){}, trace: function(){} };
+}
 if (typeof globalThis.clearTimeout === 'undefined') { globalThis.clearTimeout = function () {}; }
 if (typeof globalThis.setTimeout === 'undefined') {
   globalThis.setTimeout = function (fn, ms) { try { fn(); } catch (_) {} return 0; };
@@ -154,32 +157,40 @@ globalThis.APP = {
   channelId: 'dev',
 };
 
-// ===== fetch 兜底：flutter_js 未注入全局 fetch 时用 XMLHttpRequest 实现 =====
+// ===== fetch 兜底：基于 sendMessage http 桥（不依赖 XMLHttpRequest）=====
+if (typeof globalThis.XMLHttpRequest === 'undefined') {
+  globalThis.XMLHttpRequest = function () {
+    this.readyState = 0; this.status = 0; this.responseText = '';
+    this.open = function () {}; this.setRequestHeader = function () {};
+    this.send = function () { const onerror = this.onerror; if (onerror) setTimeout(onerror, 0); };
+    this.getResponseHeader = function () { return ''; };
+    this.getAllResponseHeaders = function () { return ''; };
+  };
+}
 if (typeof globalThis.fetch !== 'function') {
   globalThis.fetch = function (url, options) {
     options = options || {};
-    return new Promise(function (resolve, reject) {
-      try {
-        var xhr = new XMLHttpRequest();
-        xhr.open(options.method || 'GET', url, true);
-        var hs = options.headers || {};
-        Object.keys(hs).forEach(function (k) { try { xhr.setRequestHeader(k, String(hs[k])); } catch (_) {} });
-        xhr.onload = function () {
-          var headers = { get: function (name) {
-            try { return xhr.getResponseHeader(name) || ''; } catch (_) { return ''; }
-          }};
-          resolve({ status: xhr.status || 0, ok: (xhr.status || 0) >= 200 && (xhr.status || 0) < 300,
-            text: function () { return Promise.resolve(String(xhr.responseText || '')); },
-            json: function () { return Promise.resolve(JSON.parse(xhr.responseText || 'null')); },
-            headers: headers });
-        };
-        xhr.onerror = function () { reject(new Error('XHR network error')); };
-        xhr.ontimeout = function () { reject(new Error('XHR timeout')); };
-        xhr.timeout = 30000;
-        if (options.body !== undefined && options.body !== null && String(options.method || 'GET').toUpperCase() !== 'GET') {
-          xhr.send(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
-        } else { xhr.send(); }
-      } catch (e) { reject(e); }
+    return sendMessage({
+      method: 'http',
+      http_method: (options.method || 'GET').toUpperCase(),
+      url: String(url),
+      headers: options.headers || {},
+      data: (options.body !== undefined && (options.method || 'GET').toUpperCase() !== 'GET') ? String(options.body) : undefined,
+    }).then(function (res) {
+      const body = (res && res.body) ? String(res.body) : '';
+      const hs = (res && res.headers) || {};
+      return {
+        status: (res && res.status) || 0,
+        ok: ((res && res.status) || 0) >= 200 && ((res && res.status) || 0) < 300,
+        text: function () { return Promise.resolve(body); },
+        json: function () { try { return Promise.resolve(JSON.parse(body)); } catch (e) { return Promise.reject(e); } },
+        arrayBuffer: function () {
+          const bin = new Uint8Array(body.length);
+          for (let i = 0; i < body.length; i++) bin[i] = body.charCodeAt(i) & 0xff;
+          return Promise.resolve(bin.buffer);
+        },
+        headers: { get: function (name) { return hs[String(name).toLowerCase()] || ''; } },
+      };
     });
   };
 }
