@@ -61,6 +61,28 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
 
   final Set<String> _loadedSources = {};
 
+  // 执行锁：evaluateAwait 共享全局变量，必须串行（并发会互相覆盖数据）
+  bool _busy = false;
+  final List<Completer<void>> _waitQueue = [];
+
+  Future<T> _serialized<T>(Future<T> Function() fn) async {
+    while (_busy) {
+      final c = Completer<void>();
+      _waitQueue.add(c);
+      await c.future;
+    }
+    _busy = true;
+    try {
+      return await fn();
+    } finally {
+      _busy = false;
+      for (final w in _waitQueue) {
+        w.complete();
+      }
+      _waitQueue.clear();
+    }
+  }
+
   static void reset() {
     _cache = null;
     _cache?.dispose();
@@ -295,13 +317,14 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
   }
 
   /// 执行源 JS，注册到 __sources__
-  Future<String?> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
-    await init();
-    // 已加载且无设置变化 → 直接复用（修复重复 eval 和首次点击不加载）
-    if (_loadedSources.contains(sourceId) && (settings == null || settings.isEmpty)) {
-      return null;
-    }
-    if (settings != null && settings.isNotEmpty) {
+  Future<String?> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) {
+    return _serialized(() async {
+      await init();
+      // 已加载且无设置变化 → 直接复用（修复重复 eval 和首次点击不加载）
+      if (_loadedSources.contains(sourceId) && (settings == null || settings.isEmpty)) {
+        return null;
+      }
+      if (settings != null && settings.isNotEmpty) {
       final s = jsonEncode(settings);
       _engine!.evaluate("globalThis.__settingsOverride__ = JSON.parse('${s.replaceAll("'", "\\'").replaceAll('\n', r'\n')}');");
     } else {
@@ -325,8 +348,9 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
   }
 
   /// 求值 JS 并等待 Promise 完成（flutter_qjs dispatch 自动处理事件循环）
-  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 20000}) async {
-    _engine!.evaluate('''
+  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 20000}) {
+    return _serialized(() async {
+      _engine!.evaluate('''
 globalThis.__evalResult__ = null;
 globalThis.__evalDone__ = false;
 (async () => {
@@ -339,17 +363,18 @@ globalThis.__evalDone__ = false;
   globalThis.__evalDone__ = true;
 })();
 ''');
-    final maxIter = timeoutMs ~/ 10;
-    for (var i = 0; i < maxIter; i++) {
-      final done = _engine!.evaluate('JSON.stringify(globalThis.__evalDone__)').toString();
-      if (done == 'true') break;
-      await Future.delayed(const Duration(milliseconds: 10));
-    }
-    final r = _engine!.evaluate('globalThis.__evalResult__');
-    if (r is Map && r['__error'] != null) {
-      throw Exception(r['__error']);
-    }
-    return r;
+      final maxIter = timeoutMs ~/ 10;
+      for (var i = 0; i < maxIter; i++) {
+        final done = _engine!.evaluate('JSON.stringify(globalThis.__evalDone__)').toString();
+        if (done == 'true') break;
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      final r = _engine!.evaluate('globalThis.__evalResult__');
+      if (r is Map && r['__error'] != null) {
+        throw Exception(r['__error']);
+      }
+      return r;
+    });
   }
 
   void dispose() {
