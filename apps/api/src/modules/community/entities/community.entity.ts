@@ -220,7 +220,7 @@ export class SourceRequest {
 
 // ====== 源注册表 ======
 
-@Entity('source_registry')
+@Entity('notifications')
 export class Notification {
   @PrimaryGeneratedColumn('uuid')
   id: string;

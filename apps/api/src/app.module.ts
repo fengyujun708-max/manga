@@ -7,12 +7,12 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
-import { SmsModule } from './modules/sms/sms.module';
 import { ComicModule } from './modules/comic/comic.module';
 import { CommunityModule } from './modules/community/community.module';
 import { RequestModule } from './modules/request/request.module';
 import { SourceModule } from './modules/source/source.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { LogModule } from './modules/log/log.module';
 import { AnnouncementModule } from './modules/announcement/announcement.module';
 import { UpdateModule } from './modules/update/update.module';
 import { AdminModule } from './modules/admin/admin.module';
@@ -64,12 +64,12 @@ import { OfficialModule } from './modules/official/official.module';
     // Feature Modules
     AuthModule,
     UserModule,
-    SmsModule,
     ComicModule,
     CommunityModule,
     RequestModule,
     SourceModule,
     NotificationModule,
+    LogModule,
     AnnouncementModule,
     UpdateModule,
     AdminModule,

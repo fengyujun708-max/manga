@@ -72,16 +72,25 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
         backgroundColor: DS.bg,
         appBar: AppBar(
           backgroundColor: DS.bg,
-          title: Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DS.textPrimary)),
+          elevation: 0, scrolledUnderElevation: 0,
+          titleSpacing: 0,
+          title: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            Text('$name', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: DS.textPrimary, letterSpacing: -0.3)),
+            Text(widget.sourceId, style: TextStyle(fontSize: 11, color: DS.textTertiary, letterSpacing: 0.3)),
+          ]),
           actions: [
             IconButton(icon: Icon(Icons.search_rounded, color: DS.textPrimary),
-              onPressed: () => GoRouter.of(context).push('/search')),
+              onPressed: () => GoRouter.of(context).push('/search?sourceId=${widget.sourceId}&name=${Uri.encodeComponent(name)}')),
           ],
           bottom: TabBar(
             controller: _tabCtrl,
             indicatorColor: DS.accent,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicatorWeight: 3,
             labelColor: DS.textPrimary,
             unselectedLabelColor: DS.textTertiary,
+            labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            unselectedLabelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             tabs: [Tab(text: '首页'), Tab(text: '分类')],
           ),
         ),
@@ -110,26 +119,39 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   Widget _buildExplore() {
     if (_loadingExplore) return Center(child: CircularProgressIndicator(color: DS.accent));
     if (_error != null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Text(_error!, style: TextStyle(color: DS.textSecondary)),
+      Icon(Icons.cloud_off_rounded, size: 44, color: DS.textDisabled),
+      SizedBox(height: 16),
+      Padding(padding: EdgeInsets.symmetric(horizontal: 32),
+        child: Text(_error!, textAlign: TextAlign.center, style: TextStyle(color: DS.textSecondary, fontSize: 13))),
       SizedBox(height: 16),
       FilledButton(onPressed: _loadExplore, child: Text('重试')),
     ]));
-    if (_sections.isEmpty) return Center(child: Text('暂无内容', style: TextStyle(color: DS.textTertiary)));
+    if (_sections.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.menu_book_rounded, size: 44, color: DS.textDisabled),
+      SizedBox(height: 12),
+      Text('暂无内容', style: TextStyle(color: DS.textTertiary)),
+      SizedBox(height: 8),
+      Text('可能是源站无响应，试试开 VPN', style: TextStyle(color: DS.textDisabled, fontSize: 12)),
+    ]));
 
-    return ListView.builder(padding: EdgeInsets.only(bottom: 100), itemCount: _sections.length, itemBuilder: (_, si) {
+    return ListView.builder(padding: EdgeInsets.only(top: 8, bottom: 100), itemCount: _sections.length, itemBuilder: (_, si) {
       final section = _sections[si];
       final items = (section['items'] as List?) ?? [];
       if (items.isEmpty) return SizedBox.shrink();
       final title = (section['title'] ?? '').toString();
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+        Padding(padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
           child: Row(children: [
-            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: DS.textPrimary)),
-            Spacer(),
-            GestureDetector(onTap: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?initial=$title'),
-              child: Text('更多', style: TextStyle(fontSize: 13, color: DS.textTertiary))),
+            Container(width: 4, height: 18, decoration: BoxDecoration(color: DS.accent, borderRadius: BorderRadius.circular(2))),
+            SizedBox(width: 8),
+            Expanded(child: Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: DS.textPrimary))),
+            GestureDetector(onTap: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?initial=${Uri.encodeComponent(title)}'),
+              child: Row(children: [
+                Text('查看全部', style: TextStyle(fontSize: 12, color: DS.textTertiary)),
+                Icon(Icons.chevron_right_rounded, size: 16, color: DS.textTertiary),
+              ])),
           ])),
-        SizedBox(height: 200, child: ListView.separated(
+        SizedBox(height: 250, child: ListView.separated(
           padding: EdgeInsets.symmetric(horizontal: 16), scrollDirection: Axis.horizontal,
           itemCount: items.length, separatorBuilder: (_, __) => SizedBox(width: 12),
           itemBuilder: (_, i) {
@@ -138,15 +160,18 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
             final comicId = (item['id'] ?? '').toString();
             final cTitle = (item['title'] ?? '').toString();
             return GestureDetector(onTap: () => _enterComic(widget.sourceId, comicId),
-              child: SizedBox(width: 120, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Expanded(child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: DS.surface1),
+              child: SizedBox(width: 140, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(child: Container(
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: DS.surface2,
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 10, offset: Offset(0, 4))]),
                   clipBehavior: Clip.antiAlias,
                   child: cover.isNotEmpty ? CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover, width: double.infinity,
                     httpHeaders: {'Referer': 'https://${Uri.parse(cover).host}/'},
                     errorWidget: (_, __, ___) => Container(color: DS.surface2, child: Icon(Icons.menu_book_rounded, color: DS.textDisabled)))
-                    : Container(color: DS.surface2))),
-                SizedBox(height: 6),
-                Text(cTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: DS.textPrimary)),
+                    : Container(color: DS.surface2, child: Icon(Icons.menu_book_rounded, color: DS.textDisabled)),
+                )),
+                SizedBox(height: 8),
+                Text(cTitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: DS.textPrimary, height: 1.3)),
               ])));
           })),
       ]);

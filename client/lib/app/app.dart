@@ -77,7 +77,10 @@ class ManjieApp extends StatelessWidget {
             initialCategory: state.uri.queryParameters['initial'],
           ),
         ),
-            GoRoute(path: '/search', builder: (_, __) => const SearchPage()),
+            GoRoute(path: '/search', builder: (_, state) => SearchPage(
+            sourceId: state.uri.queryParameters['sourceId'],
+            sourceName: state.uri.queryParameters['name'] ?? '',
+          )),
         GoRoute(path: '/comic/:id', builder: (_, state) => ComicDetailPage(comicId: state.pathParameters['id']!)),
         GoRoute(path: '/settings', builder: (_, __) => const SettingsPage()),
         GoRoute(path: '/community/create', builder: (_, __) => const CreatePostPage()),

@@ -51,8 +51,20 @@ class SourceManifest {
       downloads: json['downloads'] as int? ?? 0,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       networkType: json['networkType'] as String? ?? 'direct',
-      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
+      metadata: _parseMetadata(json['metadata']),
     );
+  }
+
+  static Map<String, dynamic> _parseMetadata(dynamic m) {
+    if (m == null) return {};
+    if (m is Map) return Map<String, dynamic>.from(m);
+    if (m is String) {
+      try {
+        final d = jsonDecode(m);
+        if (d is Map) return Map<String, dynamic>.from(d);
+      } catch (_) {}
+    }
+    return {};
   }
 
   Map<String, dynamic> toJson() => {

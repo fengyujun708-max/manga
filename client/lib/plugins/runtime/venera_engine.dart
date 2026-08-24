@@ -13,6 +13,7 @@ class VeneraEngine {
 
   JavascriptRuntime? _runtime;
   bool _prepared = false;
+  final Set<String> _loadedSources = {};
 
   Future<void> init() async {
     if (_prepared) return;
@@ -68,6 +69,10 @@ class VeneraEngine {
   /// 返回 null=成功；否则返回错误信息
   Future<String?> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
     await init();
+    // 已加载且无设置变化 → 直接复用，避免重复 eval（修复"点几次才加载"）
+    if (_loadedSources.contains(sourceId) && (settings == null || settings.isEmpty)) {
+      return null;
+    }
     // 注入宿主侧设置覆盖（线路选择等）
     if (settings != null && settings.isNotEmpty) {
       final s = jsonEncode(settings).replaceAll("'", "\\'");
@@ -77,7 +82,6 @@ class VeneraEngine {
     }
     _runtime!.evaluate('''
       try { delete globalThis.__sourceClass; } catch(_) {}
-      try { delete globalThis.__sources__; } catch(_) {}
       try { delete globalThis.__sourceLoadError__; } catch(_) {}
     ''');
     // base64 注入，避免字符串转义损坏源代码
@@ -87,7 +91,10 @@ class VeneraEngine {
     for (var i = 0; i < 300; i++) {
       _runtime!.executePendingJob();
       final r = _runtime!.evaluate('JSON.stringify(Object.keys(globalThis.__sources__ || {}))');
-      if (r.rawResult.toString().contains('"$sourceId"')) return null;
+      if (r.rawResult.toString().contains('"$sourceId"')) {
+        _loadedSources.add(sourceId);
+        return null;
+      }
       await Future.delayed(const Duration(milliseconds: 30));
     }
     // 超时未注册 → 取出 runtime 捕获的错误
@@ -97,7 +104,7 @@ class VeneraEngine {
   }
 
   /// 求值 JS 并等待 Promise 完成
-  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 8000}) async {
+  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 25000}) async {
     _runtime!.evaluate('''
 globalThis.__evalResult__ = null;
 globalThis.__evalDone__ = false;
@@ -140,6 +147,7 @@ globalThis.__evalDone__ = false;
     _runtime?.dispose();
     _runtime = null;
     _prepared = false;
+    _loadedSources.clear();
   }
 
   String _toHex(String latin1) => latin1.codeUnits.map((c) => c.toRadixString(16).padLeft(2, '0')).join();

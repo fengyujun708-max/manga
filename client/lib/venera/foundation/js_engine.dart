@@ -99,7 +99,7 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
       if (_jsInitCache != null) {
         jsInit = _jsInitCache!;
       } else {
-        var buffer = await rootBundle.load("assets/vcomic_engine.js");
+        var buffer = await rootBundle.load("assets/venera_client_runtime.js");
         jsInit = buffer.buffer.asUint8List();
       }
       _engine!
