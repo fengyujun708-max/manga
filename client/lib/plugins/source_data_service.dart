@@ -63,12 +63,16 @@ class SourceDataService {
       try {
         final raw = await engine.evaluateAwait('globalThis.__exploreAll__("$sourceId")').timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('探索超时（网络不通或源站被墙，请开 VPN）'));
         if (raw is Map && raw['error'] != null) {
+          LogReporter.instance.report('error', 'explore失败[$sourceId]', raw['error'].toString());
           return {'sections': [], 'mode': 'local', 'error': raw['error'].toString()};
         } else if (raw is List && raw.isNotEmpty) {
           return {'sections': raw, 'mode': 'local'};
         }
-        return {'sections': [], 'mode': 'local', 'error': raw is Map && raw['error'] != null ? raw['error'].toString() : '板块为空，请检查网络或开VPN后重试'};
+        final msg = raw is Map && raw['error'] != null ? raw['error'].toString() : '板块为空: ${raw.toString().substring(0, raw.toString().length.clamp(0, 200))}';
+        LogReporter.instance.report('error', 'explore空[$sourceId]', msg);
+        return {'sections': [], 'mode': 'local', 'error': '板块为空，请检查网络或开VPN后重试'};
       } catch (e) {
+        LogReporter.instance.report('error', 'explore异常[$sourceId]', e.toString());
         return {'sections': [], 'mode': 'local', 'error': e.toString()};
       }
     }
@@ -135,12 +139,15 @@ class SourceDataService {
         if (raw is Map) {
           final err = raw['error']?.toString();
           if (err != null && err.isNotEmpty) {
+            LogReporter.instance.report('error', '详情失败[$sourceId]', '$comicId: $err');
             return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': err};
           }
           return {'detail': raw, 'chapters': raw['chapters'] ?? [], 'mode': 'local'};
         }
+        LogReporter.instance.report('error', '详情空[$sourceId]', '$comicId raw=${raw.toString().substring(0, raw.toString().length.clamp(0, 200))}');
         return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': '详情返回为空'};
       } catch (e) {
+        LogReporter.instance.report('error', '详情异常[$sourceId]', '$comicId: ${e.toString()}');
         return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': '详情加载失败：${e.toString().replaceAll("Exception: ", "")}'};
       }
     }
