@@ -25,6 +25,7 @@ import 'package:uuid/uuid.dart';
 import 'package:manjie/venera/components/js_ui.dart';
 import 'package:manjie/venera/foundation/app.dart';
 import 'package:manjie/venera/foundation/js_pool.dart';
+import 'package:manjie/core/network/log_reporter.dart';
 import 'package:manjie/venera/network/app_dio.dart';
 import 'package:manjie/venera/network/cookie_jar.dart';
 import 'package:manjie/venera/network/proxy.dart';
@@ -96,16 +97,23 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
       setGlobalFunc(["appVersion", App.version]);
       setGlobalFunc.free();
       Uint8List jsInit;
-      if (_jsInitCache != null) {
-        jsInit = _jsInitCache!;
-      } else {
-        var buffer = await rootBundle.load("assets/venera_client_runtime.js");
-        jsInit = buffer.buffer.asUint8List();
-      }
+      var buffer = await rootBundle.load("assets/venera_client_runtime.js");
+      jsInit = buffer.buffer.asUint8List();
       _engine!
           .evaluate(utf8.decode(jsInit), name: "<init>");
+      // 验证 runtime 加载成功
+      final check = _engine!.evaluate('typeof globalThis.Convert');
+      if (check.toString() != 'function') {
+        Log.error('JS Engine', 'Runtime 加载异常: Convert=${check}');
+        try {
+          LogReporter.instance.report('error', 'JsEngine Runtime 加载失败', 'Convert=${check}');
+        } catch (_) {}
+      }
     } catch (e, s) {
       Log.error('JS Engine', 'JS Engine Init Error:\n$e\n$s');
+      try {
+        LogReporter.instance.report('error', 'JsEngine Init Error', '$e\n$s');
+      } catch (_) {}
     }
   }
 
@@ -148,6 +156,8 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
             source?.saveData();
           case 'http':
             return _http(Map.from(message));
+          case 'crypto':
+            return _crypto(Map.from(message));
           case 'html':
             return handleHtmlCallback(Map.from(message));
           case 'convert':
@@ -455,6 +465,39 @@ mixin class _JSEngineApi {
       if (uri == null) continue;
       _cookieJar!.deleteUri(uri);
     }
+  }
+
+  /// crypto 桥：md5/sha/hmac/base64（Venera 语义：哈希返回 latin1 二进制串）
+  dynamic _crypto(Map<String, dynamic> data) {
+    final op = data['op']?.toString() ?? '';
+    List<int> bin(String s) => List<int>.generate(s.length, (i) => s.codeUnitAt(i) & 0xff);
+    String result = '';
+    final dataStr = data['data']?.toString() ?? '';
+    switch (op) {
+      case 'md5': result = String.fromCharCodes(md5.convert(bin(dataStr)).bytes); break;
+      case 'sha1': result = String.fromCharCodes(sha1.convert(bin(dataStr)).bytes); break;
+      case 'sha256': result = String.fromCharCodes(sha256.convert(bin(dataStr)).bytes); break;
+      case 'sha512': result = String.fromCharCodes(sha512.convert(bin(dataStr)).bytes); break;
+      case 'hmac':
+        final key = data['key']?.toString() ?? '';
+        final msg = data['msg']?.toString() ?? '';
+        final algo = data['algo']?.toString() ?? 'sha256';
+        result = String.fromCharCodes(Hmac(switch (algo) {
+          'md5' => md5, 'sha1' => sha1, 'sha256' => sha256, 'sha512' => sha512,
+          _ => sha256,
+        }, bin(key)).convert(bin(msg)).bytes);
+        break;
+      case 'b64encode': {
+        final bytes = bin(dataStr);
+        result = base64Encode(bytes);
+        break;
+      }
+      case 'b64decode':
+        try { result = String.fromCharCodes(base64Decode(dataStr)); } catch (_) { result = ''; }
+        break;
+      default: result = '';
+    }
+    return result;
   }
 
   Object? _convert(Map<String, dynamic> data) {

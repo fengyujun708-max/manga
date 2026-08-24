@@ -292,10 +292,11 @@ function __aesEcbDecrypt(dataStr, keyStr) {
 
 // ===== Convert（加密通过宿主桥接，结果存全局变量）=====
 function __cryptoJs(op) {
-  // flutter_js QuickJS: sendMessage 同步且返回 Dart 回调的返回值
+  // flutter_qjs: sendMessage 单参对象契约，Dart 侧 _messageReceiver 同步返回
   try {
-    const r = sendMessage('crypto', JSON.stringify(op));
+    const r = sendMessage({ method: 'crypto', op: op.op, data: op.data, key: op.key, msg: op.msg, algo: op.algo });
     if (typeof r === 'string') return r;
+    if (r && typeof r === 'object' && r.result !== undefined) return String(r.result);
   } catch (_) {}
   // 兜底：旧模式（Dart 侧 evaluate 写全局变量）
   return globalThis.__cryptoResult || '';
@@ -596,11 +597,14 @@ const Network = {
         bytes: true,
       });
       let bin;
-      if (res.body is Uint8List) {
-        bin = new Uint8Array(res.body);
-      } else if (typeof res.body === 'string') {
-        bin = new Uint8Array(res.body.length);
-        for (let i = 0; i < res.body.length; i++) bin[i] = res.body.charCodeAt(i) & 0xff;
+      const rawBody = res.body;
+      if (rawBody instanceof Uint8Array) {
+        bin = rawBody;
+      } else if (Array.isArray(rawBody)) {
+        bin = new Uint8Array(rawBody);
+      } else if (typeof rawBody === 'string') {
+        bin = new Uint8Array(rawBody.length);
+        for (let i = 0; i < rawBody.length; i++) bin[i] = rawBody.charCodeAt(i) & 0xff;
       } else {
         bin = new Uint8Array(0);
       }
