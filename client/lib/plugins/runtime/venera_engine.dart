@@ -118,7 +118,6 @@ class VeneraEngine {
       _waitQueue.clear();
     }
   }
-  }
 
   /// 求值 JS 并等待 Promise 完成
   Future<dynamic> evaluateAwait(String js, {int timeoutMs = 25000}) async {
