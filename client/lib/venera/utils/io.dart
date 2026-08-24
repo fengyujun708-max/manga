@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/services.dart';
+import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:manjie/venera/foundation/app.dart';
 import 'package:manjie/venera/utils/ext.dart';
 import 'package:path/path.dart' as p;
