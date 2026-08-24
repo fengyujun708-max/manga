@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/services.dart';
 import 'package:manjie/venera/foundation/log.dart';
 import 'package:manjie/venera/network/cache.dart';
@@ -124,6 +125,8 @@ class MyLogInterceptor implements Interceptor {
 class AppDio with DioMixin {
   AppDio([BaseOptions? options]) {
     this.options = options ?? BaseOptions();
+    // 必须初始化 adapter（late 字段，不设访问即抛 LateInitializationError）
+    httpClientAdapter = IOHttpClientAdapter();
     if (App.isInitialized) {
       interceptors.add(CookieManagerSql(SingleInstanceCookieJar.instance!));
       interceptors.add(NetworkCacheManager());
