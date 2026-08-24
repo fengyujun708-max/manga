@@ -42,7 +42,8 @@ class SourceDataService {
         file = lower;
       }
       final code = await file.readAsString();
-      final err = await engine.executeSource(sourceId, code, settings: SourceRoutesService.instance.getOverrides(sourceId));
+      final err = await engine.executeSource(sourceId, code, settings: SourceRoutesService.instance.getOverrides(sourceId))
+          .timeout(const Duration(seconds: 5), onTimeout: () { throw Exception('源加载超时'); });
       if (err != null) {
         debugPrint('[SourceLoad] $sourceId failed: $err');
         return false;
@@ -57,7 +58,7 @@ class SourceDataService {
   Future<Map<String, dynamic>> explore(String sourceId) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__exploreAll__("$sourceId")').timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('探索超时（网络不通或源站被墙）'));
+        final raw = await engine.evaluateAwait('globalThis.__exploreAll__("$sourceId")').timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('探索超时（网络不通或源站被墙）'));
         if (raw is Map && raw['error'] != null) {
           return {'sections': [], 'mode': 'local', 'error': raw['error'].toString()};
         } else if (raw is List && raw.isNotEmpty) {
@@ -75,7 +76,7 @@ class SourceDataService {
   Future<Map<String, dynamic>> search(String sourceId, String keyword, int page) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__search__("$sourceId", "${_jsStr(keyword)}", $page)').timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('搜索超时'));
+        final raw = await engine.evaluateAwait('globalThis.__search__("$sourceId", "${_jsStr(keyword)}", $page)').timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('搜索超时'));
         if (raw is Map && raw['error'] == null) {
           return {'items': raw['items'] ?? [], 'hasMore': raw['hasMore'] == true, 'mode': 'local'};
         }
@@ -93,7 +94,7 @@ class SourceDataService {
   Future<List<Map<String, dynamic>>> categories(String sourceId) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__categories__("$sourceId")').timeout(const Duration(seconds: 15), onTimeout: () => throw Exception('分类加载超时'));
+        final raw = await engine.evaluateAwait('globalThis.__categories__("$sourceId")').timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('分类加载超时'));
         if (raw is List && raw.isNotEmpty) {
           return (raw as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
         }
@@ -126,7 +127,7 @@ class SourceDataService {
   Future<Map<String, dynamic>> comic(String sourceId, String comicId) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__comic__("$sourceId", "${_jsStr(comicId)}")').timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('详情加载超时'));
+        final raw = await engine.evaluateAwait('globalThis.__comic__("$sourceId", "${_jsStr(comicId)}")').timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('详情加载超时'));
         if (raw is Map) return {'detail': raw, 'chapters': raw['chapters'] ?? [], 'mode': 'local'};
       } catch (_) {}
     }
@@ -137,7 +138,7 @@ class SourceDataService {
   Future<Map<String, dynamic>> pages(String sourceId, String comicId, String epId) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__pages__("$sourceId", "${_jsStr(comicId)}", "${_jsStr(epId)}")').timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('图片页加载超时'));
+        final raw = await engine.evaluateAwait('globalThis.__pages__("$sourceId", "${_jsStr(comicId)}", "${_jsStr(epId)}")').timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('图片页加载超时'));
         if (raw is Map && raw['pages'] != null) {
           return {'pages': raw['pages'], 'next': raw['next'] ?? '', 'mode': 'local'};
         }

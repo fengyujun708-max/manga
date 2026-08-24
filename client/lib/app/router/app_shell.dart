@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../ds.dart';
 import '../../plugins/source_installer.dart';
+import '../../plugins/source_data_service.dart';
 
 /// 漫界 App Shell — 浮动液态玻璃底栏
 /// 滚动下滑隐藏 + 上滑/停止显示 + 选中微动效
@@ -41,6 +42,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     _barOpacity = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(parent: _barCtrl, curve: Curves.easeOut));
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
+      // 预初始化 QuickJS 引擎（修复首次点击不加载）
+      try { await SourceDataService.instance.engine.init(); } catch (_) {}
       // 内置源自动提取（首次）
       final prefs = await SharedPreferences.getInstance();
       if (!(prefs.getBool('sources_extracted') ?? false)) {

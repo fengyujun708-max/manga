@@ -73,6 +73,10 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
         appBar: AppBar(
           backgroundColor: DS.bg,
           title: Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DS.textPrimary)),
+          actions: [
+            IconButton(icon: Icon(Icons.search_rounded, color: DS.textPrimary),
+              onPressed: () => GoRouter.of(context).push('/search')),
+          ],
           bottom: TabBar(
             controller: _tabCtrl,
             indicatorColor: DS.accent,
