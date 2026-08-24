@@ -1,9 +1,3 @@
-// 桩定义 — 替代不存在的包
-class _FileType { static final images = null; static final any = null; }
-class _FlutterFileDialog { static saveFile(_) async => null; static importFile(_) async => null; }
-class _SaveFileDialogParams { _SaveFileDialogParams({String? fileName, dynamic fileBytes, _FileType? fileType}); }
-class _IOOverrides {}
-
 import 'dart:io';
 import 'dart:isolate';
 
@@ -16,6 +10,11 @@ import 'package:share_plus/share_plus.dart' as s;
 
 export 'dart:io';
 export 'dart:typed_data';
+
+// 桩定义 — 替代不存在的包
+class _FileType { static final images = null; static final any = null; }
+class _FlutterFileDialog { static saveFile(_) async => null; static importFile(_) async => null; }
+class _SaveFileDialogParams { _SaveFileDialogParams({String? fileName, dynamic fileBytes, _FileType? fileType}); }
 
 class IO {
   /// A global flag used to indicate whether the app is selecting files.
@@ -367,32 +366,11 @@ Future<void> saveFile(
 
 final class _IOOverrides extends IOOverrides {
   @override
-  Directory createDirectory(String path) {
-    if (App.isAndroid) {
-      var dir = dynamic.fromPathSync(path);
-      if (dir == null) {
-        return super.createDirectory(path);
-      }
-      return dir;
-    } else {
-      return super.createDirectory(path);
-    }
-  }
-
+  Directory createDirectory(String path) => super.createDirectory(path);
   @override
   File createFile(String path) {
-    if (path.startsWith("file://")) {
-      path = path.substring(7);
-    }
-    if (App.isAndroid) {
-      var f = AndroidFile.fromPathSync(path);
-      if (f == null) {
-        return super.createFile(path);
-      }
-      return f;
-    } else {
-      return super.createFile(path);
-    }
+    if (path.startsWith("file://")) path = path.substring(7);
+    return super.createFile(path);
   }
 }
 
