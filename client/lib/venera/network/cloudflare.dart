@@ -1,30 +1,20 @@
 // (c) 2026 漫界 — CloudflareInterceptor 简化版
 // 检测到 CF 挑战时抛 CloudflareException；交互式验证（webview）后续补
-import 'dart:io' as io;
-
 import 'package:dio/dio.dart';
 import 'package:manjie/venera/foundation/log.dart';
 
 import 'cookie_jar.dart';
 
-class CloudflareException implements DioException {
-  @override
-  Object? error = "Cloudflare challenge detected";
+class CloudflareException extends DioException {
+  CloudflareException()
+      : super(
+          requestOptions: RequestOptions(path: ''),
+          type: DioExceptionType.unknown,
+          error: "Cloudflare challenge detected",
+        );
 
   @override
   String get message => "Cloudflare challenge detected";
-
-  @override
-  RequestOptions get requestOptions => RequestOptions(path: '');
-  @override
-  Response<dynamic>? get response => null;
-  @override
-  DioExceptionType get type => DioExceptionType.unknown;
-  @override
-  StackTrace? get stackTrace => null;
-
-  @override
-  Object? get unknown => null;
 
   @override
   String toString() => "Cloudflare challenge detected";
@@ -70,4 +60,4 @@ class CloudflareUtil {
   static bool isCloudflareIp(String ip) => false;
 }
 // ignore_for_file: unused_element
-Future<void> _unusedSaveCookies(CookieJar jar, Uri uri) async {}
+Future<void> _unusedSaveCookies(CookieJarSql jar, Uri uri) async {}

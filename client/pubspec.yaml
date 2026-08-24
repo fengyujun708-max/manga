@@ -35,7 +35,7 @@ dependencies:
   sqlite3: ^2.7.4
   sqlite3_flutter_libs: ^0.5.30
   url_launcher: ^6.3.1
-  share_plus: ^12.0.1
+  share_plus: 11.1.0
   webdav_client: ^1.2.0
   zip_flutter: ^0.0.13
   lodepng_flutter:
@@ -79,6 +79,3 @@ flutter:
     - assets/vcomic_engine.js
     - assets/sources/
     #- assets/sources/*.js.enc  # dart 不支持 glob，用目录
-    - assets/images/
-    - assets/fonts/
-    - assets/i18n/

@@ -574,6 +574,123 @@ mixin class _JSEngineApi {
     }
     return (min + (max - min) * math.Random().nextDouble()).toInt();
   }
+
+  // 官方引擎 Image 桥：RGBA 像素缓冲池（copyRange/rotate90/fillImageAt 等）
+  final Map<int, Uint8List> _imageBuffers = {};
+  final Map<int, (int, int)> _imageSizes = {};
+  int _imageKeyCounter = 0;
+
+  Object? _image(Map<String, dynamic> data) {
+    final f = data["function"] as String?;
+    switch (f) {
+      case "emptyImage":
+        final w = (data["width"] as num).toInt();
+        final h = (data["height"] as num).toInt();
+        final key = ++_imageKeyCounter;
+        _imageBuffers[key] = Uint8List(w * h * 4); // 透明黑
+        _imageSizes[key] = (w, h);
+        return key;
+      case "getWidth":
+        return _imageSizes[data["key"]]?.$1;
+      case "getHeight":
+        return _imageSizes[data["key"]]?.$2;
+      case "copyRange":
+        final key = data["key"];
+        final src = _imageBuffers[key];
+        final size = _imageSizes[key];
+        if (src == null || size == null) return null;
+        final (sw, sh) = size;
+        final x = (data["x"] as num).toInt();
+        final y = (data["y"] as num).toInt();
+        final w = (data["width"] as num).toInt();
+        final h = (data["height"] as num).toInt();
+        final dst = Uint8List(w * h * 4);
+        for (var row = 0; row < h; row++) {
+          final sr = y + row;
+          if (sr < 0 || sr >= sh) continue;
+          for (var col = 0; col < w; col++) {
+            final sc = x + col;
+            if (sc < 0 || sc >= sw) continue;
+            final si = (sr * sw + sc) * 4;
+            final di = (row * w + col) * 4;
+            dst[di] = src[si];
+            dst[di + 1] = src[si + 1];
+            dst[di + 2] = src[si + 2];
+            dst[di + 3] = src[si + 3];
+          }
+        }
+        final nk = ++_imageKeyCounter;
+        _imageBuffers[nk] = dst;
+        _imageSizes[nk] = (w, h);
+        return nk;
+      case "copyAndRotate90":
+        final key = data["key"];
+        final src = _imageBuffers[key];
+        final size = _imageSizes[key];
+        if (src == null || size == null) return null;
+        final (w, h) = size;
+        final nw = h, nh = w;
+        final dst = Uint8List(nw * nh * 4);
+        for (var y = 0; y < h; y++) {
+          for (var x = 0; x < w; x++) {
+            final si = (y * w + x) * 4;
+            final dx = h - 1 - y;
+            final dy = x;
+            final di = (dy * nw + dx) * 4;
+            dst[di] = src[si];
+            dst[di + 1] = src[si + 1];
+            dst[di + 2] = src[si + 2];
+            dst[di + 3] = src[si + 3];
+          }
+        }
+        final nk = ++_imageKeyCounter;
+        _imageBuffers[nk] = dst;
+        _imageSizes[nk] = (nw, nh);
+        return nk;
+      case "fillImageAt":
+      case "fillImageRangeAt":
+        final key = data["key"];
+        final dst = _imageBuffers[key];
+        final dsize = _imageSizes[key];
+        if (dst == null || dsize == null) return null;
+        final (dw, dh) = dsize;
+        final imgKey = data["image"];
+        final src = _imageBuffers[imgKey];
+        final ssize = _imageSizes[imgKey];
+        if (src == null || ssize == null) return null;
+        final (sw, sh) = ssize;
+        final dx = (data["x"] as num).toInt();
+        final dy = (data["y"] as num).toInt();
+        final sx = f == "fillImageRangeAt"
+            ? (data["srcX"] as num).toInt()
+            : 0;
+        final sy = f == "fillImageRangeAt"
+            ? (data["srcY"] as num).toInt()
+            : 0;
+        final fw = f == "fillImageRangeAt"
+            ? (data["width"] as num).toInt()
+            : sw;
+        final fh = f == "fillImageRangeAt"
+            ? (data["height"] as num).toInt()
+            : sh;
+        for (var row = 0; row < fh; row++) {
+          final dr = dy + row, sr = sy + row;
+          if (dr < 0 || dr >= dh || sr < 0 || sr >= sh) continue;
+          for (var col = 0; col < fw; col++) {
+            final dc = dx + col, sc = sx + col;
+            if (dc < 0 || dc >= dw || sc < 0 || sc >= sw) continue;
+            final si = (sr * sw + sc) * 4;
+            final di = (dr * dw + dc) * 4;
+            dst[di] = src[si];
+            dst[di + 1] = src[si + 1];
+            dst[di + 2] = src[si + 2];
+            dst[di + 3] = src[si + 3];
+          }
+        }
+        return null;
+    }
+    return null;
+  }
 }
 
 class DocumentWrapper {

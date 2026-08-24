@@ -180,8 +180,13 @@ class RHttpAdapter extends IOHttpClientAdapter {
   Future<HttpClient> get httpClient async {
     var client = await super.httpClient;
     var proxy = await getProxy();
-    if (proxy != null) {
-      client.findProxy = (uri) => 'PROXY ' + proxy.host + ':' + proxy.port.toString();
+    if (proxy != null && proxy.isNotEmpty) {
+      final parts = proxy.split(':');
+      if (parts.length == 2) {
+        final host = parts[0];
+        final port = int.tryParse(parts[1]) ?? 0;
+        client.findProxy = (uri) => 'PROXY $host:$port';
+      }
     }
     return client;
   }

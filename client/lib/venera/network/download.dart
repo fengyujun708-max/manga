@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/widgets.dart' show ChangeNotifier;
-import 'package:flutter_saf/flutter_saf.dart';
+
 import 'package:manjie/venera/foundation/app.dart';
 import 'package:manjie/venera/foundation/appdata.dart';
 import 'package:manjie/venera/foundation/comic_source/comic_source.dart';
