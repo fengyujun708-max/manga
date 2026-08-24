@@ -33,6 +33,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   Future<void> _preloadAndLoad() async {
     // 预加载源到引擎
     await SourceDataService.instance.loadLocal(widget.sourceId);
+    if (!mounted) return;
     // 源加载完成后再加载 explore 和 categories
     _loadExplore();
     _loadCategories();
@@ -42,6 +43,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   void dispose() { _tabCtrl.dispose(); super.dispose(); }
 
   Future<void> _loadExplore() async {
+    if (!mounted) return;
     setState(() => _loadingExplore = true);
     try {
       final result = await SourceDataService.instance.explore(widget.sourceId);

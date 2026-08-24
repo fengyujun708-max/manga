@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 /// A mixin class that provides a way to ensure the class is initialized.
 abstract mixin class Init {
   bool _isInit = false;
+  Future<void>? _initializing;
 
   final _initCompleter = <Completer<void>>[];
 
@@ -29,12 +30,22 @@ abstract mixin class Init {
   @protected
   Future<void> doInit();
 
-  /// Initialize the class.
+  /// Initialize the class（防并发：多处同时调用只执行一次 doInit）
   Future<void> init() async {
     if (_isInit) {
       return;
     }
-    await doInit();
-    await _markInit();
+    // 并发保护：第二个调用者等待第一个的初始化完成，而不是重复 doInit
+    final inFlight = _initializing;
+    if (inFlight != null) {
+      return inFlight;
+    }
+    final f = doInit().then((_) async => await _markInit());
+    _initializing = f;
+    try {
+      await f;
+    } finally {
+      _initializing = null;
+    }
   }
 }

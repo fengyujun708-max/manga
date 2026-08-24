@@ -59,6 +59,8 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
 
   Dio? _dio;
 
+  final Set<String> _loadedSources = {};
+
   static void reset() {
     _cache = null;
     _cache?.dispose();
@@ -101,9 +103,9 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
       jsInit = buffer.buffer.asUint8List();
       _engine!
           .evaluate(utf8.decode(jsInit), name: "<init>");
-      // 验证 runtime 加载成功
+      // 验证 runtime 加载成功（Convert 是对象，检查非 undefined 即可）
       final check = _engine!.evaluate('typeof globalThis.Convert');
-      if (check.toString() != 'function') {
+      if (check.toString() == 'undefined') {
         Log.error('JS Engine', 'Runtime 加载异常: Convert=${check}');
         try {
           LogReporter.instance.report('error', 'JsEngine Runtime 加载失败', 'Convert=${check}');
@@ -295,6 +297,10 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
   /// 执行源 JS，注册到 __sources__
   Future<String?> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
     await init();
+    // 已加载且无设置变化 → 直接复用（修复重复 eval 和首次点击不加载）
+    if (_loadedSources.contains(sourceId) && (settings == null || settings.isEmpty)) {
+      return null;
+    }
     if (settings != null && settings.isNotEmpty) {
       final s = jsonEncode(settings);
       _engine!.evaluate("globalThis.__settingsOverride__ = JSON.parse('${s.replaceAll("'", "\\'").replaceAll('\n', r'\n')}');");
@@ -307,7 +313,10 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
     // flutter_qjs 的 dispatch() 自动处理 Promise，等待源注册
     for (var i = 0; i < 500; i++) {
       final r = _engine!.evaluate('JSON.stringify(Object.keys(globalThis.__sources__ || {}))');
-      if (r.toString().contains('"$sourceId"')) return null;
+      if (r.toString().contains('"$sourceId"')) {
+        _loadedSources.add(sourceId);
+        return null;
+      }
       await Future.delayed(const Duration(milliseconds: 20));
     }
     final err = _engine!.evaluate('globalThis.__sourceLoadError__');
@@ -346,6 +355,7 @@ globalThis.__evalDone__ = false;
   void dispose() {
     _cache = null;
     _closed = true;
+    _loadedSources.clear();
     _engine?.close();
     _engine?.port.close();
   }
