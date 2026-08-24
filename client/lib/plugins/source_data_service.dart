@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart' show debugPrint;
 import 'source_installer.dart';
 import 'source_routes_service.dart';
-import 'runtime/venera_engine.dart';
+import '../venera/foundation/js_engine.dart';
 import '../core/network/log_reporter.dart';
 
 /// 源数据服务 —— 纯本地执行（Venera 模式）
@@ -13,7 +13,7 @@ class SourceDataService {
   static SourceDataService? _instance;
   static SourceDataService get instance => _instance ??= SourceDataService();
 
-  final VeneraEngine engine = VeneraEngine.instance;
+  final JsEngine engine = JsEngine();
   final Map<String, bool> _hasLocalJs = {};
 
   /// 检查本地是否有该源的 JS 文件

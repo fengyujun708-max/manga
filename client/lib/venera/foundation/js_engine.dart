@@ -277,6 +277,57 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
     return _engine!.evaluate(js, name: name);
   }
 
+  /// 执行源 JS，注册到 __sources__
+  Future<String?> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
+    await init();
+    if (settings != null && settings.isNotEmpty) {
+      final s = jsonEncode(settings);
+      _engine!.evaluate("globalThis.__settingsOverride__ = JSON.parse('${s.replaceAll("'", "\\'").replaceAll('\n', r'\n')}');");
+    } else {
+      _engine!.evaluate("globalThis.__settingsOverride__ = {};");
+    }
+    _engine!.evaluate('try { delete globalThis.__sourceClass; } catch(_) {} try { delete globalThis.__sourceLoadError__; } catch(_) {}');
+    final b64 = base64.encode(utf8.encode(jsCode));
+    _engine!.evaluate("globalThis.__executeSourceB64__('${b64}', '$sourceId');");
+    // flutter_qjs 的 dispatch() 自动处理 Promise，等待源注册
+    for (var i = 0; i < 500; i++) {
+      final r = _engine!.evaluate('JSON.stringify(Object.keys(globalThis.__sources__ || {}))');
+      if (r.toString().contains('"$sourceId"')) return null;
+      await Future.delayed(const Duration(milliseconds: 20));
+    }
+    final err = _engine!.evaluate('globalThis.__sourceLoadError__');
+    final msg = err.toString();
+    return (msg == 'null' || msg.isEmpty) ? '源加载超时' : msg;
+  }
+
+  /// 求值 JS 并等待 Promise 完成（flutter_qjs dispatch 自动处理事件循环）
+  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 20000}) async {
+    _engine!.evaluate('''
+globalThis.__evalResult__ = null;
+globalThis.__evalDone__ = false;
+(async () => {
+  try {
+    const r = await $js;
+    globalThis.__evalResult__ = r;
+  } catch(e) {
+    globalThis.__evalResult__ = { __error: String(e && e.message ? e.message : e) };
+  }
+  globalThis.__evalDone__ = true;
+})();
+''');
+    final maxIter = timeoutMs ~/ 10;
+    for (var i = 0; i < maxIter; i++) {
+      final done = _engine!.evaluate('JSON.stringify(globalThis.__evalDone__)').toString();
+      if (done == 'true') break;
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+    final r = _engine!.evaluate('globalThis.__evalResult__');
+    if (r is Map && r['__error'] != null) {
+      throw Exception(r['__error']);
+    }
+    return r;
+  }
+
   void dispose() {
     _cache = null;
     _closed = true;

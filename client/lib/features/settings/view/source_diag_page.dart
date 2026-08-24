@@ -26,6 +26,7 @@ class _SourceDiagPageState extends State<SourceDiagPage> {
     setState(() { _running = true; _results.clear(); });
     final svc = SourceDataService.instance;
     final engine = svc.engine;
+    await engine.init();
 
     void log(String name, Object e) {
       _results.add(_DiagResult(name, e.toString()));

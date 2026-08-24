@@ -517,37 +517,32 @@ class Cookie {
 class PageJumpTarget { constructor(opts = {}) { Object.assign(this, opts); } }
 class Comment { constructor(opts = {}) { Object.assign(this, opts); } }
 
-// ===== Network（基于全局 fetch —— flutter_js XHR→Dart http 异步桥接）=====
+// ===== Network（通过 sendMessage http 桥接 Dart Dio，不依赖 XHR 泵送）=====
 const Network = {
   _cookies: new Map(),
   async request(method, url, headers = {}, body) {
-    // 清理 undefined headers
     const h = {};
     for (const [k, v] of Object.entries(headers || {})) {
       if (v !== undefined && v !== null) h[k] = String(v);
     }
-    let res;
+    let outBody = body;
+    if (body !== undefined && body !== null && typeof body === 'object') outBody = JSON.stringify(body);
     try {
-      // Venera 官方语义：非字符串 body 自动 JSON 序列化
-      let outBody = body;
-      if (body !== undefined && body !== null && typeof body === 'object') outBody = JSON.stringify(body);
-      // Promise.race 超时兜底：15 秒内必须返回，否则 reject
-      res = await Promise.race([
-        fetch(url, {
-          method: method.toUpperCase(),
-          headers: h,
-          body: (outBody !== undefined && outBody !== null && method.toUpperCase() !== 'GET') ? outBody : undefined,
-          redirect: 'follow',
-        }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('网络超时（15s）')), 15000)),
-      ]);
+      const res = await sendMessage({
+        method: 'http',
+        http_method: method.toUpperCase(),
+        url: url,
+        headers: h,
+        data: (outBody !== undefined && outBody !== null && method.toUpperCase() !== 'GET') ? outBody : undefined,
+      });
+      if (res && res.error) throw new Error('网络错误: ' + res.error);
+      const text = res.body || '';
+      let ct = '';
+      try { ct = (res.headers || {})['content-type'] || ''; } catch (_) {}
+      return { status: res.status || 0, body: text, headers: { 'content-type': ct } };
     } catch (e) {
       throw new Error('网络错误: ' + String(e && e.message ? e.message : e));
     }
-    const text = await res.text();
-    let ct = '';
-    try { ct = res.headers && res.headers.get ? (res.headers.get('content-type') || '') : ''; } catch (_) {}
-    return { status: res.status, body: text, headers: { 'content-type': ct } };
   },
   async get(url, headers = {}, query) {
     let finalUrl = url;
@@ -588,19 +583,28 @@ const Network = {
     if (typeof url === 'string' && /^(GET|POST|PUT|PATCH|DELETE|HEAD)$/i.test(url) && typeof arguments[1] === 'string') {
       method = url.toUpperCase(); realUrl = arguments[1]; hdrs = arguments[2] || {};
     }
-    // 二进制路径：直接读 arrayBuffer（DataView/图片解析需要真字节）
     try {
       const h = {};
       for (const [k, v] of Object.entries(hdrs || {})) {
         if (v !== undefined && v !== null) h[k] = String(v);
       }
-      const res2 = await Promise.race([
-        fetch(realUrl, { method, headers: h, redirect: 'follow' }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('图片下载超时（15s）')), 15000)),
-      ]);
-      const ab = await res2.arrayBuffer();
-      const bin = new Uint8Array(ab);
-      return { status: res2.status, bytes: bin, body: bin, headers: {} };
+      const res = await sendMessage({
+        method: 'http',
+        http_method: method,
+        url: realUrl,
+        headers: h,
+        bytes: true,
+      });
+      let bin;
+      if (res.body is Uint8List) {
+        bin = new Uint8Array(res.body);
+      } else if (typeof res.body === 'string') {
+        bin = new Uint8Array(res.body.length);
+        for (let i = 0; i < res.body.length; i++) bin[i] = res.body.charCodeAt(i) & 0xff;
+      } else {
+        bin = new Uint8Array(0);
+      }
+      return { status: res.status || 0, bytes: bin, body: bin, headers: {} };
     } catch (e) {
       return { status: 0, bytes: new Uint8Array(0), body: new Uint8Array(0), headers: {}, error: String(e) };
     }
