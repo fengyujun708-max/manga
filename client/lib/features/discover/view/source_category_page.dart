@@ -85,9 +85,22 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
     try {
       final result = await SourceDataService.instance.categoryComics(widget.sourceId, _activeCategory, reset ? 1 : _page);
       final list = (result['items'] as List?) ?? [];
+      // 修复 cover URL 相对路径（占位图根因）
+      final fixed = list.map((e) {
+        final m = Map<String, dynamic>.from(e as Map);
+        var cover = (m['cover'] ?? m['coverUrl'] ?? '').toString();
+        if (cover.startsWith('//')) cover = 'https:' + cover;
+        if (cover.startsWith('/') && !cover.startsWith('//')) {
+          // 尝试从源 JS 获取 baseUrl，兜底用 sourceId 拼
+          cover = 'https://' + widget.sourceId + cover;
+        }
+        m['cover'] = cover;
+        m['coverUrl'] = cover;
+        return m;
+      }).toList();
       if (!mounted) return;
       setState(() {
-        _comics = reset ? list.cast<Map<String, dynamic>>() : [..._comics, ...list.cast<Map<String, dynamic>>()];
+        _comics = reset ? fixed : [..._comics, ...fixed];
         _hasMore = result['hasMore'] == true && list.isNotEmpty;
         if (_hasMore) _page++;
         _comicsLoading = false;

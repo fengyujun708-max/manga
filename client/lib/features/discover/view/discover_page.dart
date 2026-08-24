@@ -50,11 +50,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
               const Text('发现', style: DS.headline),
               const Spacer(),
               _iconBtn(Icons.search_rounded, () => GoRouter.of(context).push('/search')),
-              const SizedBox(width: 8),
-              _iconBtn(Icons.add_rounded, () async {
-                await GoRouter.of(context).push('/source-manager');
-                _load();
-              }),
             ]),
           ),
 

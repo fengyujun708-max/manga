@@ -175,6 +175,7 @@ if (typeof globalThis.fetch !== 'function') {
         };
         xhr.onerror = function () { reject(new Error('XHR network error')); };
         xhr.ontimeout = function () { reject(new Error('XHR timeout')); };
+        xhr.timeout = 30000;
         if (options.body !== undefined && options.body !== null && String(options.method || 'GET').toUpperCase() !== 'GET') {
           xhr.send(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
         } else { xhr.send(); }

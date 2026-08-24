@@ -45,7 +45,6 @@ class ManjieApp extends StatelessWidget {
       },
       routes: [
         GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
-        GoRoute(path: '/source-manager', builder: (_, __) => const SourceMarketPage()),
 
         GoRoute(
           path: '/discover/source/:id',
