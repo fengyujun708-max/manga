@@ -99,7 +99,7 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
       if (_jsInitCache != null) {
         jsInit = _jsInitCache!;
       } else {
-        var buffer = await rootBundle.load("assets/init.js");
+        var buffer = await rootBundle.load("assets/vcomic_engine.js");
         jsInit = buffer.buffer.asUint8List();
       }
       _engine!
@@ -202,6 +202,8 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
               throw "Args must be a list";
             }
             return JSPool().execute(func, args ?? []);
+          case "image":
+            return _image(Map.from(message));
         }
       }
       return null;

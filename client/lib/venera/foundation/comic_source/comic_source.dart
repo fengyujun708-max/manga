@@ -9,9 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:manjie/venera/foundation/app.dart';
 import 'package:manjie/venera/foundation/comic_type.dart';
-import 'package:manjie/venera/foundation/history.dart';
 import 'package:manjie/venera/foundation/res.dart';
-import 'package:manjie/venera/utils/data_sync.dart';
 import 'package:manjie/venera/utils/ext.dart';
 import 'package:manjie/venera/utils/init.dart';
 import 'package:manjie/venera/utils/io.dart';
@@ -225,7 +223,6 @@ class ComicSource {
     }
     await file.writeAsString(jsonEncode(data));
     _isSaving = false;
-    DataSync().uploadData();
   }
 
   Future<bool> reLogin() async {

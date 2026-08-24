@@ -136,14 +136,11 @@ class ComicID {
   String toString() => "$type@$id";
 }
 
-class ComicDetails with HistoryMixin {
-  @override
+class ComicDetails {
   final String title;
 
-  @override
   final String? subTitle;
 
-  @override
   final String cover;
 
   final String? description;
@@ -181,7 +178,6 @@ class ComicDetails with HistoryMixin {
 
   final double? stars;
 
-  @override
   final int? maxPage;
 
   final List<Comment>? comments;
