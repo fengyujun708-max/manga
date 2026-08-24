@@ -120,7 +120,7 @@ class VeneraEngine {
   }
 
   /// 求值 JS 并等待 Promise 完成
-  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 25000}) async {
+  Future<dynamic> evaluateAwait(String js, {int timeoutMs = 15000}) async {
     _runtime!.evaluate('''
 globalThis.__evalResult__ = null;
 globalThis.__evalDone__ = false;
@@ -134,16 +134,16 @@ globalThis.__evalDone__ = false;
   globalThis.__evalDone__ = true;
 })();
 ''');
-    final maxIter = timeoutMs ~/ 30;
+    // 快速轮询，用 JSON.stringify 避免类型比较问题
+    final maxIter = (timeoutMs ~/ 10);
     for (var i = 0; i < maxIter; i++) {
       _runtime!.executePendingJob();
-      final done = _runtime!.evaluate('globalThis.__evalDone__').rawResult;
-      if (done == true) break;
-      await Future.delayed(const Duration(milliseconds: 30));
+      final done = _runtime!.evaluate('JSON.stringify(globalThis.__evalDone__)').rawResult.toString();
+      if (done == 'true') break;
+      await Future.delayed(const Duration(milliseconds: 10));
     }
-    final done = _runtime!.evaluate('globalThis.__evalDone__').rawResult;
-    if (done != true) {
-      // 超时未完成 → 强制返回错误
+    final done = _runtime!.evaluate('JSON.stringify(globalThis.__evalDone__)').rawResult.toString();
+    if (done != 'true') {
       _runtime!.evaluate('globalThis.__evalDone__ = true; globalThis.__evalResult__ = { __error: "请求超时（源站无响应或被墙）" };');
     }
     final r = _runtime!.evaluate('globalThis.__evalResult__');

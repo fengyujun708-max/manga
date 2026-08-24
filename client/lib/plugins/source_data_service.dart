@@ -131,7 +131,7 @@ class SourceDataService {
     if (await loadLocal(sourceId)) {
       try {
         final raw = await engine.evaluateAwait('globalThis.__comic__("$sourceId", "${_jsStr(comicId)}")')
-            .timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('详情加载超时（源站响应慢或被墙，请开 VPN 重试）'));
+            .timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('连接超时，请检查网络或 VPN 后重试'));
         if (raw is Map) {
           final err = raw['error']?.toString();
           if (err != null && err.isNotEmpty) {
