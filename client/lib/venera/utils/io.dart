@@ -14,7 +14,7 @@ export 'dart:typed_data';
 // 桩定义 — 替代不存在的包
 class _FileType { static final images = null; static final any = null; }
 class _FlutterFileDialog { static saveFile(_) async => null; static importFile(_) async => null; }
-class _SaveFileDialogParams { _SaveFileDialogParams({String? fileName, dynamic fileBytes, _FileType? fileType}); }
+class _SaveFileDialogParams { _SaveFileDialogParams({String? fileName, dynamic fileBytes, dynamic fileType}); }
 
 class IO {
   /// A global flag used to indicate whether the app is selecting files.
