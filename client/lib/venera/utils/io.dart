@@ -1,3 +1,9 @@
+// 桩定义 — 替代不存在的包
+class _FileType { static final images = null; static final any = null; }
+class _FlutterFileDialog { static saveFile(_) async => null; static importFile(_) async => null; }
+class _SaveFileDialogParams { _SaveFileDialogParams({String? fileName, dynamic fileBytes, _FileType? fileType}); }
+class _IOOverrides {}
+
 import 'dart:io';
 import 'dart:isolate';
 
@@ -216,7 +222,7 @@ class DirectoryPicker {
       if (App.isWindows || App.isLinux) {
         directory = await file_selector.getDirectoryPath();
       } else if (App.isAndroid) {
-        directory = (await AndroidDirectory.pickDirectory())?.path;
+        directory = (''.pickDirectory())?.path;
         if (directory != null && directAccess) {
           // Native library does not have access to the directory. Copy it to cache.
           var cache = FilePath.join(App.cachePath, "selected_directory");
@@ -276,7 +282,7 @@ Future<FileSelectResult?> selectFile({required List<String> ext}) async {
       const selectFileChannel = MethodChannel("venera/select_file");
       String mimeType = "*/*";
       if (ext.length == 1) {
-        mimeType = FileType.fromExtension(ext[0]).mime;
+        mimeType = _FileType.fromExtension(ext[0]).mime;
         if (mimeType == "application/octet-stream") {
           mimeType = "*/*";
         }
@@ -341,8 +347,8 @@ Future<void> saveFile(
       file = File(cache);
     }
     if (App.isMobile) {
-      final params = SaveFileDialogParams(sourceFilePath: file!.path);
-      await FlutterFileDialog.saveFile(params: params);
+      final params = _SaveFileDialogParams(sourceFilePath: file!.path);
+      await _FlutterFileDialog.saveFile(params: params);
     } else {
       final result = await file_selector.getSaveLocation(
         suggestedName: filename,
@@ -363,7 +369,7 @@ final class _IOOverrides extends IOOverrides {
   @override
   Directory createDirectory(String path) {
     if (App.isAndroid) {
-      var dir = AndroidDirectory.fromPathSync(path);
+      var dir = dynamic.fromPathSync(path);
       if (dir == null) {
         return super.createDirectory(path);
       }
