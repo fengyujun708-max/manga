@@ -81,6 +81,18 @@ class SourceDataService {
         } else if (raw is List && raw.isNotEmpty) {
           // 深度规范化，确保 UI 渲染时 as Map/as List 不崩溃
           final normalized = _deepNormalize(raw) as List;
+          // debug：上报数据结构，定位 items 空问题
+          try {
+            final summary = normalized.take(3).map((s) {
+              if (s is Map) {
+                final items = s['items'];
+                final itemsLen = items is List ? items.length : 'non-list:${items.runtimeType}';
+                return '${s['title']}(items=$itemsLen)';
+              }
+              return 'non-map:${s.runtimeType}';
+            }).join(', ');
+            LogReporter.instance.report('info', 'explore数据[$sourceId]', '${normalized.length}板块: $summary');
+          } catch (_) {}
           return {'sections': normalized, 'mode': 'local'};
         }
         final msg = raw is Map && raw['error'] != null ? raw['error'].toString() : '板块为空: ${raw.toString().substring(0, raw.toString().length.clamp(0, 200))}';

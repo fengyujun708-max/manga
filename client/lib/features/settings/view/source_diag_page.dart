@@ -86,7 +86,13 @@ class _SourceDiagPageState extends State<SourceDiagPage> {
             log('④ copy_manga 全链路', '❌ ${res['error']}');
           } else {
             final secs = res['sections'] as List? ?? [];
-            log('④ copy_manga 全链路', '✅ ${secs.length} 个板块加载成功');
+            final detail = secs.map((s) {
+              if (s is! Map) return '非Map(${s.runtimeType})';
+              final items = s['items'];
+              final n = items is List ? items.length : '非List(' + (items?.runtimeType.toString() ?? 'null') + ')';
+              return '${s['title']}:$n';
+            }).join(', ');
+            log('④ copy_manga 全链路', secs.isEmpty ? '⚠️ 0板块' : '✅ ${secs.length}板块 [' + detail + ']');
           }
         }
       }
