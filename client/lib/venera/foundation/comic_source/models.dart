@@ -245,12 +245,7 @@ class ComicDetails {
   }
 
   @override
-  HistoryType get historyType => HistoryType(sourceKey.hashCode);
-
-  @override
   String get id => comicId;
-
-  ComicType get comicType => ComicType(sourceKey.hashCode);
 
   /// Convert tags map to plain list
   List<String> get plainTags {

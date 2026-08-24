@@ -2,14 +2,10 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_file_dialog/flutter_file_dialog.dart';
-import 'package:flutter_saf/flutter_saf.dart';
 import 'package:manjie/venera/foundation/app.dart';
 import 'package:manjie/venera/utils/ext.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart' as s;
-import 'package:file_selector/file_selector.dart' as file_selector;
-import 'package:manjie/venera/utils/file_type.dart';
 
 export 'dart:io';
 export 'dart:typed_data';

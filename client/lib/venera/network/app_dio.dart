@@ -3,13 +3,10 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
-import 'package:manjie/venera/foundation/appdata.dart';
 import 'package:manjie/venera/foundation/log.dart';
 import 'package:manjie/venera/network/cache.dart';
-import 'package:manjie/venera/network/proxy.dart';
 
 import '../foundation/app.dart';
-import 'cloudflare.dart';
 import 'cookie_jar.dart';
 
 export 'package:dio/dio.dart';
@@ -127,11 +124,9 @@ class MyLogInterceptor implements Interceptor {
 class AppDio with DioMixin {
   AppDio([BaseOptions? options]) {
     this.options = options ?? BaseOptions();
-    httpClientAdapter = RHttpAdapter();
     if (App.isInitialized) {
       interceptors.add(CookieManagerSql(SingleInstanceCookieJar.instance!));
       interceptors.add(NetworkCacheManager());
-      interceptors.add(CloudflareInterceptor());
       interceptors.add(MyLogInterceptor());
     }
   }
@@ -171,25 +166,4 @@ class AppDio with DioMixin {
       }
     }
   }
-}
-
-class RHttpAdapter extends IOHttpClientAdapter {
-  RHttpAdapter() : super(validateCertificate: (cert, host, port) => true);
-
-  @override
-  Future<HttpClient> get httpClient async {
-    var client = await super.httpClient;
-    var proxy = await getProxy();
-    if (proxy != null && proxy.isNotEmpty) {
-      final parts = proxy.split(':');
-      if (parts.length == 2) {
-        final host = parts[0];
-        final port = int.tryParse(parts[1]) ?? 0;
-        client.findProxy = (uri) => 'PROXY $host:$port';
-      }
-    }
-    return client;
-  }
-}
-
 }

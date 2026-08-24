@@ -277,6 +277,11 @@ class JsEngine with _JSEngineApi, JsUiApi, Init {
     return _engine!.evaluate(js, name: name);
   }
 
+  /// 同步求值（别名，兼容旧代码）
+  dynamic evaluate(String js) {
+    return _engine!.evaluate(js);
+  }
+
   /// 执行源 JS，注册到 __sources__
   Future<String?> executeSource(String sourceId, String jsCode, {Map<String, dynamic>? settings}) async {
     await init();
