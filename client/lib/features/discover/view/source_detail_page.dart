@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../app/ds.dart';
 import '../../../plugins/source_data_service.dart';
 import '../../../plugins/source_sdk.dart';
+import '../../../plugins/source_routes_service.dart';
 
 /// 源详情页 — Tab 分离：首页(Explore) / 分类(Category) / 设置
 class SourceDetailPage extends StatefulWidget {
@@ -22,22 +23,62 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   List<Map<String, dynamic>> _categories = [];
   String? _error;
 
+  // 线路检测
+  List<RouteProbe> _routes = [];
+  bool _routeLoading = false;
+  String? _selectedRoute;
+
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 2, vsync: this);
-    // 先预加载源到 QuickJS，完成后再加载 explore（串行，避免竞态）
+    _tabCtrl = TabController(length: 3, vsync: this);
     _preloadAndLoad();
   }
 
   Future<void> _preloadAndLoad() async {
-    // 预加载源到引擎
     await SourceDataService.instance.loadLocal(widget.sourceId);
     if (!mounted) return;
-    // 串行加载（并发会争抢 JsEngine 串行锁导致详情排队过久）
+    // 加载当前选中线路
+    _selectedRoute = SourceRoutesService.instance.getSelectedRoute(widget.sourceId);
     await _loadExplore();
     if (!mounted) return;
     _loadCategories();
+    // 后台自动检测最优线路（不阻塞 UI）
+    _autoDetectRoute();
+  }
+
+  /// 自动检测最优线路
+  Future<void> _autoDetectRoute() async {
+    try {
+      final best = await SourceRoutesService.instance.autoSelect(widget.sourceId);
+      if (best != null && mounted) {
+        setState(() => _selectedRoute = best.host);
+      }
+    } catch (_) {}
+  }
+
+  /// 手动测速所有线路
+  Future<void> _probeRoutes() async {
+    if (_routeLoading) return;
+    setState(() => _routeLoading = true);
+    try {
+      _routes = await SourceRoutesService.instance.probeRoutes(widget.sourceId);
+      if (mounted) setState(() => _routeLoading = false);
+    } catch (_) {
+      if (mounted) setState(() => _routeLoading = false);
+    }
+  }
+
+  /// 手动切换线路
+  Future<void> _selectRoute(String host) async {
+    HapticFeedback.selectionClick();
+    await SourceRoutesService.instance.selectRoute(widget.sourceId, 'base_url', host);
+    await SourceRoutesService.instance.selectRoute(widget.sourceId, 'domains', host);
+    setState(() => _selectedRoute = host);
+    // 重新加载源（清除缓存使新线路生效）
+    SourceDataService.instance.clearCache();
+    await SourceDataService.instance.loadLocal(widget.sourceId);
+    _loadExplore();
   }
 
   @override
@@ -76,7 +117,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   Widget build(BuildContext context) {
     final name = widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId;
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         backgroundColor: DS.bg,
         appBar: AppBar(
@@ -100,12 +141,13 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
             unselectedLabelColor: DS.textTertiary,
             labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             unselectedLabelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            tabs: [Tab(text: '首页'), Tab(text: '分类')],
+            tabs: [Tab(text: '首页'), Tab(text: '分类'), Tab(text: '线路')],
           ),
         ),
         body: TabBarView(controller: _tabCtrl, children: [
           _buildExplore(),
           _buildCategoryGrid(),
+          _buildRoutes(),
         ]),
       ),
     );
@@ -208,5 +250,130 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
           }).toList())),
       ]);
     });
+  }
+
+  // ===== 线路 Tab =====
+  Widget _buildRoutes() {
+    if (_routeLoading) {
+      return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const CircularProgressIndicator(color: DS.accent, strokeWidth: 2.5),
+        const SizedBox(height: 16),
+        const Text('正在测速所有线路...', style: TextStyle(color: DS.textTertiary, fontSize: 13)),
+      ]));
+    }
+
+    // 首次进入自动测速
+    if (_routes.isEmpty) {
+      // 延迟触发避免和 explore 竞争
+      Future.microtask(() => _probeRoutes());
+      return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.dns_rounded, size: 40, color: DS.textDisabled),
+        const SizedBox(height: 12),
+        const Text('点击下方按钮检测线路', style: TextStyle(color: DS.textTertiary, fontSize: 14)),
+        const SizedBox(height: 16),
+        FilledButton.icon(
+          onPressed: _probeRoutes,
+          icon: const Icon(Icons.speed_rounded, size: 18),
+          label: const Text('检测线路'),
+        ),
+      ]));
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(DS.sp16),
+      children: [
+        // 自动选择按钮
+        Padding(
+          padding: const EdgeInsets.only(bottom: DS.sp16),
+          child: Row(children: [
+            Expanded(child: FilledButton.icon(
+              onPressed: () async {
+                HapticFeedback.mediumImpact();
+                await _autoDetectRoute();
+                _probeRoutes();
+              },
+              icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+              label: const Text('自动选择最优'),
+              style: FilledButton.styleFrom(backgroundColor: DS.accent),
+            )),
+            const SizedBox(width: DS.sp8),
+            OutlinedButton.icon(
+              onPressed: _probeRoutes,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('重新测速'),
+            ),
+          ]),
+        ),
+
+        // 当前线路
+        if (_selectedRoute != null)
+          Container(
+            padding: const EdgeInsets.all(DS.sp12),
+            margin: const EdgeInsets.only(bottom: DS.sp12),
+            decoration: BoxDecoration(
+              color: DS.accent.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(DS.rMd),
+              border: Border.all(color: DS.accent.withValues(alpha: 0.3), width: 0.5),
+            ),
+            child: Row(children: [
+              const Icon(Icons.check_circle_rounded, size: 18, color: DS.success),
+              const SizedBox(width: 8),
+              const Text('当前线路', style: TextStyle(fontSize: 13, color: DS.textTertiary)),
+              const SizedBox(width: 8),
+              Expanded(child: Text(_selectedRoute!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: DS.textPrimary))),
+            ]),
+          ),
+
+        // 线路列表
+        ...(_routes.map((r) {
+          final selected = _selectedRoute == r.host;
+          final latency = r.latencyMs;
+          final color = latency == null
+            ? DS.textDisabled
+            : (latency < 300 ? DS.success : (latency < 800 ? DS.warning : DS.error));
+          return GestureDetector(
+            onTap: () => _selectRoute(r.host),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: DS.sp16, vertical: 14),
+              margin: const EdgeInsets.only(bottom: DS.sp8),
+              decoration: BoxDecoration(
+                color: selected ? DS.accent.withValues(alpha: 0.08) : DS.surface1,
+                borderRadius: BorderRadius.circular(DS.rMd),
+                border: Border.all(color: selected ? DS.accent.withValues(alpha: 0.4) : Colors.transparent, width: 1),
+              ),
+              child: Row(children: [
+                Expanded(child: Text(r.host, style: TextStyle(fontSize: 14, fontWeight: selected ? FontWeight.w600 : FontWeight.w400, color: DS.textPrimary))),
+                if (latency != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                    child: Text('${latency}ms', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+                  )
+                else
+                  const Text('不可达', style: TextStyle(fontSize: 12, color: DS.textDisabled)),
+                const SizedBox(width: 8),
+                if (selected)
+                  const Icon(Icons.check_rounded, size: 18, color: DS.accent)
+                else
+                  Icon(Icons.radio_button_unchecked_rounded, size: 18, color: DS.textTertiary),
+              ]),
+            ),
+          );
+        }).toList()),
+
+        const SizedBox(height: DS.sp20),
+        // 说明
+        Container(
+          padding: const EdgeInsets.all(DS.sp12),
+          decoration: BoxDecoration(color: DS.surface1, borderRadius: BorderRadius.circular(DS.rMd)),
+          child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.info_outline_rounded, size: 16, color: DS.textTertiary),
+            SizedBox(width: 8),
+            Expanded(child: Text('线路检测从源 JS 提取所有 API 域名，并发测速（HEAD 请求，5秒超时）。选择线路后源会使用该域名加载内容。建议选择延迟最低的线路。海外源（如 jm）可能需要 VPN。',
+              style: TextStyle(fontSize: 12, color: DS.textTertiary, height: 1.5))),
+          ]),
+        ),
+      ],
+    );
   }
 }

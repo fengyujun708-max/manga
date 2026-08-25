@@ -91,13 +91,31 @@ class SourceRoutesService {
   Future<void> setOverride(String sourceId, String settingKey, dynamic value) => selectRoute(sourceId, settingKey, value);
 
   /// 自动选择延迟最低的可用线路
-  Future<void> autoSelect(String sourceId) async {
+  Future<RouteProbe?> autoSelect(String sourceId) async {
     final hosts = await extractHosts(sourceId);
-    if (hosts.isEmpty) return;
+    if (hosts.isEmpty) return null;
     final probes = await probe(hosts);
     final ok = probes.where((p) => p.ok).toList()
       ..sort((a, b) => a.latencyMs!.compareTo(b.latencyMs!));
-    if (ok.isNotEmpty) await selectRoute(sourceId, 'domains', ok.first.host);
+    if (ok.isEmpty) return null;
+    // 设置多个常见 key，覆盖不同源的 settingKey
+    for (final key in ['base_url', 'domains', 'apiDomain', 'url', 'api_url']) {
+      await selectRoute(sourceId, key, ok.first.host);
+    }
+    return ok.first;
+  }
+
+  /// 获取该源所有线路的测速结果（UI 用）
+  Future<List<RouteProbe>> probeRoutes(String sourceId) async {
+    final hosts = await extractHosts(sourceId);
+    if (hosts.isEmpty) return [];
+    return probe(hosts);
+  }
+
+  /// 获取当前选中的线路
+  String? getSelectedRoute(String sourceId) {
+    final ov = getOverrides(sourceId);
+    return ov['base_url'] ?? ov['domains'] ?? ov['apiDomain'] ?? ov['url'] ?? null;
   }
 
   Map<String, dynamic> getOverrides(String sourceId) {
