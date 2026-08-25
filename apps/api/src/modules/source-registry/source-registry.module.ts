@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SourceRegistryController } from './source-registry.controller';
-import { SourceRegistryService } from './source-registry.service';
 import { SourceRegistry } from './entities/source-registry.entity';
+import { SourceRegistryService } from './source-registry.service';
+import { SourceRegistryController } from './source-registry.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([SourceRegistry])],

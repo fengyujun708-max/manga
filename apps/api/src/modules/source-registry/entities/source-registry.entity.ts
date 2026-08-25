@@ -1,74 +1,58 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
 @Entity('source_registry')
-@Index(['enabled', 'id'])
+@Index(['sourceId'])
+@Index(['status'])
+@Index(['downloadCount'])
 export class SourceRegistry {
   @PrimaryGeneratedColumn('uuid')
   uuid: string;
 
-  @Column({ unique: true })
-  id: string;
+  @Column({ unique: true, name: 'sourceId' })
+  sourceId: string;
 
-  @Column({ name: 'display_name' })
-  displayName: string;
+  @Column({ name: 'name' })
+  name: string;
 
-  @Column({ name: 'description', type: 'text', nullable: true })
-  description: string;
-
-  @Column({ nullable: true })
-  author: string;
-
-  @Column({ name: 'repository_url', type: 'text', nullable: true })
-  repositoryUrl: string;
-
-  @Column({ name: 'version', length: '64' })
+  @Column({ name: 'version' })
   version: string;
 
-  @Column({ default: true })
-  enabled: boolean;
+  @Column({ name: 'author', nullable: true })
+  author: string;
 
-  @Column({ default: false })
-  vetted: boolean;
+  @Column({ name: 'description', nullable: true })
+  description: string;
 
-  @Column({ name: 'min_app_version', length: '64', nullable: true })
-  minAppVersion: string;
+  @Column({ name: 'icon', nullable: true })
+  icon: string;
 
-  @Column({ name: 'download_url', type: 'text', nullable: true })
+  @Column({ name: 'downloadUrl' })
   downloadUrl: string;
 
-  @Column({ name: 'icon_url', type: 'text', nullable: true })
-  iconUrl: string;
+  @Column({ name: 'sha256', nullable: true })
+  sha256: string;
 
-  @Column({ name: 'metadata', type: 'jsonb', nullable: true })
-  metadata: Record<string, any>;
-
-  @Column({ name: 'tags', type: 'text', nullable: true })
-  tags: string;
+  @Column({ name: 'minAppVersion', nullable: true })
+  minAppVersion: string;
 
   @Column({ name: 'capabilities', type: 'text', nullable: true })
   capabilities: string;
 
-  @Column({ name: 'network_type', length: '32', default: 'HTTP' })
-  networkType: string;
+  @Column({ name: 'downloadCount', default: 0 })
+  downloadCount: number;
 
-  @Column({ name: 'health_status', length: '32', default: 'UNKNOWN' })
-  healthStatus: string;
-
-  @Column({ name: 'health_checked_at', type: 'timestamp', nullable: true })
-  healthCheckedAt: Date;
-
-  @Column({ name: 'health_error', type: 'text', nullable: true })
-  healthError: string;
-
-  @Column({ name: 'downloads', default: 0 })
-  downloads: number;
-
-  @Column({ name: 'rating', type: 'decimal', precision: 3, scale: 2, default: 0 })
+  @Column({ name: 'rating', type: 'numeric', precision: 3, scale: 2, default: 0 })
   rating: number;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @Column({ name: 'metadata', type: 'json', nullable: true })
+  metadata: Record<string, any>;
+
+  @Column({ name: 'status', default: 'active' })
+  status: string;
+
+  @CreateDateColumn({ name: 'createdAt' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updatedAt' })
   updatedAt: Date;
 }

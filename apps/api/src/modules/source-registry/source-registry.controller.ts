@@ -1,56 +1,170 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/guards/auth.guard';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Patch, Delete } from '@nestjs/common';
 import { SourceRegistryService } from './source-registry.service';
-import { CreateSourceRegistryDto } from './dto/create-source-registry.dto';
+import { SourceRegistry } from './entities/source-registry.entity';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { UserRole } from '../../common/enums/user-role.enum';
+import { Roles } from '../../common/decorators/roles.decorator';
 
-@ApiTags('源注册表')
 @Controller('sources')
 export class SourceRegistryController {
-  constructor(private service: SourceRegistryService) {}
+  constructor(private readonly sourceRegistryService: SourceRegistryService) {}
 
-  /** 公开接口：客户端获取启用的源注册表（用于同步） */
-  @Public()
-  @Get('registry')
-  @ApiOperation({ summary: '获取启用的源注册表' })
-  async registry() {
-    return this.service.publicRegistry();
-  }
-
-  /** 公开接口：获取单个源信息 */
-  @Public()
-  @Get('registry/:id')
-  @ApiOperation({ summary: '获取单个源信息' })
-  async getOne(@Param('id') id: string) {
-    return this.service.getById(id);
-  }
-
-  /** 管理后台：列出所有源 */
+  /**
+   * 获取所有源（客户端同步接口）
+   * GET /sources
+   * 可选查询参数：onlyEnabled=true（默认只返回启用的源）
+   */
   @Get()
-  @ApiOperation({ summary: '列出所有源（管理后台）' })
-  @ApiQuery({ name: 'enabledOnly', required: false, type: Boolean })
-  async list(@Query('enabledOnly') enabledOnly?: boolean) {
-    return this.service.list(enabledOnly);
+  async findAll(@Query('onlyEnabled') onlyEnabled: boolean = true): Promise<SourceRegistry[]> {
+    return this.sourceRegistryService.findAll(onlyEnabled);
   }
 
-  /** 管理后台：创建/更新源 */
+  /**
+   * 获取单个源信息
+   * GET /sources/:sourceId
+   */
+  @Get(':sourceId')
+  async findOne(@Param('sourceId') sourceId: string): Promise<SourceRegistry | null> {
+    return this.sourceRegistryService.findOne(sourceId);
+  }
+
+  /**
+   * 获取源版本信息（用于客户端检查更新）
+   * GET /sources/:sourceId/version
+   */
+  @Get(':sourceId/version')
+  async getVersion(@Param('sourceId') sourceId: string): Promise<{ version: string; minAppVersion: string } | null> {
+    return this.sourceRegistryService.getSourceVersion(sourceId);
+  }
+
+  /**
+   * 获取源元数据
+   * GET /sources/:sourceId/metadata
+   */
+  @Get(':sourceId/metadata')
+  async getMetadata(@Param('sourceId') sourceId: string): Promise<Record<string, any> | null> {
+    return this.sourceRegistryService.getSourceMetadata(sourceId);
+  }
+
+  /**
+   * 检查源健康状态
+   * GET /sources/:sourceId/health
+   */
+  @Get(':sourceId/health')
+  async checkHealth(@Param('sourceId') sourceId: string): Promise<{
+    healthy: boolean;
+    latency: number;
+    error?: string;
+    timestamp: Date;
+  }> {
+    return this.sourceRegistryService.checkHealth(sourceId);
+  }
+
+  /**
+   * 批量检查多个源的健康状态
+   * POST /sources/health/batch
+   */
+  @Post('health/batch')
+  async checkHealthBatch(@Body('sourceIds') sourceIds: string[]): Promise<Record<string, {
+    healthy: boolean;
+    latency: number;
+    error?: string;
+    timestamp: Date;
+  }>> {
+    return this.sourceRegistryService.checkHealthBatch(sourceIds);
+  }
+
+  /**
+   * 按能力过滤源
+   * GET /sources?capabilities=search,detail
+   */
+  @Get('by-capabilities')
+  async findByCapabilities(@Query('capabilities') capabilities: string): Promise<SourceRegistry[]> {
+    const capArray = capabilities?.split(',') || [];
+    return this.sourceRegistryService.findByCapabilities(capArray);
+  }
+
+  /**
+   * 同步 Venera 官方源（管理员接口）
+   * POST /sources/sync
+   * 从 Venera 官方注册表同步已审核源
+   */
+  @Post('sync')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async syncFromVettedRegistry(): Promise<{
+    added: number;
+    updated: number;
+    skipped: number;
+  }> {
+    return this.sourceRegistryService.syncFromVettedRegistry();
+  }
+
+  /**
+   * 启用源（管理员接口）
+   * PATCH /sources/:sourceId/enable
+   */
+  @Patch(':sourceId/enable')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async enable(@Param('sourceId') sourceId: string): Promise<SourceRegistry | null> {
+    return this.sourceRegistryService.enable(sourceId);
+  }
+
+  /**
+   * 禁用源（管理员接口）
+   * PATCH /sources/:sourceId/disable
+   */
+  @Patch(':sourceId/disable')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async disable(@Param('sourceId') sourceId: string): Promise<SourceRegistry | null> {
+    return this.sourceRegistryService.disable(sourceId);
+  }
+
+  /**
+   * 创建或更新源（管理员接口）
+   * POST /sources
+   */
   @Post()
-  @ApiOperation({ summary: '创建或更新源' })
-  async upsert(@Body() dto: CreateSourceRegistryDto) {
-    return this.service.upsert(dto);
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async createOrUpdate(@Body() data: Partial<SourceRegistry>): Promise<SourceRegistry> {
+    return this.sourceRegistryService.createOrUpdate(data);
   }
 
-  /** 管理后台：启用/禁用源 */
-  @Put(':id/enable')
-  @ApiOperation({ summary: '启用/禁用源' })
-  async toggle(@Param('id') id: string, @Body('enabled') enabled: boolean) {
-    return this.service.toggle(id, enabled);
+  /**
+   * 删除源（管理员接口）
+   * DELETE /sources/:sourceId
+   */
+  @Delete(':sourceId')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async remove(@Param('sourceId') sourceId: string): Promise<{ success: boolean }> {
+    const success = await this.sourceRegistryService.remove(sourceId);
+    return { success };
   }
 
-  /** 管理后台：同步内置源到注册表 */
-  @Post('sync-vetted')
-  @ApiOperation({ summary: '同步内置源到注册表' })
-  async syncVetted() {
-    return this.service.syncVetted();
+  /**
+   * 获取统计信息
+   * GET /sources/stats
+   */
+  @Get('stats')
+  async getStats(): Promise<{
+    total: number;
+    active: number;
+    disabled: number;
+    totalDownloads: number;
+  }> {
+    return this.sourceRegistryService.getStats();
+  }
+
+  /**
+   * 增加下载计数（客户端调用）
+   * POST /sources/:sourceId/download
+   */
+  @Post(':sourceId/download')
+  async incrementDownload(@Param('sourceId') sourceId: string): Promise<SourceRegistry | null> {
+    return this.sourceRegistryService.incrementDownload(sourceId);
   }
 }
