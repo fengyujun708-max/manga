@@ -16,6 +16,7 @@ import { AnnouncementModule } from './modules/announcement/announcement.module';
 import { UpdateModule } from './modules/update/update.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { OfficialModule } from './modules/official/official.module';
+import { SourceRegistryModule } from './modules/source-registry/source-registry.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { OfficialModule } from './modules/official/official.module';
     UpdateModule,
     AdminModule,
     OfficialModule,
+    SourceRegistryModule,
   ],
   providers: [
     {
