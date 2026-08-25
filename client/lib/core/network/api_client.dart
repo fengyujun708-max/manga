@@ -16,7 +16,6 @@ class ApiClient {
     '/auth/guest',
     '/auth/captcha',
     '/auth/refresh',
-    '/sources',
   ];
 
   ApiClient({String? baseUrl}) {

@@ -13,7 +13,6 @@ import '../features/discover/view/source_category_page.dart';
 import '../features/discover/view/discover_page.dart';
 import '../features/community/view/community_page.dart';
 import '../features/profile/view/profile_page.dart';
-import '../features/sources/view/source_market_page.dart';
 import '../features/sources/view/source_setup_dialog.dart';
 import '../core/network/api_client.dart';
 import '../features/search/view/search_page.dart';

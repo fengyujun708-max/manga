@@ -10,7 +10,6 @@ import { UserModule } from './modules/user/user.module';
 import { ComicModule } from './modules/comic/comic.module';
 import { CommunityModule } from './modules/community/community.module';
 import { RequestModule } from './modules/request/request.module';
-import { SourceModule } from './modules/source/source.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { LogModule } from './modules/log/log.module';
 import { AnnouncementModule } from './modules/announcement/announcement.module';

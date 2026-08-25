@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/ds.dart';
 import '../../../plugins/source_installer.dart';
-import '../../../plugins/manga_source.dart';
 
 /// 首次启动源配置检测 — 强制弹窗，一键安装 20 个可用源
 class SourceSetupDialog {
@@ -48,37 +47,12 @@ class SourceSetupDialog {
     }
   }
 
-  static SourceManifest _manifest(String id) => SourceManifest(
-        id: id, name: _names[id] ?? id, version: '1.0.0', author: '',
-        description: '', icon: '', repositoryUrl: '', downloadUrl: '',
-        minAppVersion: '', capabilities: const [], downloads: 0, rating: 0,
-        networkType: '',
-      );
-
   /// 一键安装全部白名单源
   static Future<int> installAll(void Function(int done, int total, String name) onProgress) async {
-    final dir = await SourceInstaller.ensureSourceDir();
-    if (dir == null) return 0;
-    final prefs = await SharedPreferences.getInstance();
-    var ok = 0;
     final total = SourceInstaller.vettedSources.length;
-    for (var i = 0; i < total; i++) {
-      final id = SourceInstaller.vettedSources[i];
-      onProgress(i, total, _names[id] ?? id);
-      final m = _manifest(id.toLowerCase());
-      try {
-        if (await SourceInstaller.install(m, dir)) {
-          // 逐个保存，避免中途失败丢全部
-          final json = prefs.getString('installed_sources') ?? '[]';
-          final list = (jsonDecode(json) as List).toList();
-          if (!list.any((e) { try { return SourceManifest.fromJson(e as Map<String, dynamic>).id == m.id; } catch (_) { return false; } })) {
-            list.add(m.toJson());
-            await prefs.setString('installed_sources', jsonEncode(list));
-          }
-          ok++;
-        }
-      } catch (_) {}
-    }
+    final ok = await SourceInstaller.extractBundledSources();
+    onProgress(total, total, '本地内置源');
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_flag, true);
     return ok;
   }

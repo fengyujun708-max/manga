@@ -50,13 +50,6 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         await SourceInstaller.extractBundledSources();
         await prefs.setBool('sources_extracted', true);
       }
-      // 版本更新检测
-      try {
-        final updates = await SourceInstaller.checkUpdates();
-        if (updates.isNotEmpty && mounted) {
-          _showUpdateDialog(updates);
-        }
-      } catch (_) {}
     });
   }
 
@@ -75,42 +68,6 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     }
   }
 
-  void _showUpdateDialog(List<SourceUpdate> updates) {
-    showDialog(context: context, barrierDismissible: false, builder: (_) => AlertDialog(
-      backgroundColor: DS.surface2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DS.rLg)),
-      title: Row(children: [
-        Icon(Icons.system_update_rounded, color: DS.accent, size: 22),
-        SizedBox(width: 8),
-        Text('漫画源更新', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: DS.textPrimary)),
-      ]),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        ...updates.take(5).map((u) => Padding(
-          padding: EdgeInsets.symmetric(vertical: 4),
-          child: Row(children: [
-            Icon(Icons.extension_rounded, size: 16, color: DS.textTertiary),
-            SizedBox(width: 8),
-            Expanded(child: Text('${u.name}  ${u.currentVersion} → ${u.newVersion}', style: TextStyle(fontSize: 13, color: DS.textSecondary))),
-          ]),
-        )),
-        if (updates.length > 5) Text('...等 ${updates.length} 个源', style: TextStyle(fontSize: 12, color: DS.textTertiary)),
-      ]),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text('稍后', style: TextStyle(color: DS.textTertiary))),
-        FilledButton(
-          onPressed: () async {
-            Navigator.pop(context);
-            final count = await SourceInstaller.updateAll(updates);
-            if (mounted && count > 0) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已更新 $count 个源'), behavior: SnackBarBehavior.floating));
-            }
-          },
-          style: FilledButton.styleFrom(backgroundColor: DS.accent),
-          child: Text('立即更新'),
-        ),
-      ],
-    ));
-  }
 
   @override
   Widget build(BuildContext context) {
