@@ -222,10 +222,10 @@ class SourceDataService {
         return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': '详情返回为空'};
       } catch (e) {
         LogReporter.instance.report('error', '详情异常[$sourceId]', '$comicId: ${e.toString()}');
-        return {'detail': {}, 'chapters': [], 'mode': 'local', 'error': '详情加载失败：${e.toString().replaceAll("Exception: ", "")}'};
+        return {'detail': <String, dynamic>{}, 'chapters': <dynamic>[], 'mode': 'local', 'error': '详情加载失败：${e.toString().replaceAll("Exception: ", "")}'};
       }
     }
-    return {'detail': {}, 'chapters': [], 'mode': 'none', 'error': '未安装源脚本，请到源市场重新安装'};
+    return {'detail': <String, dynamic>{}, 'chapters': <dynamic>[], 'mode': 'none', 'error': '未安装源脚本，请到源市场重新安装'};
   }
 
   /// 图片页
