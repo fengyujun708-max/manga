@@ -109,7 +109,7 @@ class _HomePageState extends State<HomePage> {
           Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: DS.textPrimary)),
           if (sub != null) Text(sub, style: TextStyle(fontSize: 12, color: DS.textTertiary)),
         ]))),
-      SliverToBoxAdapter(child: _CardRow(cards: cards.map((c) => Map<String, dynamic>.from(c)).toList(), onTap: (c) => _openOfficial(_idOf(c))),
+      SliverToBoxAdapter(child: _CardRow(cards: cards.map((c) => Map<String, dynamic>.from(c)).toList(), onTap: (c) => _openOfficial(_idOf(c)))),
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
     ];
   }
@@ -170,6 +170,7 @@ class _HomePageState extends State<HomePage> {
           end: Alignment.bottomRight,
           colors: [Color(0xFF1E1E2F), Color(0xFF2A2A4A)],
         ),
+      ),
       child: const Center(child: Text('漫界', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: DS.accent))),
     );
   }
