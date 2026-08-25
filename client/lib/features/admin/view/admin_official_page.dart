@@ -39,13 +39,13 @@ class _AdminOfficialPageState extends State<AdminOfficialPage> {
   }
 
   Future<void> _createSeries() async {
-    final form = _SeriesForm();
+    final formKey = GlobalKey<_SeriesFormState>();
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: DS.surface1,
         title: const Text('创建漫画', style: TextStyle(color: DS.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
-        content: form,
+        content: _SeriesForm(key: formKey),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('创建')),
@@ -53,7 +53,9 @@ class _AdminOfficialPageState extends State<AdminOfficialPage> {
       ),
     );
     if (ok != true) return;
-    final dto = form.value();
+    final state = formKey.currentState;
+    if (state == null) return;
+    final dto = state.value();
     if (dto['title'].toString().trim().isEmpty) {
       _snack('标题必填');
       return;
@@ -202,7 +204,7 @@ class _SeriesFormState extends State<_SeriesForm> {
         'title': _title.text.trim(),
         'author': _author.text.trim(),
         'description': _desc.text.trim(),
-        'genres': _genres.text.split(/[,，]/).map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+        'genres': _genres.text.split(RegExp(r'[,，]')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
         'coverUrl': _cover.text.trim(),
         'status': _completed ? 'COMPLETED' : 'ONGOING',
       };

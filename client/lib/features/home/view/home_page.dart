@@ -205,7 +205,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: DS.sp12),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, childAspectRatio: 0.6, crossAxisSpacing: DS.sp10, mainAxisSpacing: DS.sp10),
+                crossAxisCount: 3, childAspectRatio: 0.6, crossAxisSpacing: DS.sp8, mainAxisSpacing: DS.sp8),
               delegate: SliverChildBuilderDelegate((_, i) {
                 final card = merged[i];
                 if (i >= 30) return null;
