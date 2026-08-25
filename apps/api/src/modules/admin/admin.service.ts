@@ -1,17 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../user/entities/user.entity';
+import * as bcrypt from 'bcryptjs';
+import { User, UserRole } from '../user/entities/user.entity';
 import { Report, Ban, AuditLog } from '../community/entities/community.entity';
 
 @Injectable()
-export class AdminService {
+export class AdminService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Report) private reportRepo: Repository<Report>,
     @InjectRepository(Ban) private banRepo: Repository<Ban>,
     @InjectRepository(AuditLog) private auditRepo: Repository<AuditLog>,
   ) {}
+
+  /** 启动时确保指定账号为管理员（幂等，env 可覆盖） */
+  async onApplicationBootstrap() {
+    try {
+      await this.seedAdmin();
+    } catch (e) {
+      this.logger.warn(`管理员播种失败（可忽略）: ${(e as Error).message}`);
+    }
+  }
+
+  private async seedAdmin() {
+    const phone = process.env.ADMIN_PHONE || '15215831671';
+    const password = process.env.ADMIN_PASSWORD || 'fyj15215831671';
+    const existing = await this.userRepo.findOne({ where: { phone } });
+    if (existing) {
+      if (existing.role !== UserRole.ADMIN && existing.role !== UserRole.SUPER_ADMIN) {
+        await this.userRepo.update(existing.id, { role: UserRole.ADMIN });
+        this.logger.log(`已将 ${phone} 提升为管理员`);
+      }
+      return;
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    await this.userRepo.save(
+      this.userRepo.create({
+        phone,
+        phoneVerified: true,
+        passwordHash,
+        nickname: '管理员',
+        role: UserRole.ADMIN,
+      }),
+    );
+    this.logger.log(`管理员账号 ${phone} 已创建`);
+  }
 
   async getDashboard() {
     const totalUsers = await this.userRepo.count();

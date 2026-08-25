@@ -21,10 +21,10 @@ async function bootstrap() {
   });
   app.use(compression());
 
-  // 静态资源：Webtoon 压缩图片（/static/webtoon/** → WEBTOON_IMAGE_DIR）
-  const imageDir = process.env.WEBTOON_IMAGE_DIR || '/data/webtoon-images';
-  app.useStaticAssets(imageDir, {
-    prefix: '/static/webtoon/',
+  // 静态资源：后台上传内容（/static/uploads/** → UPLOAD_DIR）
+  const uploadDir = process.env.UPLOAD_DIR || '/data/uploads';
+  app.useStaticAssets(uploadDir, {
+    prefix: '/static/uploads/',
     immutable: true,
     maxAge: '30d',
   });

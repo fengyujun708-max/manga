@@ -5,6 +5,15 @@ import { OfficialService } from './official.service';
 export class OfficialController {
   constructor(private readonly svc: OfficialService) {}
 
+  @Get('series')
+  async listSeries(
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+    @Query('sort') sort = 'latest',
+  ) {
+    return this.svc.listSeries({ page: Number(page), limit: Number(limit), sort });
+  }
+
   @Get('channels')
   async listChannels() {
     return this.svc.findAllChannels();
@@ -23,5 +32,10 @@ export class OfficialController {
     const s = await this.svc.findSeriesById(id);
     if (!s) throw new NotFoundException();
     return s;
+  }
+
+  @Get('episode/:id/content')
+  async episodeContent(@Param('id') id: string) {
+    return this.svc.getEpisodeContent(id);
   }
 }

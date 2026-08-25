@@ -50,14 +50,15 @@ class _OfficialReaderPageState extends State<OfficialReaderPage> {
     setState(() { _loading = true; _error = null; });
     try {
       final api = GetIt.instance<ApiClient>();
-      final res = await api.get('/webtoon/episode/${widget.episodeId}/content');
+      final res = await api.get('/official/episode/${widget.episodeId}/content');
       final data = res.data is Map ? Map<String, dynamic>.from(res.data as Map) : <String, dynamic>{};
-      if (data['ready'] == true && data['pages'] is List) {
-        _pages = (data['pages'] as List).map((e) => e.toString()).toList();
+      final images = data['images'];
+      if (images is List && images.isNotEmpty) {
+        _pages = images.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
         _ready = true;
         _loading = false;
         LibraryService.instance.recordRead(
-          sourceId: 'webtoon',
+          sourceId: 'manjie_official',
           comicId: widget.seriesId,
           title: widget.seriesTitle,
           cover: '',
@@ -65,14 +66,7 @@ class _OfficialReaderPageState extends State<OfficialReaderPage> {
           chapterTitle: widget.episodeTitle,
         );
       } else {
-        // 图片准备中——等待重试（服务端压缩需要时间）
-        _loading = false;
-        if (_poll < 12) {
-          _poll++;
-          Future.delayed(const Duration(seconds: 5), () { if (mounted) _load(); });
-        } else {
-          setState(() => _error = '图片准备超时，请重试');
-        }
+        if (mounted) setState(() { _loading = false; _error = '本章暂无图片内容'; });
       }
     } catch (e) {
       if (mounted) setState(() { _loading = false; _error = e.toString(); });

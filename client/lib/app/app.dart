@@ -19,6 +19,7 @@ import '../features/search/view/search_page.dart';
 import '../features/comic/view/comic_detail_page.dart';
 import '../features/comic/view/official_comic_page.dart';
 import '../features/comic/view/official_reader_page.dart';
+import '../features/admin/view/admin_official_page.dart';
 import '../features/settings/view/settings_page.dart';
 import '../features/request/view/request_page.dart';
 import 'router/app_shell.dart';
@@ -103,6 +104,7 @@ class ManjieApp extends StatelessWidget {
           ),
         ),
         GoRoute(path: '/settings', builder: (_, __) => const SettingsPage()),
+        GoRoute(path: '/admin/official', builder: (_, __) => const AdminOfficialPage()),
         GoRoute(path: '/community/create', builder: (_, __) => const CreatePostPage()),
         GoRoute(path: '/request/:type', builder: (_, state) => RequestPage(type: state.pathParameters['type'] ?? 'manga')),
         ShellRoute(

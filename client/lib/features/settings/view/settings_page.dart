@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 import '../../../app/ds.dart';
 import '../../../app/components/manjie_card.dart';
 import '../../../app/components/manjie_toast.dart';
+import '../../../core/network/api_client.dart';
 import 'source_diag_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -13,6 +15,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool _isAdmin = false;
+  bool _adminChecked = false;
   // 阅读设置
   bool _webtoonMode = true;
   bool _volumeButtons = false;
@@ -30,12 +34,55 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _showPageNumber = true;
 
   @override
+  void initState() {
+    super.initState();
+    _checkAdmin();
+  }
+
+  /// 探测当前账号是否管理员（非管理员不显示管理入口）
+  Future<void> _checkAdmin() async {
+    try {
+      final api = GetIt.instance<ApiClient>();
+      final res = await api.get('/user/profile');
+      final data = res.data is Map ? Map<String, dynamic>.from(res.data as Map) : <String, dynamic>{};
+      final role = (data['role'] ?? '').toString();
+      if (mounted) {
+        setState(() {
+          _isAdmin = role == 'admin' || role == 'super_admin' || role == 'content_manager';
+          _adminChecked = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _adminChecked = true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('设置')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // ====== 内容管理（仅管理员可见）=====
+          if (_isAdmin) ...[
+            _SectionTitle('内容管理'),
+            ManjieCard(
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: DS.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                  child: const Icon(Icons.auto_stories_rounded, color: DS.accent, size: 22),
+                ),
+                title: const Text('漫界官方内容', style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: DS.textPrimary)),
+                subtitle: const Text('创建漫画 / 管理章节 / 上传图片', style: TextStyle(fontSize: 12, color: DS.textTertiary)),
+                trailing: const Icon(Icons.chevron_right_rounded, color: DS.textTertiary),
+                onTap: () => GoRouter.of(context).push('/admin/official'),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+
           // ====== 阅读设置 ======
           _SectionTitle('阅读设置'),
           ManjieCard(

@@ -16,7 +16,6 @@ import { AnnouncementModule } from './modules/announcement/announcement.module';
 import { UpdateModule } from './modules/update/update.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { OfficialModule } from './modules/official/official.module';
-import { WebtoonModule } from './modules/webtoon/webtoon.module';
 
 @Module({
   imports: [
@@ -73,7 +72,6 @@ import { WebtoonModule } from './modules/webtoon/webtoon.module';
     UpdateModule,
     AdminModule,
     OfficialModule,
-    WebtoonModule,
   ],
   providers: [
     {
