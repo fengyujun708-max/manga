@@ -17,6 +17,8 @@ import '../features/sources/view/source_setup_dialog.dart';
 import '../core/network/api_client.dart';
 import '../features/search/view/search_page.dart';
 import '../features/comic/view/comic_detail_page.dart';
+import '../features/comic/view/official_comic_page.dart';
+import '../features/comic/view/official_reader_page.dart';
 import '../features/settings/view/settings_page.dart';
 import '../features/request/view/request_page.dart';
 import 'router/app_shell.dart';
@@ -87,6 +89,19 @@ class ManjieApp extends StatelessWidget {
           ),
         ),
         GoRoute(path: '/comic/:id', builder: (_, state) => ComicDetailPage(comicId: state.pathParameters['id']!)),
+        GoRoute(
+          path: '/official/:id',
+          builder: (_, state) => OfficialComicPage(seriesId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/official/:seriesId/reader/:episodeId',
+          builder: (_, state) => OfficialReaderPage(
+            seriesId: state.pathParameters['seriesId']!,
+            episodeId: state.pathParameters['episodeId']!,
+            seriesTitle: state.uri.queryParameters['series'] ?? '',
+            episodeTitle: state.uri.queryParameters['title'] ?? '',
+          ),
+        ),
         GoRoute(path: '/settings', builder: (_, __) => const SettingsPage()),
         GoRoute(path: '/community/create', builder: (_, __) => const CreatePostPage()),
         GoRoute(path: '/request/:type', builder: (_, state) => RequestPage(type: state.pathParameters['type'] ?? 'manga')),

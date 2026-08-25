@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
     final cover = hero['cover'] ?? '';
     return GestureDetector(
-      onTap: () => GoRouter.of(context).push('/comic/${hero['id'] ?? ''}'),
+      onTap: () => GoRouter.of(context).push('/official/${hero['id'] ?? ''}'),
       child: Container(
         height: 320,
         margin: EdgeInsets.fromLTRB(DS.sp12, DS.sp4, DS.sp12, 0),
@@ -174,7 +174,7 @@ class _CardRow extends StatelessWidget {
         final card = cards[i];
         final cover = card['cover'] ?? '';
         return GestureDetector(
-          onTap: () => GoRouter.of(context).push('/comic/${card['id'] ?? ''}'),
+          onTap: () => GoRouter.of(context).push('/official/${card['id'] ?? ''}'),
           child: SizedBox(width: 130, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Expanded(
               child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(DS.rMd), color: DS.surface1), clipBehavior: Clip.antiAlias,

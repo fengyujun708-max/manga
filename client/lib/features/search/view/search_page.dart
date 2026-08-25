@@ -240,7 +240,7 @@ class _SearchPageState extends State<SearchPage> {
   void _openHit(_SearchHit hit) {
     HapticFeedback.lightImpact();
     if (hit.official) {
-      GoRouter.of(context).push('/comic/${hit.comicId}');
+      GoRouter.of(context).push('/official/${hit.comicId}');
       return;
     }
     GoRouter.of(context).push('/source/${hit.sourceId}/comic/${hit.comicId}?sourceName=${Uri.encodeComponent(hit.sourceName)}');
