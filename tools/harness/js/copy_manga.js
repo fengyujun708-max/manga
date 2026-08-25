@@ -154,7 +154,8 @@ class CopyManga extends ComicSource {
     }
 
     get apiUrl() {
-        return `https://${this.loadSetting('base_url')}`
+        const host = this.loadSetting('base_url') || CopyManga.defaultApiUrl;
+        return `https://${String(host).replace(/^https?:\/\//, '').replace(/\/$/, '')}`
     }
 
     get copyRegion() {
@@ -169,7 +170,7 @@ class CopyManga extends ComicSource {
         // 用于储存 { 作者名 : 英文参数 }
         this.author_path_word_dict = {}
         this.refreshSearchApi()
-        this.refreshAppApi()
+        return this.refreshAppApi()
     }
 
     /// account

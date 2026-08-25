@@ -72,8 +72,16 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   /// 手动切换线路
   Future<void> _selectRoute(String host) async {
     HapticFeedback.selectionClick();
-    await SourceRoutesService.instance.selectRoute(widget.sourceId, 'base_url', host);
-    await SourceRoutesService.instance.selectRoute(widget.sourceId, 'domains', host);
+    if (widget.sourceId == 'jm') {
+      final hosts = await SourceRoutesService.instance.extractHosts(widget.sourceId);
+      final index = hosts.indexOf(host);
+      if (index >= 0) {
+        await SourceRoutesService.instance.selectRoute(widget.sourceId, 'apiDomain', index + 1);
+      }
+    } else {
+      await SourceRoutesService.instance.selectRoute(widget.sourceId, 'base_url', host);
+      await SourceRoutesService.instance.selectRoute(widget.sourceId, 'domains', host);
+    }
     setState(() => _selectedRoute = host);
     // 重新加载源（清除缓存使新线路生效）
     SourceDataService.instance.clearCache();

@@ -27,6 +27,13 @@ class JM extends ComicSource {
         "www.cdnntr.cc",
     ];
 
+    // 首次启动必须有可用域名；远程刷新失败时直接使用内置线路。
+    static apiDomains = [
+        "www.cdntwice.org",
+        "www.cdnsha.org",
+        "www.cdnaspa.cc",
+        "www.cdnntr.cc",
+    ];
     static imageUrl = "https://cdn-msp.jmapinodeudzn.net"
 
     static ua = "Mozilla/5.0 (Linux; Android 10; K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.0.0 Mobile Safari/537.36"

@@ -81,10 +81,11 @@ class SourceRoutesService {
   }
 
   /// 保存选中线路（覆盖注入 domains 字段；值为主机名）
-  Future<void> selectRoute(String sourceId, String settingKey, String value) async {
+  Future<void> selectRoute(String sourceId, String settingKey, dynamic value) async {
     final sp = await SharedPreferences.getInstance();
-    final cur = getOverrides(sourceId);
+    final cur = Map<String, dynamic>.from(getOverrides(sourceId));
     cur[settingKey] = value;
+    _cache[sourceId] = cur;
     await sp.setString('$_prefPrefix$sourceId', jsonEncode(cur));
   }
 
@@ -98,9 +99,13 @@ class SourceRoutesService {
     final ok = probes.where((p) => p.ok).toList()
       ..sort((a, b) => a.latencyMs!.compareTo(b.latencyMs!));
     if (ok.isEmpty) return null;
-    // 设置多个常见 key，覆盖不同源的 settingKey
-    for (final key in ['base_url', 'domains', 'apiDomain', 'url', 'api_url']) {
-      await selectRoute(sourceId, key, ok.first.host);
+    // JM 的 apiDomain 是 1-based 数字索引，不能写入域名字符串。
+    if (sourceId == 'jm') {
+      await selectRoute(sourceId, 'domains', ok.map((e) => e.host).toList());
+    } else {
+      for (final key in ['base_url', 'domains', 'url', 'api_url']) {
+        await selectRoute(sourceId, key, ok.first.host);
+      }
     }
     return ok.first;
   }

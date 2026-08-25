@@ -767,16 +767,25 @@ globalThis.__executeSource__ = async function (jsCode, sourceId) {
       }
     }
   } catch (_) {}
+  try {
+    const overrides = globalThis.__settingsOverride__ || {};
+    if (Array.isArray(overrides.domains) && typeof instance.overwriteApiDomains === 'function') {
+      instance.overwriteApiDomains(overrides.domains);
+    }
+  } catch (_) {}
+  // 先注册实例，再执行 init；部分源的 init 会通过全局源表访问自身。
+  globalThis.__sources__ = globalThis.__sources__ || {};
+  globalThis.__sources__[sourceId] = instance;
   if (instance.init) {
     try {
       await Promise.race([
         Promise.resolve(instance.init()),
         new Promise((r) => setTimeout(r, 8000)),
       ]);
-    } catch (_) {}
+    } catch (e) {
+      instance.__initError = String(e && e.message ? e.message : e);
+    }
   }
-  globalThis.__sources__ = globalThis.__sources__ || {};
-  globalThis.__sources__[sourceId] = instance;
   return instance;
 };
 
@@ -932,8 +941,20 @@ globalThis.__search__ = async function (sourceId, keyword, page) {
 globalThis.__comic__ = async function (sourceId, comicId) {
   const src = globalThis.__sources__ && globalThis.__sources__[sourceId];
   if (!src) return { error: 'source not loaded' };
-  if (!src.comic || typeof src.comic.loadInfo !== 'function') return { error: 'no comic method' };
-  const d = await src.comic.loadInfo(comicId);
+  const comic = src && src.comic;
+  let loadInfo = comic && comic.loadInfo;
+  if (typeof loadInfo !== 'function' && typeof src.getDetail === 'function') {
+    loadInfo = (id) => src.getDetail(id);
+  }
+  if (typeof loadInfo !== 'function') {
+    return { error: '详情接口不可用：源未提供 loadInfo/getDetail' };
+  }
+  let d;
+  try {
+    d = await loadInfo.call(comic || src, comicId);
+  } catch (e) {
+    return { error: String(e && e.message ? e.message : e) };
+  }
   if (!d || typeof d !== 'object') return { error: '详情返回为空' };
   // chapters 规范化为 [{id,title}]（Venera: {epId|id, title} 或数组；Map → Array）
   let chapters = d.chapters || d.eps || [];
@@ -966,10 +987,11 @@ globalThis.__pages__ = async function (sourceId, comicId, epId) {
   const src = globalThis.__sources__ && globalThis.__sources__[sourceId];
   if (!src) return { error: 'source not loaded' };
   let p;
-  if (src.comic && typeof src.comic.loadEp === 'function') {
-    p = await src.comic.loadEp(comicId, epId === '' ? null : epId);
-  } else if (src.comic && typeof src.comic.loadImages === 'function') {
-    p = await src.comic.loadImages(comicId, epId === '' ? null : epId);
+  const comic = src && src.comic;
+  if (comic && typeof comic.loadEp === 'function') {
+    p = await comic.loadEp(comicId, epId === '' ? null : epId);
+  } else if (comic && typeof comic.loadImages === 'function') {
+    p = await comic.loadImages(comicId, epId === '' ? null : epId);
   } else if (typeof src.pages === 'function') {
     p = await src.pages(comicId, epId);
   } else {
