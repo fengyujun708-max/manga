@@ -188,6 +188,7 @@ class _AdminOfficialPageState extends State<AdminOfficialPage> {
 
 // ===== 创建表单 =====
 class _SeriesForm extends StatefulWidget {
+  const _SeriesForm({Key? key}) : super(key: key);
   @override
   State<_SeriesForm> createState() => _SeriesFormState();
 }
