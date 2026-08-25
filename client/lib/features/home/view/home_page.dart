@@ -71,6 +71,8 @@ class _HomePageState extends State<HomePage> {
     GoRouter.of(context).push('/official/$id');
   }
 
+  String _idOf(Map<String, dynamic> c) => (c['id'] ?? '').toString();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,7 +91,8 @@ class _HomePageState extends State<HomePage> {
                       const SliverToBoxAdapter(child: SizedBox(height: DS.sp16)),
                       if (_sectionCards('official').isNotEmpty) ..._section('漫界官方', '官方精选 · 实时更新', _sectionCards('official')),
                       if (_sectionCards('updates').isNotEmpty) ..._section('今日更新', null, _sectionCards('updates')),
-                      _section('热门', null, _dedup(_sectionCards('official') + _sectionCards('updates'))).toList(),
+                      if (_dedup(_sectionCards('official') + _sectionCards('updates')).isNotEmpty)
+                        ..._section('热门', null, _dedup(_sectionCards('official') + _sectionCards('updates'))),
                       if (_sectionCards('official').isEmpty)
                         SliverToBoxAdapter(child: _sourceShortcut()),
                       const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -106,7 +109,7 @@ class _HomePageState extends State<HomePage> {
           Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: DS.textPrimary)),
           if (sub != null) Text(sub, style: TextStyle(fontSize: 12, color: DS.textTertiary)),
         ]))),
-      SliverToBoxAdapter(child: _CardRow(cards: cards.map((c) => Map<String, dynamic>.from(c)).toList(), onTap: _openOfficial)),
+      SliverToBoxAdapter(child: _CardRow(cards: cards.map((c) => Map<String, dynamic>.from(c)).toList(), onTap: (c) => _openOfficial(_idOf(c))),
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
     ];
   }
@@ -138,7 +141,12 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               height: 96, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black87]),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black87],
+                ),
+              ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 if ((h['title'] ?? '').toString().isNotEmpty)
                   Text(h['title'], style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: DS.textPrimary, height: 1.2), maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -155,7 +163,13 @@ class _HomePageState extends State<HomePage> {
   Widget _heroFallback() {
     return Container(
       height: 260, margin: EdgeInsets.symmetric(horizontal: DS.sp12, vertical: 4),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(DS.rLg), gradient: DS.cardGradient),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(DS.rLg),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E1E2F), Color(0xFF2A2A4A)],
+        ),
       child: const Center(child: Text('漫界', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: DS.accent))),
     );
   }
