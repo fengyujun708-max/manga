@@ -74,10 +74,7 @@ class _SourceComicPageState extends State<SourceComicPage> {
     if (t is String) return t.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
     return [];
   }
-  String get _referer {
-    final u = Uri.tryParse(_cover);
-    return u != null && u.host.isNotEmpty ? 'https://${u.host}/' : '';
-  }
+  String get _referer => SourceDataService.getReferer(_cover, SourceDataService.instance.baseUrl(widget.sourceId));
 
   @override
   Widget build(BuildContext context) {

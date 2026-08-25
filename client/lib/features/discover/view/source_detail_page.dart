@@ -161,9 +161,16 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
   }
 
   Map<String, String> _imgHeaders(String url) {
-    final u = Uri.tryParse(_fixUrl(url));
-    if (u != null && u.host.isNotEmpty) return {'Referer': 'https://' + u.host + '/'};
-    return {};
+    final base = SourceDataService.instance.baseUrl(widget.sourceId);
+    return {'Referer': SourceDataService.getReferer(url, base)};
+  }
+
+  String _categoryLink(String title) {
+    final normalized = title.trim();
+    if (normalized.contains('排行') || normalized == '热门' || normalized == '本周' || normalized == '本月' || normalized == '今日') {
+      return '/source/${widget.sourceId}/category?initial=${Uri.encodeComponent('排行')}&param=${Uri.encodeComponent('ranking')}';
+    }
+    return '/source/${widget.sourceId}/category?initial=${Uri.encodeComponent(normalized)}';
   }
 
   // ===== 首页（explore 板块）=====
@@ -196,7 +203,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
             Container(width: 4, height: 18, decoration: BoxDecoration(color: DS.accent, borderRadius: BorderRadius.circular(2))),
             SizedBox(width: 8),
             Expanded(child: Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: DS.textPrimary))),
-            GestureDetector(onTap: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?initial=${Uri.encodeComponent(title)}'),
+            GestureDetector(onTap: () => GoRouter.of(context).push(_categoryLink(title)),
               child: Row(children: [
                 Text('查看全部', style: TextStyle(fontSize: 12, color: DS.textTertiary)),
                 Icon(Icons.chevron_right_rounded, size: 16, color: DS.textTertiary),
@@ -217,7 +224,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 10, offset: Offset(0, 4))]),
                   clipBehavior: Clip.antiAlias,
                   child: cover.isNotEmpty ? CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover, width: double.infinity,
-                    httpHeaders: {'Referer': 'https://${Uri.parse(cover).host}/'},
+                    httpHeaders: {'Referer': SourceDataService.getReferer(cover, SourceDataService.instance.baseUrl(widget.sourceId))},
                     errorWidget: (_, __, ___) => Container(color: DS.surface2, child: Icon(Icons.menu_book_rounded, color: DS.textDisabled)))
                     : Container(color: DS.surface2, child: Icon(Icons.menu_book_rounded, color: DS.textDisabled)),
                 )),

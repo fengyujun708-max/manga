@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import '../../../app/ds.dart';
 import '../../../plugins/source_data_service.dart';
+import '../../../plugins/source_sdk.dart';
 import '../../../core/services/library_service.dart';
 
 /// 源内阅读页 — 本地 QuickJS 引擎加载图片
@@ -38,6 +39,7 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
   double _brightness = 1.0;
   ReaderMode _mode = ReaderMode.vertical;
   bool _showOverlay = false;
+  String? _sourceBaseUrl;
   final _scrollCtrl = ScrollController();
   final _pageCtrl = PageController();
 
@@ -82,8 +84,15 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
       final chId = widget.chapters[_chapterIndex]['id'] ?? '';
       final res = await svc.pages(widget.sourceId, widget.comicId, chId.toString());
       final pages = res['pages'] as List? ?? [];
+      // images 已经是 List<String>（SourceDataService 统一提取了 URL）
       final images = pages.map((e) => e.toString()).where((e) => e.startsWith('http')).toList();
+      // 获取源 baseUrl 用于图片 Referer
+      _sourceBaseUrl = svc.baseUrl(widget.sourceId);
       if (!mounted) return;
+      if (images.isEmpty) {
+        setState(() { _loading = false; _error = '该章节无图片（可能需要登录或 VIP）'; });
+        return;
+      }
       setState(() { _images = images; _loading = false; });
       LibraryService.instance.recordRead(
         sourceId: widget.sourceId, comicId: widget.comicId, title: widget.comicTitle,
@@ -127,6 +136,29 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
     return _mode == ReaderMode.vertical ? _buildVertical() : _buildPageMode();
   }
 
+  Future<Map<String, String>> _imageHeaders(String url) async {
+    final headers = <String, String>{'Referer': SourceDataService.getReferer(url, _sourceBaseUrl)};
+    headers.addAll(await SourceSDK.imageHeaders(widget.sourceId, url, comicId: widget.comicId,
+        epId: widget.chapters[_chapterIndex]['id']?.toString() ?? ''));
+    return headers;
+  }
+
+  Widget _image(String url, {BoxFit fit = BoxFit.contain, double? height}) {
+    return FutureBuilder<Map<String, String>>(
+      future: _imageHeaders(url),
+      builder: (_, snapshot) => CachedNetworkImage(
+        imageUrl: url,
+        fit: fit,
+        height: height,
+        httpHeaders: snapshot.data ?? {'Referer': SourceDataService.getReferer(url, _sourceBaseUrl)},
+        placeholder: (_, __) => Container(height: height ?? 400, color: DS.surface1,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: DS.accent))),
+        errorWidget: (_, __, ___) => Container(height: height ?? 200, color: DS.surface1,
+            child: Icon(Icons.broken_image_rounded, color: Colors.white24)),
+      ),
+    );
+  }
+
   Widget _buildVertical() {
     return ListView.builder(
       controller: _scrollCtrl,
@@ -134,13 +166,7 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
       itemBuilder: (_, i) {
         if (i == 0) return _chapterHeader();
         if (i == _images.length + 1) return _chapterFooter();
-        return CachedNetworkImage(
-          imageUrl: _images[i - 1],
-          fit: BoxFit.fitWidth,
-          httpHeaders: {'Referer': Uri.tryParse(_images[i - 1])?.host != null ? 'https://${Uri.parse(_images[i - 1]).host}/' : ''},
-          placeholder: (_, __) => Container(height: 400, color: DS.surface1, child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: DS.accent))),
-          errorWidget: (_, __, ___) => Container(height: 200, color: DS.surface1, child: Icon(Icons.broken_image_rounded, color: Colors.white24)),
-        );
+        return _image(_images[i - 1], fit: BoxFit.fitWidth);
       },
     );
   }
@@ -151,11 +177,7 @@ class _SourceReaderPageState extends State<SourceReaderPage> {
       reverse: true,
       itemCount: _images.length,
       itemBuilder: (_, i) => InteractiveViewer(maxScale: 3.0, child: Center(
-        child: CachedNetworkImage(imageUrl: _images[i], fit: BoxFit.contain,
-          httpHeaders: {'Referer': 'https://${Uri.parse(_images[i]).host}/'},
-          placeholder: (_, __) => CircularProgressIndicator(strokeWidth: 2, color: DS.accent),
-          errorWidget: (_, __, ___) => Icon(Icons.broken_image_rounded, color: Colors.white24),
-        ),
+        child: _image(_images[i]),
       )),
     );
   }

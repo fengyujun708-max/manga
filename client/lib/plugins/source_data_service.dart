@@ -148,13 +148,34 @@ class SourceDataService {
   /// 修复 cover 相对路径（//xx、/xx），baseUrl 从源 JS 的 url 属性缓存
   final Map<String, String> _sourceBaseUrls = {};
 
-  String? _baseUrl(String sourceId) => _sourceBaseUrls[sourceId];
+  String? baseUrl(String sourceId) => _sourceBaseUrls[sourceId];
+
+  /// 获取图片 Referer（优先用源 baseUrl，兜底用图片域名）
+  static String getReferer(String imageUrl, [String? sourceBaseUrl]) {
+    if (sourceBaseUrl != null && sourceBaseUrl.startsWith('http')) {
+      return sourceBaseUrl.endsWith('/') ? sourceBaseUrl : '$sourceBaseUrl/';
+    }
+    final host = Uri.tryParse(imageUrl)?.host;
+    return host != null ? 'https://$host/' : '';
+  }
+
+  String _fixImageUrl(String sourceId, String image) {
+    if (image.isEmpty || image.startsWith('data:')) return image;
+    if (image.startsWith('//')) return 'https:$image';
+    if (image.startsWith('/')) {
+      final base = baseUrl(sourceId);
+      if (base != null && base.isNotEmpty) {
+        return base.endsWith('/') ? base.substring(0, base.length - 1) + image : base + image;
+      }
+    }
+    return image;
+  }
 
   String _fixCover(String sourceId, String cover) {
     if (cover.isEmpty) return cover;
     if (cover.startsWith('//')) return 'https:$cover';
     if (cover.startsWith('/')) {
-      final base = _baseUrl(sourceId);
+      final base = baseUrl(sourceId);
       if (base != null && base.isNotEmpty) {
         return base.endsWith('/') ? base.substring(0, base.length - 1) + cover : base + cover;
       }
@@ -232,11 +253,30 @@ class SourceDataService {
   Future<Map<String, dynamic>> pages(String sourceId, String comicId, String epId) async {
     if (await loadLocal(sourceId)) {
       try {
-        final raw = await engine.evaluateAwait('globalThis.__pages__("$sourceId", "${_jsStr(comicId)}", "${_jsStr(epId)}")').timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('图片加载超时'));
-        if (raw is Map && raw['pages'] != null) {
-          return {'pages': raw['pages'], 'next': raw['next'] ?? '', 'mode': 'local'};
+        final raw = await engine.evaluateAwait('globalThis.__pages__("$sourceId", "${_jsStr(comicId)}", "${_jsStr(epId)}")')
+            .timeout(const Duration(seconds: 20), onTimeout: () => throw Exception('图片加载超时'));
+        if (raw is Map && raw['error'] != null) {
+          final message = raw['error'].toString();
+          LogReporter.instance.report('error', '正文接口失败[$sourceId]', '$comicId/$epId: $message');
+          return {'pages': [], 'next': '', 'mode': 'local', 'error': message};
         }
-      } catch (_) {}
+        if (raw is Map && raw['pages'] != null) {
+          final normalized = _deepNormalize(raw['pages']);
+          final pageList = normalized is List ? normalized : <dynamic>[];
+          // 统一提取图片 URL（兼容 String / {url} / {image} / {cover}）
+          final images = pageList.map((e) {
+            if (e is String) return e;
+            if (e is Map) {
+              return (e['url'] ?? e['image'] ?? e['cover'] ?? e['imageUrl'] ?? e['src'] ?? '').toString();
+            }
+            return '';
+          }).where((e) => e.isNotEmpty).map((e) => _fixImageUrl(sourceId, e)).toList();
+          return {'pages': images, 'next': raw['next'] ?? '', 'mode': 'local'};
+        }
+      } catch (e) {
+        LogReporter.instance.report('error', '正文失败[$sourceId]', '$comicId/$epId: $e');
+        return {'pages': [], 'next': '', 'mode': 'local', 'error': '正文加载失败：${e.toString().replaceAll("Exception: ", "")}' };
+      }
     }
     return {'pages': [], 'next': '', 'mode': 'none', 'error': '加载失败'};
   }

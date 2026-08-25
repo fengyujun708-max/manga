@@ -74,6 +74,7 @@ class ManjieApp extends StatelessWidget {
           builder: (_, state) => SourceCategoryPage(
             sourceId: state.pathParameters['sourceId']!,
             initialCategory: state.uri.queryParameters['initial'],
+            initialParam: state.uri.queryParameters['param'],
           ),
         ),
             GoRoute(path: '/search', builder: (_, state) => SearchPage(

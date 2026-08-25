@@ -9,7 +9,8 @@ import '../../../app/ds.dart';
 class SourceCategoryPage extends StatefulWidget {
   final String sourceId;
   final String? initialCategory;
-  const SourceCategoryPage({super.key, required this.sourceId, this.initialCategory});
+  final String? initialParam;
+  const SourceCategoryPage({super.key, required this.sourceId, this.initialCategory, this.initialParam});
   @override
   State<SourceCategoryPage> createState() => _SourceCategoryPageState();
 }
@@ -20,6 +21,7 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
   List<Map<String, dynamic>> _parts = [];
   String _activePart = '';
   String _activeCategory = '';
+  String _activeParam = '';
   List<Map<String, dynamic>> _comics = [];
   bool _comicsLoading = false;
   bool _hasMore = true;
@@ -57,6 +59,25 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
     return [];
   }
 
+  String _categoryParam(Map<String, dynamic> part, String category) {
+    final cats = part['categories'];
+    if (cats is! List) return '';
+    for (final item in cats) {
+      if (item is Map && item['name']?.toString() == category) {
+        return item['param']?.toString() ?? '';
+      }
+    }
+    return '';
+  }
+
+  String _categoryParamForName(String category) {
+    for (final part in _parts) {
+      final value = _categoryParam(part, category);
+      if (value.isNotEmpty) return value;
+    }
+    return '';
+  }
+
   Future<void> _loadCategories() async {
     setState(() { _loading = true; _error = null; });
     final parts = await SourceDataService.instance.categories(widget.sourceId);
@@ -66,10 +87,27 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
         _parts = parts;
         _activePart = parts.first['name']?.toString() ?? '';
         final cats = _activeCategories();
-        if (cats.contains(widget.initialCategory)) {
+        // 如果初始分类不在当前板块，搜索所有板块
+        if (widget.initialCategory != null && widget.initialCategory!.isNotEmpty && !cats.contains(widget.initialCategory)) {
+          for (final p in parts) {
+            final pName = p['name']?.toString() ?? '';
+            final pCats = (p['categories'] as List?)?.map((e) {
+              if (e is Map) return e['name']?.toString() ?? '';
+              return e.toString();
+            }).where((s) => s.isNotEmpty).toList() ?? [];
+            if (pCats.contains(widget.initialCategory)) {
+              _activePart = pName;
+              _activeCategory = widget.initialCategory!;
+              _activeParam = widget.initialParam ?? _categoryParam(p, widget.initialCategory!);
+              break;
+            }
+          }
+        } else if (cats.contains(widget.initialCategory)) {
           _activeCategory = widget.initialCategory!;
+          _activeParam = widget.initialParam ?? _categoryParamForName(_activeCategory);
         } else {
           _activeCategory = cats.isNotEmpty ? cats.first : '';
+          _activeParam = _categoryParamForName(_activeCategory);
         }
         _loading = false;
       });
@@ -83,21 +121,10 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
     if (_activeCategory.isEmpty) return;
     setState(() { _comicsLoading = true; if (reset) { _page = 1; _comics = []; _hasMore = true; } });
     try {
-      final result = await SourceDataService.instance.categoryComics(widget.sourceId, _activeCategory, reset ? 1 : _page);
+      final result = await SourceDataService.instance.categoryComics(widget.sourceId, _activeCategory, reset ? 1 : _page, _activeParam);
       final list = (result['items'] as List?) ?? [];
-      // 修复 cover URL 相对路径（占位图根因）
-      final fixed = list.map((e) {
-        final m = Map<String, dynamic>.from(e as Map);
-        var cover = (m['cover'] ?? m['coverUrl'] ?? '').toString();
-        if (cover.startsWith('//')) cover = 'https:' + cover;
-        if (cover.startsWith('/') && !cover.startsWith('//')) {
-          // 尝试从源 JS 获取 baseUrl，兜底用 sourceId 拼
-          cover = 'https://' + widget.sourceId + cover;
-        }
-        m['cover'] = cover;
-        m['coverUrl'] = cover;
-        return m;
-      }).toList();
+      // SourceDataService 已按源 baseUrl 统一修复封面 URL，页面不要再次改写。
+      final fixed = list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
       if (!mounted) return;
       setState(() {
         _comics = reset ? fixed : [..._comics, ...fixed];
@@ -117,7 +144,10 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
 
   void _selectCategory(String cat) {
     HapticFeedback.selectionClick();
-    setState(() { _activeCategory = cat; });
+    setState(() {
+      _activeCategory = cat;
+      _activeParam = _categoryParamForName(cat);
+    });
     _loadComics(reset: true);
   }
 
@@ -166,7 +196,12 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
                       final name = p['name']?.toString() ?? '';
                       final active = name == _activePart;
                       return GestureDetector(
-                        onTap: () { HapticFeedback.selectionClick(); setState(() { _activePart = name; _activeCategory = _activeCategories().firstOrNull ?? ''; }); _loadComics(reset: true); },
+                        onTap: () { HapticFeedback.selectionClick(); setState(() {
+                            _activePart = name;
+                            _activeCategory = _activeCategories().firstOrNull ?? '';
+                            _activeParam = _categoryParamForName(_activeCategory);
+                          });
+                          _loadComics(reset: true); },
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(

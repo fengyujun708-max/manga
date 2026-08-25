@@ -977,13 +977,15 @@ globalThis.__pages__ = async function (sourceId, comicId, epId) {
   }
   if (Array.isArray(p)) return { pages: p };
   if (p && typeof p === 'object') {
-    const pages = p.pages || p.urls || p.images || (typeof p.next === 'object' && Array.isArray(p.next.pages) ? p.next.pages : []);
+    const body = p.data && typeof p.data === 'object' ? p.data : p;
+    const pages = body.pages || body.urls || body.images || body.list || body.comics ||
+      (typeof body.next === 'object' && Array.isArray(body.next.pages) ? body.next.pages : []);
     let next = '';
-    if (p.next && typeof p.next === 'object' && p.next.pages) {
-      const pagesList = p.next.pages || [];
+    if (body.next && typeof body.next === 'object' && body.next.pages) {
+      const pagesList = body.next.pages || [];
       if (pagesList.length > 0) next = String(pagesList[0] || '');
     }
-    return { pages: Array.isArray(pages) ? pages : [], next: next || (p.next !== undefined && typeof p.next === 'string' ? p.next : '') };
+    return { pages: Array.isArray(pages) ? pages : [], next: next || (body.next !== undefined && typeof body.next === 'string' ? body.next : '') };
   }
   return { pages: [] };
 };

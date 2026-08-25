@@ -711,7 +711,10 @@ class CopyManga extends ComicSource {
             ])
 
             if (results[0].status !== 200) {
-                throw `Invalid status code: ${res.status}`;
+                if (results[0].status === 210) {
+                    throw '拷贝漫画接口限制访问频率，请稍后重试或切换线路';
+                }
+                throw `Invalid status code: ${results[0].status}`;
             }
 
             let data = JSON.parse(results[0].body).results;
