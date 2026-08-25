@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ComicController } from './comic.controller';
 import { ComicService } from './comic.service';
 import { Comic, ComicSource, Chapter, ReadingHistory, Favorite, FavoriteFolder } from './entities/comic.entity';
+import { OfficialModule } from '../official/official.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Comic, ComicSource, Chapter, ReadingHistory, Favorite, FavoriteFolder])],
+  imports: [TypeOrmModule.forFeature([Comic, ComicSource, Chapter, ReadingHistory, Favorite, FavoriteFolder]), OfficialModule],
   controllers: [ComicController],
   providers: [ComicService],
   exports: [TypeOrmModule],

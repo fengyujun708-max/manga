@@ -1,13 +1,17 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ComicService } from './comic.service';
+import { OfficialService } from '../official/official.service';
 import { JwtAuthGuard, Public, CurrentUser } from '../../common/guards/auth.guard';
 import { SearchDto, DiscoverDto, AddFavoriteDto, CreateFolderDto, UpdateHistoryDto } from './dto/comic.dto';
 
 @ApiTags('漫画')
 @Controller('comic')
 export class ComicController {
-  constructor(private comicService: ComicService) {}
+  constructor(
+    private comicService: ComicService,
+    private officialService: OfficialService,
+  ) {}
 
   // ====== 首页 ======
   @Public()
@@ -17,12 +21,18 @@ export class ComicController {
     return this.comicService.getHomeFeed();
   }
 
-  // ====== 搜索 ======
+  // ====== 搜索（官方优先，本地兜底）=====
   @Public()
   @Get('search')
-  @ApiOperation({ summary: '搜索漫画' })
+  @ApiOperation({ summary: '搜索漫画（官方优先）' })
   async search(@Query() dto: SearchDto) {
-    return this.comicService.search(dto.q, dto.page, dto.limit);
+    const q = dto.q?.trim() ?? '';
+    if (!q) return { items: [], total: 0, page: 1, limit: dto.limit, totalPages: 0 };
+    const official = await this.officialService.search(q, dto.limit);
+    if (official.items.length > 0) {
+      return { items: official.items, total: official.items.length, page: dto.page ?? 1, limit: dto.limit, totalPages: 1, official: true };
+    }
+    return this.comicService.search(q, dto.page, dto.limit);
   }
 
   // ====== 发现 ======

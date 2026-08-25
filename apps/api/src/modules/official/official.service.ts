@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan, MoreThan } from 'typeorm';
+import { Repository, Between, LessThan, MoreThan, ILike } from 'typeorm';
 import { OfficialChannel } from './entities/channel.entity';
 import { OfficialSeries } from './entities/series.entity';
 import { OfficialEpisode } from './entities/episode.entity';
@@ -37,6 +37,25 @@ export class OfficialService {
 
   async findSeriesById(id: string): Promise<OfficialSeries | null> {
     return this.seriesRepo.findOne({ where: { id }, relations: ['episodes'] });
+  }
+
+  // ===== 官方优先搜索 =====
+  async search(query: string, limit = 30) {
+    const q = query.trim();
+    if (!q) return { items: [] };
+    const [series] = await this.seriesRepo.findAndCount({
+      where: [
+        { title: ILike(`%${q}%`) },
+        { altTitle: ILike(`%${q}%`) },
+        { author: ILike(`%${q}%`) },
+      ],
+      order: { updatedAt: 'DESC' },
+      take: Math.min(Math.max(limit, 1), 50),
+    });
+    return { items: series.map(s => ({
+      id: s.id, title: s.title, cover: s.coverUrl || '', author: s.author || '',
+      sourceId: 'manjie_official', sourceName: '漫界官方', official: true,
+    })) };
   }
 
   // ===== 首页 =====

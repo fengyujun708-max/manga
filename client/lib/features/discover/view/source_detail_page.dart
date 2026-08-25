@@ -118,7 +118,8 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
 
   void _enterComic(String sourceId, String comicId) {
     if (comicId.isEmpty || sourceId.isEmpty) return;
-    GoRouter.of(context).push('/source/$sourceId/comic/$comicId');
+    final name = widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId;
+    GoRouter.of(context).push('/source/$sourceId/comic/$comicId?sourceName=${Uri.encodeComponent(name)}');
   }
 
   @override
@@ -138,7 +139,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
           ]),
           actions: [
             IconButton(icon: Icon(Icons.search_rounded, color: DS.textPrimary),
-              onPressed: () => GoRouter.of(context).push('/search?sourceId=${widget.sourceId}&name=${Uri.encodeComponent(name)}')),
+              onPressed: () => GoRouter.of(context).push('/search?sourceId=${widget.sourceId}&name=${Uri.encodeComponent(name)}&scope=source')),
           ],
           bottom: TabBar(
             controller: _tabCtrl,
@@ -261,7 +262,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
             final cparam = (c is Map ? (c['param'] ?? '') : '').toString();
             return ActionChip(label: Text(cname, style: TextStyle(fontSize: 13, color: DS.textPrimary)),
               backgroundColor: DS.surface2,
-              onPressed: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?initial=${Uri.encodeComponent(cname)}&param=${Uri.encodeComponent(cparam)}'));
+              onPressed: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?sourceName=${Uri.encodeComponent(name)}&initial=${Uri.encodeComponent(cname)}&param=${Uri.encodeComponent(cparam)}'));
           }).toList())),
       ]);
     });

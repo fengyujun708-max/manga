@@ -57,6 +57,7 @@ class ManjieApp extends StatelessWidget {
           builder: (_, state) => SourceComicPage(
             sourceId: state.pathParameters['sourceId']!,
             comicId: state.pathParameters['comicId']!,
+            sourceName: state.uri.queryParameters['sourceName'] ?? '',
           ),
         ),
         GoRoute(
@@ -72,14 +73,19 @@ class ManjieApp extends StatelessWidget {
           path: '/source/:sourceId/category',
           builder: (_, state) => SourceCategoryPage(
             sourceId: state.pathParameters['sourceId']!,
+            sourceName: state.uri.queryParameters['sourceName'] ?? '',
             initialCategory: state.uri.queryParameters['initial'],
             initialParam: state.uri.queryParameters['param'],
           ),
         ),
-            GoRoute(path: '/search', builder: (_, state) => SearchPage(
+        GoRoute(
+          path: '/search',
+          builder: (_, state) => SearchPage(
             sourceId: state.uri.queryParameters['sourceId'],
             sourceName: state.uri.queryParameters['name'] ?? '',
-          )),
+            scope: state.uri.queryParameters['scope'] ?? 'official',
+          ),
+        ),
         GoRoute(path: '/comic/:id', builder: (_, state) => ComicDetailPage(comicId: state.pathParameters['id']!)),
         GoRoute(path: '/settings', builder: (_, __) => const SettingsPage()),
         GoRoute(path: '/community/create', builder: (_, __) => const CreatePostPage()),

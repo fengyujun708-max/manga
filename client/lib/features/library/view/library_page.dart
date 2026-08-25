@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../../app/ds.dart';
 import '../../../core/services/library_service.dart';
 
@@ -85,17 +86,20 @@ class _LibraryPageState extends State<LibraryPage> {
           errorWidget: (_, __, ___) => Icon(Icons.menu_book_rounded, size: 32, color: DS.textDisabled)))),
       SizedBox(height: 6),
       Text(item['title'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: DS.textPrimary)),
+      Text(item['sourceName'] ?? item['sourceId'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10, color: DS.textTertiary)),
     ]);
   }
 
   Widget histTile(Map<String, dynamic> h) {
     final date = DateTime.tryParse(h['readAt'] ?? '');
     final timeStr = date != null ? '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}' : '';
-    return ListTile(contentPadding: EdgeInsets.symmetric(horizontal: 16),
+    return ListTile(
+      onTap: () => GoRouter.of(context).push('/source/${h['sourceId'] ?? ''}/comic/${h['comicId'] ?? ''}?sourceName=${Uri.encodeComponent((h['sourceName'] ?? h['sourceId'] ?? '').toString())}'),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16),
       leading: Container(width: 48, height: 64, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: DS.surface1), clipBehavior: Clip.antiAlias,
         child: CachedNetworkImage(imageUrl: h['cover'] ?? '', fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(Icons.image, color: DS.textDisabled))),
       title: Text(h['title'] ?? '', maxLines: 1, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: DS.textPrimary)),
-      subtitle: Text('${h['chapterTitle'] ?? ''} · $timeStr', maxLines: 1, style: TextStyle(fontSize: 12, color: DS.textTertiary)));
+      subtitle: Text('${h['sourceName'] ?? h['sourceId'] ?? ''} · ${h['chapterTitle'] ?? ''} · $timeStr', maxLines: 1, style: TextStyle(fontSize: 12, color: DS.textTertiary)));
   }
 
   Widget emptyView(IconData icon, String title, String subtitle) {

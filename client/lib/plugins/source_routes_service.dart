@@ -101,7 +101,11 @@ class SourceRoutesService {
     if (ok.isEmpty) return null;
     // JM 的 apiDomain 是 1-based 数字索引，不能写入域名字符串。
     if (sourceId == 'jm') {
-      await selectRoute(sourceId, 'domains', ok.map((e) => e.host).toList());
+      final bestHost = ok.first.host;
+      final idx = hosts.indexOf(bestHost);
+      if (idx >= 0) {
+        await selectRoute(sourceId, 'apiDomain', idx + 1);
+      }
     } else {
       for (final key in ['base_url', 'domains', 'url', 'api_url']) {
         await selectRoute(sourceId, key, ok.first.host);
@@ -120,7 +124,8 @@ class SourceRoutesService {
   /// 获取当前选中的线路
   String? getSelectedRoute(String sourceId) {
     final ov = getOverrides(sourceId);
-    return ov['base_url'] ?? ov['domains'] ?? ov['apiDomain'] ?? ov['url'] ?? null;
+    final v = ov['base_url'] ?? ov['domains'] ?? ov['apiDomain'] ?? ov['url'];
+    return v?.toString();
   }
 
   Map<String, dynamic> getOverrides(String sourceId) {

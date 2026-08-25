@@ -49,7 +49,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
             title: Row(children: [
               const Text('发现', style: DS.headline),
               const Spacer(),
-              _iconBtn(Icons.search_rounded, () => GoRouter.of(context).push('/search')),
+              _iconBtn(Icons.search_rounded, () => GoRouter.of(context).push('/search?scope=sources')),
             ]),
           ),
 
@@ -65,7 +65,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
             child: Padding(
               padding: EdgeInsets.fromLTRB(DS.sp16, 0, DS.sp16, DS.sp16),
               child: GestureDetector(
-                onTap: () {},
+                onTap: () => GoRouter.of(context).push('/search'),
                 child: Container(
                   height: 120,
                   decoration: BoxDecoration(

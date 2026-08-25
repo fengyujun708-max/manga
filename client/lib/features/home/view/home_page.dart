@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
     final cover = hero['cover'] ?? '';
     return GestureDetector(
-      onTap: () {},
+      onTap: () => GoRouter.of(context).push('/comic/${hero['id'] ?? ''}'),
       child: Container(
         height: 320,
         margin: EdgeInsets.fromLTRB(DS.sp12, DS.sp4, DS.sp12, 0),
@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               Text(hero['author'], style: TextStyle(fontSize: 13, color: DS.textSecondary)),
             SizedBox(height: DS.sp12),
             FilledButton.icon(
-              onPressed: () {},
+              onPressed: () => GoRouter.of(context).push('/search'),
               icon: Icon(Icons.play_arrow_rounded, size: 18),
               label: Text('开始阅读', style: TextStyle(fontWeight: FontWeight.w700)),
               style: FilledButton.styleFrom(backgroundColor: DS.accent, foregroundColor: Colors.white, padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
@@ -174,7 +174,7 @@ class _CardRow extends StatelessWidget {
         final card = cards[i];
         final cover = card['cover'] ?? '';
         return GestureDetector(
-          onTap: () {},
+          onTap: () => GoRouter.of(context).push('/comic/${card['id'] ?? ''}'),
           child: SizedBox(width: 130, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Expanded(
               child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(DS.rMd), color: DS.surface1), clipBehavior: Clip.antiAlias,

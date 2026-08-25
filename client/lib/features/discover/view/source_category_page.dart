@@ -8,9 +8,10 @@ import '../../../app/ds.dart';
 /// 源分类页 — 胶囊筛选 + 无限滚动漫画网格
 class SourceCategoryPage extends StatefulWidget {
   final String sourceId;
+  final String sourceName;
   final String? initialCategory;
   final String? initialParam;
-  const SourceCategoryPage({super.key, required this.sourceId, this.initialCategory, this.initialParam});
+  const SourceCategoryPage({super.key, required this.sourceId, this.sourceName = '', this.initialCategory, this.initialParam});
   @override
   State<SourceCategoryPage> createState() => _SourceCategoryPageState();
 }
@@ -87,7 +88,6 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
         _parts = parts;
         _activePart = parts.first['name']?.toString() ?? '';
         final cats = _activeCategories();
-        // 如果初始分类不在当前板块，搜索所有板块
         if (widget.initialCategory != null && widget.initialCategory!.isNotEmpty && !cats.contains(widget.initialCategory)) {
           for (final p in parts) {
             final pName = p['name']?.toString() ?? '';
@@ -102,7 +102,7 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
               break;
             }
           }
-        } else if (cats.contains(widget.initialCategory)) {
+        } else if (widget.initialCategory != null && cats.contains(widget.initialCategory)) {
           _activeCategory = widget.initialCategory!;
           _activeParam = widget.initialParam ?? _categoryParamForName(_activeCategory);
         } else {
@@ -123,7 +123,6 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
     try {
       final result = await SourceDataService.instance.categoryComics(widget.sourceId, _activeCategory, reset ? 1 : _page, _activeParam);
       final list = (result['items'] as List?) ?? [];
-      // SourceDataService 已按源 baseUrl 统一修复封面 URL，页面不要再次改写。
       final fixed = list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
       if (!mounted) return;
       setState(() {
@@ -132,7 +131,7 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
         if (_hasMore) _page++;
         _comicsLoading = false;
       });
-    } catch (e) {
+    } catch (_) {
       if (mounted) setState(() { _comicsLoading = false; _hasMore = false; });
     }
   }
@@ -153,7 +152,8 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
 
   void _enterComic(String id) {
     if (id.isEmpty) return;
-    GoRouter.of(context).push('/source/${widget.sourceId}/comic/$id');
+    final name = widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId;
+    GoRouter.of(context).push('/source/${widget.sourceId}/comic/$id?sourceName=${Uri.encodeComponent(name)}');
   }
 
   @override
@@ -164,7 +164,6 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
         controller: _scroll,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // 头部
           SliverAppBar(
             pinned: true,
             backgroundColor: Colors.transparent,
@@ -174,13 +173,11 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
             ),
             title: const Text('分类浏览', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: DS.textPrimary)),
           ),
-
           if (_loading)
             const SliverFillRemaining(child: LoadingState(text: '加载分类...'))
           else if (_error != null)
             SliverFillRemaining(child: EmptyState(icon: Icons.category_outlined, title: _error!))
           else ...[
-            // 分类分区选择（横向）
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
@@ -196,12 +193,16 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
                       final name = p['name']?.toString() ?? '';
                       final active = name == _activePart;
                       return GestureDetector(
-                        onTap: () { HapticFeedback.selectionClick(); setState(() {
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
                             _activePart = name;
-                            _activeCategory = _activeCategories().firstOrNull ?? '';
+                            final cats = _activeCategories();
+                            _activeCategory = cats.isNotEmpty ? cats.first : '';
                             _activeParam = _categoryParamForName(_activeCategory);
                           });
-                          _loadComics(reset: true); },
+                          _loadComics(reset: true);
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
@@ -217,8 +218,6 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
                 ),
               ),
             ),
-
-            // 分类标签（横向滚动胶囊）
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -250,8 +249,6 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
                 ),
               ),
             ),
-
-            // 漫画网格
             ComicGrid(
               comics: _comics,
               crossAxisCount: 3,
@@ -260,10 +257,8 @@ class _SourceCategoryPageState extends State<SourceCategoryPage> {
                 ? const Padding(padding: EdgeInsets.all(20), child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: DS.accent))))
                 : _hasMore ? null : const Padding(padding: EdgeInsets.all(20), child: Center(child: Text('没有更多了', style: TextStyle(fontSize: 12, color: DS.textTertiary)))),
             ),
-
             if (_comics.isEmpty && !_comicsLoading)
               const SliverToBoxAdapter(child: SizedBox(height: 200, child: EmptyState(icon: Icons.inbox_rounded, title: '暂无漫画'))),
-
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ],

@@ -11,7 +11,8 @@ import 'source_reader_page.dart';
 class SourceComicPage extends StatefulWidget {
   final String sourceId;
   final String comicId;
-  const SourceComicPage({super.key, required this.sourceId, required this.comicId});
+  final String sourceName;
+  const SourceComicPage({super.key, required this.sourceId, required this.comicId, this.sourceName = ''});
   @override
   State<SourceComicPage> createState() => _SourceComicPageState();
 }
@@ -36,7 +37,7 @@ class _SourceComicPageState extends State<SourceComicPage> {
   Future<void> _toggleFav() async {
     HapticFeedback.mediumImpact();
     await LibraryService.instance.toggleFavorite({
-      'sourceId': widget.sourceId, 'comicId': widget.comicId,
+      'sourceId': widget.sourceId, 'sourceName': _sourceLabel, 'comicId': widget.comicId,
       'title': _info['title'] ?? '', 'cover': _info['cover'] ?? '',
     });
     final fav = await LibraryService.instance.isFavorited(widget.sourceId, widget.comicId);
@@ -65,6 +66,7 @@ class _SourceComicPageState extends State<SourceComicPage> {
   }
 
   String get _title => (_info['title'] ?? _info['name'] ?? widget.comicId).toString();
+  String get _sourceLabel => widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId;
   String get _cover => (_info['cover'] ?? _info['coverUrl'] ?? '').toString();
   String get _author => (_info['author'] ?? '').toString();
   String get _desc => (_info['description'] ?? '').toString();
@@ -132,6 +134,8 @@ class _SourceComicPageState extends State<SourceComicPage> {
                     Padding(padding: const EdgeInsets.only(bottom: 4),
                       child: Text(_author, style: DS.bodySec)),
                   Text(_title, style: DS.display),
+                  const SizedBox(height: 6),
+                  Text(_sourceLabel, style: const TextStyle(fontSize: 12, color: DS.textTertiary)),
                 ])),
             ]),
           ),
