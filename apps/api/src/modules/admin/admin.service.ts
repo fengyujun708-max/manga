@@ -33,17 +33,18 @@ export class AdminService implements OnApplicationBootstrap {
     if (existing) {
       await this.userRepo.update(existing.id, { role: UserRole.ADMIN, passwordHash });
       this.logger.log(`管理员 ${phone} 已更新（密码同步）`);
-    const passwordHash = await bcrypt.hash(password, 10);
-    await this.userRepo.save(
-      this.userRepo.create({
-        phone,
-        phoneVerified: true,
-        passwordHash,
-        nickname: '管理员',
-        role: UserRole.ADMIN,
-      }),
-    );
-    this.logger.log(`管理员账号 ${phone} 已创建`);
+    } else {
+      await this.userRepo.save(
+        this.userRepo.create({
+          phone,
+          phoneVerified: true,
+          passwordHash,
+          nickname: '管理员',
+          role: UserRole.ADMIN,
+        }),
+      );
+      this.logger.log(`管理员账号 ${phone} 已创建`);
+    }
   }
 
   async getDashboard() {
