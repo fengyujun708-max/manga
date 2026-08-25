@@ -262,7 +262,7 @@ class _SourceDetailPageState extends State<SourceDetailPage> with SingleTickerPr
             final cparam = (c is Map ? (c['param'] ?? '') : '').toString();
             return ActionChip(label: Text(cname, style: TextStyle(fontSize: 13, color: DS.textPrimary)),
               backgroundColor: DS.surface2,
-              onPressed: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?sourceName=${Uri.encodeComponent(name)}&initial=${Uri.encodeComponent(cname)}&param=${Uri.encodeComponent(cparam)}'));
+              onPressed: () => GoRouter.of(context).push('/source/${widget.sourceId}/category?sourceName=${Uri.encodeComponent(widget.sourceName.isNotEmpty ? widget.sourceName : widget.sourceId)}&initial=${Uri.encodeComponent(cname)}&param=${Uri.encodeComponent(cparam)}'));
           }).toList())),
       ]);
     });

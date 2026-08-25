@@ -85,7 +85,7 @@ class _OfficialReaderPageState extends State<OfficialReaderPage> {
       backgroundColor: Colors.black,
       body: Stack(children: [
         _buildContent(),
-        if (_showOverlay) _buildOverlay(),
+        ...(_showOverlay ? _buildOverlay() : const <Widget>[]),
         GestureDetector(onTap: () => setState(() => _showOverlay = !_showOverlay), behavior: HitTestBehavior.translucent),
       ]),
     );
