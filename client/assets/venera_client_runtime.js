@@ -935,9 +935,25 @@ globalThis.__comic__ = async function (sourceId, comicId) {
   if (!src.comic || typeof src.comic.loadInfo !== 'function') return { error: 'no comic method' };
   const d = await src.comic.loadInfo(comicId);
   if (!d || typeof d !== 'object') return { error: '详情返回为空' };
-  // chapters 规范化为 [{id,title}]（Venera: {epId|id, title} 或数组）
+  // chapters 规范化为 [{id,title}]（Venera: {epId|id, title} 或数组；Map → Array）
   let chapters = d.chapters || d.eps || [];
-  if (!Array.isArray(chapters)) chapters = [];
+  if (!Array.isArray(chapters)) {
+    // Map → Array
+    if (chapters && typeof chapters[Symbol.iterator] === 'function') {
+      // Map 或 Set
+      chapters = Array.from(chapters).map((entry, i) => {
+        if (Array.isArray(entry)) return { id: String(entry[0]), title: String(entry[1] || ('第' + (i + 1) + '话')) };
+        return { id: String(entry.id ?? entry.epId ?? i), title: String(entry.title || entry.name || ('第' + (i + 1) + '话')) };
+      });
+    } else if (chapters && typeof chapters === 'object') {
+      // 普通对象 {id: title, ...}
+      chapters = Object.entries(chapters).map(([id, title], i) => ({
+        id: String(id), title: String(title || ('第' + (i + 1) + '话'))
+      }));
+    } else {
+      chapters = [];
+    }
+  }
   const normChapters = chapters.map((c, i) => ({
     id: String(c.id ?? c.epId ?? c.ep_id ?? i),
     title: String(c.title || c.name || ('第' + (i + 1) + '话')),
