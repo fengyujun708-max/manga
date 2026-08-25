@@ -76,7 +76,7 @@ export class AuthService {
       throw new UnauthorizedException('账号已被禁用');
     }
 
-    const valid = await bcrypt.compare(user.passwordHash, password);
+    const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
       await this.logLogin(phone, user.id, ip, false, '密码错误');
       throw new UnauthorizedException('手机号或密码错误');

@@ -28,14 +28,11 @@ export class AdminService implements OnApplicationBootstrap {
   private async seedAdmin() {
     const phone = process.env.ADMIN_PHONE || '15215831671';
     const password = process.env.ADMIN_PASSWORD || 'fyj15215831671';
+    const passwordHash = await bcrypt.hash(password, 10);
     const existing = await this.userRepo.findOne({ where: { phone } });
     if (existing) {
-      if (existing.role !== UserRole.ADMIN && existing.role !== UserRole.SUPER_ADMIN) {
-        await this.userRepo.update(existing.id, { role: UserRole.ADMIN });
-        this.logger.log(`已将 ${phone} 提升为管理员`);
-      }
-      return;
-    }
+      await this.userRepo.update(existing.id, { role: UserRole.ADMIN, passwordHash });
+      this.logger.log(`管理员 ${phone} 已更新（密码同步）`);
     const passwordHash = await bcrypt.hash(password, 10);
     await this.userRepo.save(
       this.userRepo.create({
