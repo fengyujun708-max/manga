@@ -39,7 +39,6 @@ jobs:
           # 2. 在 app/build.gradle(.kts) 的 defaultConfig 里设置 manifestPlaceholders
           python3 -c "
           import glob
-          # 兼容 build.gradle（Groovy）和 build.gradle.kts（Kotlin DSL）
           gradle_file = None
           for p in ['android/app/build.gradle', 'android/app/build.gradle.kts']:
               try:
@@ -53,15 +52,19 @@ jobs:
           print(f'找到 gradle 文件: {gradle_file}')
           gradle = open(gradle_file, 'r', encoding='utf-8').read()
           if 'manifestPlaceholders' not in gradle:
+              # 在 defaultConfig 块开头插入（Kotlin DSL 和 Groovy 通用）
               if gradle_file.endswith('.kts'):
-                  # Kotlin DSL 语法
-                  gradle = gradle.replace('versionName = flutterVersionName', 'versionName = flutterVersionName\n        manifestPlaceholders[\"usesCleartextTraffic\"] = \"true\"', 1)
+                  gradle = gradle.replace('defaultConfig {', 'defaultConfig {\n        manifestPlaceholders[\"usesCleartextTraffic\"] = \"true\"', 1)
               else:
-                  # Groovy DSL 语法
-                  gradle = gradle.replace('versionName = flutterVersionName', 'versionName = flutterVersionName\n        manifestPlaceholders = [usesCleartextTraffic: \"true\"]', 1)
+                  gradle = gradle.replace('defaultConfig {', 'defaultConfig {\n        manifestPlaceholders = [usesCleartextTraffic: \"true\"]', 1)
+              # 如果上面没匹配到，尝试带空格/换行的写法
+              if 'manifestPlaceholders' not in gradle:
+                  gradle = gradle.replace('defaultConfig\n    {', 'defaultConfig {\n        manifestPlaceholders = [usesCleartextTraffic: \"true\"]', 1)
           open(gradle_file, 'w', encoding='utf-8').write(gradle)
           print('build.gradle 注入完成')
-          "
+          " 
+          echo "=== 注入后 build.gradle ==="
+          grep -n "manifestPlaceholders\|defaultConfig" android/app/build.gradle*
           # 3. 写入 network_security_config.xml
           mkdir -p android/app/src/main/res/xml
           cat > android/app/src/main/res/xml/network_security_config.xml << 'NSC'
