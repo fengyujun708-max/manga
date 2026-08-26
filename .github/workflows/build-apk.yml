@@ -22,6 +22,45 @@ jobs:
           flutter-version: '3.29.0'
           channel: 'stable'
 
+      - name: 生成 Android 平台目录
+        run: flutter create --platforms=android --org com.manjie --project-name manjie .
+
+      # ★ 用简单字符串替换注入网络配置（不覆盖整个 manifest，保留 v2 embedding）
+      - name: 注入 HTTP 明文权限
+        run: |
+          # 1. 在生成的 manifest 的 <application 标签里注入 2 个属性
+          python3 -c "
+          content = open('android/app/src/main/AndroidManifest.xml', 'r', encoding='utf-8').read()
+          if 'usesCleartextTraffic' not in content:
+              content = content.replace('<application', '<application\n        android:usesCleartextTraffic=\"true\"\n        android:networkSecurityConfig=\"@xml/network_security_config\"', 1)
+          open('android/app/src/main/AndroidManifest.xml', 'w', encoding='utf-8').write(content)
+          print('manifest 注入完成')
+          "
+          # 2. 写入 network_security_config.xml
+          mkdir -p android/app/src/main/res/xml
+          cat > android/app/src/main/res/xml/network_security_config.xml << 'NSC'
+          <?xml version="1.0" encoding="utf-8"?>
+          <network-security-config>
+              <base-config cleartextTrafficPermitted="true">
+                  <trust-anchors>
+                      <certificates src="system"/>
+                      <certificates src="user"/>
+                  </trust-anchors>
+              </base-config>
+              <domain-config cleartextTrafficPermitted="true">
+                  <domain includeSubdomains="true">39.106.192.137</domain>
+              </domain-config>
+          </network-security-config>
+          NSC
+
+      - name: 验证配置
+        run: |
+          echo "=== manifest 网络配置 ==="
+          grep "usesCleartextTraffic\|networkSecurityConfig\|applicationName" android/app/src/main/AndroidManifest.xml
+          echo ""
+          echo "=== nsc 文件 ==="
+          cat android/app/src/main/res/xml/network_security_config.xml
+
       - name: 安装依赖
         run: flutter pub get
 
