@@ -16,6 +16,32 @@ class SourceDataService {
   final JsEngine engine = JsEngine();
   final Map<String, bool> _hasLocalJs = {};
 
+  /// ★ 预热：直接注入 JS 代码到引擎（绕过他文件 IO）
+  /// 由 SourceInstaller.preloadAllSourcesToEngine() 调用
+  Future<bool> preloadSource(String sourceId, String code) async {
+    try {
+      final err = await engine.executeSource(sourceId, code,
+        settings: SourceRoutesService.instance.getOverrides(sourceId))
+        .timeout(const Duration(seconds: 8), onTimeout: () => 'timeout');
+      if (err != null) {
+        debugPrint('[Preload] $sourceId failed: $err');
+        return false;
+      }
+      // 缓存 baseUrl
+      try {
+        final u = await engine.evaluateAwait(
+          'globalThis.__sources__["$sourceId"]?.url',
+          timeoutMs: 2000);
+        final us = u?.toString() ?? '';
+        if (us.startsWith('http')) _sourceBaseUrls[sourceId] = us;
+      } catch (_) {}
+      return true;
+    } catch (e) {
+      debugPrint('[Preload] $sourceId error: $e');
+      return false;
+    }
+  }
+
   /// 检查本地是否有该源的 JS 文件
   Future<bool> hasLocalJs(String sourceId) async {
     if (_hasLocalJs.containsKey(sourceId)) return _hasLocalJs[sourceId]!;

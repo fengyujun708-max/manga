@@ -1,22 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'manga_source.dart';
+import 'source_data_service.dart';
 
-/// 源安装器：仅负责 APK 内置源提取和本地存储
+/// 源安装器：从 APK 资产提取全部源 + 注册到本地 + 预热 QuickJS 引擎
 class SourceInstaller {
   static final List<int> _key = List<int>.from('ManjieSourceKey2026'.codeUnits);
 
-  /// 解密源 JS（XOR + Base64）
+  /// XOR + Base64 解密
   static String _decrypt(String encoded) {
     final encrypted = base64.decode(encoded);
     final decrypted = List<int>.generate(encrypted.length, (i) => encrypted[i] ^ _key[i % _key.length]);
     return utf8.decode(decrypted);
   }
 
-  /// 加载加密的内置源代码
+  /// 从 APK assets 加载加密的源 JS
   static Future<String?> loadBundledSource(String id) async {
     try {
       final raw = await rootBundle.loadString('assets/sources/${id.toLowerCase()}.js.enc');
@@ -33,9 +35,8 @@ class SourceInstaller {
     'ehentai','mh1234','kavita','happy','komga','mycomic',
   ];
 
-  static Map<String, SourceManifest>? _bundledManifests;
-
   /// 首次启动：从 APK 资产提取全部源到本地（无网络需求）
+  /// 必须在 runApp() 之前完成（同步等待）
   static Future<int> extractBundledSources() async {
     final dir = await ensureSourceDir();
     if (dir == null) return 0;
@@ -46,7 +47,14 @@ class SourceInstaller {
     for (final id in vettedSources) {
       try {
         final code = await loadBundledSource(id);
-        if (code == null || !code.contains('ComicSource')) continue;
+        if (code == null) {
+          debugPrint('[SourceInstaller] $id: 资源文件不存在');
+          continue;
+        }
+        if (!code.contains('ComicSource')) {
+          debugPrint('[SourceInstaller] $id: 不是 ComicSource 格式');
+          continue;
+        }
         final file = File('$dir/$id.js');
         await file.writeAsString(code);
         // 注册 manifest
@@ -57,14 +65,41 @@ class SourceInstaller {
           list.add(m.toJson());
         }
         count++;
-      } catch (_) {}
+        debugPrint('[SourceInstaller] $id: 已提取 (${code.length} bytes)');
+      } catch (e) {
+        debugPrint('[SourceInstaller] $id: 提取失败 - $e');
+      }
     }
     await prefs.setString('installed_sources', jsonEncode(list));
+    debugPrint('[SourceInstaller] 总计提取 $count 个源，目录: $dir');
     return count;
   }
 
+  /// ★ 关键修复：App 启动后预热所有源到 QuickJS 引擎
+  /// 解决"jm 等源加载不了" + "首次进入源详情页超时"
+  /// 在首页显示后调用即可（不阻塞 UI）
+  static Future<int> preloadAllSourcesToEngine() async {
+    final dir = await ensureSourceDir();
+    if (dir == null) return 0;
+    final files = await Directory(dir).list().catchError((_) => <FileSystemEntity>[]);
+    int loaded = 0;
+    int failed = 0;
+    for (final f in files) {
+      if (f is! File || !f.path.endsWith('.js')) continue;
+      final sourceId = f.path.split('/').last.replaceAll('.js', '');
+      try {
+        final code = await f.readAsString();
+        final ok = await SourceDataService.instance.preloadSource(sourceId, code);
+        if (ok) loaded++; else failed++;
+      } catch (e) {
+        failed++;
+      }
+    }
+    debugPrint('[SourceInstaller] 引擎预热完成: 成功=$loaded 失败=$failed');
+    return loaded;
+  }
+
   static SourceManifest _buildManifest(String id, String code) {
-    // 从源 JS 中提取 name 和 version
     final nameMatch = RegExp(r'name\s*=\s*"([^"]+)"').firstMatch(code);
     final verMatch = RegExp(r'version\s*=\s*"([^"]+)"').firstMatch(code);
     return SourceManifest(
@@ -78,8 +113,6 @@ class SourceInstaller {
     );
   }
 
-
-
   static Future<String?> ensureSourceDir() async {
     try {
       final docs = await getApplicationDocumentsDirectory();
@@ -88,5 +121,4 @@ class SourceInstaller {
       return dir.path;
     } catch (_) { return null; }
   }
-
 }

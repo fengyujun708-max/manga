@@ -50,6 +50,13 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         await SourceInstaller.extractBundledSources();
         await prefs.setBool('sources_extracted', true);
       }
+      // ★ 关键修复：预热所有源到 QuickJS 引擎
+      // 解决"jm/baozi 等加载不了"——进入源详情页时无需再 loadLocal
+      try {
+        await SourceInstaller.preloadAllSourcesToEngine();
+      } catch (e) {
+        debugPrint('[AppShell] preloadAllSourcesToEngine failed: $e');
+      }
     });
   }
 

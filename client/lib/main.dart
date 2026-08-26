@@ -28,10 +28,12 @@ void main() async {
   getIt.registerSingleton<SecureStorage>(SecureStorage());
   getIt.registerSingleton<ApiClient>(ApiClient());
 
-  // ── 自动解压内置源（首次安装 / 更新时触发）───────────────────────
+  // ── Step 1：同步解压内置源到本地文件（无网络）───────────────
+  // 首次安装时：将 APK assets/*.js.enc 解密写入 /data/data/com.manjie/files/sources/
   // 避免发现页首次打开空白灰屏
   try {
-    await SourceInstaller.extractBundledSources();
+    final count = await SourceInstaller.extractBundledSources();
+    debugPrint('[Main] 提取内置源: $count 个');
   } catch (e) {
     debugPrint('[Main] extractBundledSources failed: $e');
   }
