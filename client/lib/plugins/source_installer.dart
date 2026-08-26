@@ -81,7 +81,12 @@ class SourceInstaller {
   static Future<int> preloadAllSourcesToEngine() async {
     final dir = await ensureSourceDir();
     if (dir == null) return 0;
-    final files = await Directory(dir).list().catchError((_) => <FileSystemEntity>[]);
+    List<FileSystemEntity> files;
+    try {
+      files = await Directory(dir).list().toList();
+    } catch (_) {
+      files = [];
+    }
     int loaded = 0;
     int failed = 0;
     for (final f in files) {
