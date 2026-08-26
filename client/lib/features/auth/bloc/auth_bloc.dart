@@ -143,10 +143,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
     } catch (e) {
       final msg = e.toString();
-      if (msg.contains('已被禁用')) {
+      final statusCode = e is DioException ? e.response?.statusCode : null;
+      if (msg.contains('已被禁用') || statusCode == 403) {
         emit(AuthError('账号已被禁用'));
-      } else if (msg.contains('手机号或密码错误')) {
+      } else if (msg.contains('手机号或密码错误') || statusCode == 401) {
         emit(AuthError('手机号或密码错误'));
+      } else if (e is DioException && (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout)) {
+        emit(AuthError('网络连接失败，请检查网络'));
+      } else if (e is DioException && e.response?.data is Map) {
+        final msg2 = (e.response?.data as Map)['message']?.toString() ?? '';
+        if (msg2.isNotEmpty) emit(AuthError(msg2));
+        else emit(AuthError('登录失败，请检查手机号和密码'));
       } else {
         emit(AuthError('登录失败，请检查手机号和密码'));
       }
