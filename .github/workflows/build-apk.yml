@@ -24,19 +24,24 @@ jobs:
 
       - name: 生成 Android 平台目录
         run: |
-          # 备份 repo 中正确的配置
-          cp android/app/src/main/AndroidManifest.xml /tmp/manifest.xml
-          cp android/app/src/main/res/xml/network_security_config.xml /tmp/nsc.xml
-          # flutter create 会覆盖 android/ 目录
+          # ★ 关键：flutter create 会覆盖 android/ 目录里的所有文件
+          # 所以先备份正确的网络配置，创建完后恢复
+          mkdir -p /tmp/android_backup
+          cp -r android/app/src/main/AndroidManifest.xml /tmp/android_backup/
+          cp -r android/app/src/main/res/xml/ /tmp/android_backup/
+          # flutter create 会生成 gradle files + 默认 manifest
           flutter create --platforms=android --org com.manjie --project-name manjie .
-          # 恢复正确的配置
-          cp /tmp/manifest.xml android/app/src/main/AndroidManifest.xml
+          # 立即恢复正确的网络配置
+          cp /tmp/android_backup/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           mkdir -p android/app/src/main/res/xml
-          cp /tmp/nsc.xml android/app/src/main/res/xml/network_security_config.xml
-          # 验证恢复成功
-          echo "=== 验证配置 ==="
-          grep "usesCleartextTraffic\|networkSecurityConfig" android/app/src/main/AndroidManifest.xml || true
+          cp /tmp/android_backup/xml/network_security_config.xml android/app/src/main/res/xml/ 2>/dev/null || true
+          # ★ 验证恢复成功
+          echo "=== AndroidManifest.xml 验证 ==="
+          grep "usesCleartextTraffic\|networkSecurityConfig" android/app/src/main/AndroidManifest.xml
+          echo "=== network_security_config.xml 验证 ==="
           ls -la android/app/src/main/res/xml/
+          echo "=== 内容 ==="
+          cat android/app/src/main/res/xml/network_security_config.xml
 
       - name: 安装依赖
         run: flutter pub get
