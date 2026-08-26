@@ -24,16 +24,19 @@ jobs:
 
       - name: 生成 Android 平台目录
         run: |
-          # 备份 repo 中的正确配置
+          # 备份 repo 中正确的配置
           cp android/app/src/main/AndroidManifest.xml /tmp/manifest.xml
           cp android/app/src/main/res/xml/network_security_config.xml /tmp/nsc.xml
-          # flutter create 会覆盖 gradle 文件（但不覆盖 src/main/AndroidManifest.xml）
+          # flutter create 会覆盖 android/ 目录
           flutter create --platforms=android --org com.manjie --project-name manjie .
           # 恢复正确的配置
           cp /tmp/manifest.xml android/app/src/main/AndroidManifest.xml
           mkdir -p android/app/src/main/res/xml
           cp /tmp/nsc.xml android/app/src/main/res/xml/network_security_config.xml
-          echo "配置已恢复"
+          # 验证恢复成功
+          echo "=== 验证配置 ==="
+          grep "usesCleartextTraffic\|networkSecurityConfig" android/app/src/main/AndroidManifest.xml || true
+          ls -la android/app/src/main/res/xml/
 
       - name: 安装依赖
         run: flutter pub get

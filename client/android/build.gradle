@@ -1,0 +1,14 @@
+allprojects {
+    apply plugin: "com.android.repository"
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.named("build") {
+    dependsOn(subprojects.tasks.named("build"))
+}
