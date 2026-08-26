@@ -37,12 +37,19 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _feed = res.data is Map ? Map<String, dynamic>.from(res.data as Map) : null;
         _loading = false;
+        if (_feed == null) _error = '首页数据格式异常';
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _loading = false);
       final msg = e.toString();
-      if (mounted) setState(() { _loading = false; _error = msg.contains('401') ? '请登录后查看' : msg; });
+      setState(() {
+        _loading = false;
+        _error = msg.contains('401')
+            ? '登录已过期，请退出重登'
+            : msg.contains('SocketException') || msg.contains('connection')
+                ? '网络连接失败，请检查网络'
+                : '加载失败: ${msg.substring(0, msg.length.clamp(0, 80))}';
+      });
     }
   }
 

@@ -16,7 +16,6 @@ import '../features/profile/view/profile_page.dart';
 import '../features/sources/view/source_setup_dialog.dart';
 import '../core/network/api_client.dart';
 import '../features/search/view/search_page.dart';
-import '../features/comic/view/comic_detail_page.dart';
 import '../features/comic/view/official_comic_page.dart';
 import '../features/comic/view/official_reader_page.dart';
 import '../features/admin/view/admin_official_page.dart';
@@ -89,7 +88,6 @@ class ManjieApp extends StatelessWidget {
             scope: state.uri.queryParameters['scope'] ?? 'official',
           ),
         ),
-        GoRoute(path: '/comic/:id', builder: (_, state) => ComicDetailPage(comicId: state.pathParameters['id']!)),
         GoRoute(
           path: '/official/:id',
           builder: (_, state) => OfficialComicPage(seriesId: state.pathParameters['id']!),
