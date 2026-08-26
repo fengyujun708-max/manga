@@ -1,9 +1,8 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards, Patch, Delete } from '@nestjs/common';
 import { SourceRegistryService } from './source-registry.service';
 import { SourceRegistry } from './entities/source-registry.entity';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { UserRole } from '../../common/enums/user-role.enum';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard, Roles } from '../../common/guards/auth.guard';
+import { UserRole } from '../user/entities/user.entity';
 
 @Controller('sources')
 export class SourceRegistryController {

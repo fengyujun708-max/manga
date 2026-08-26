@@ -6,7 +6,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 @Index(['downloadCount'])
 export class SourceRegistry {
   @PrimaryGeneratedColumn('uuid')
-  uuid: string;
+  id: string;
 
   @Column({ unique: true, name: 'sourceId' })
   sourceId: string;
@@ -17,10 +17,10 @@ export class SourceRegistry {
   @Column({ name: 'version' })
   version: string;
 
-  @Column({ name: 'author', nullable: true })
+  @Column({ nullable: true })
   author: string;
 
-  @Column({ name: 'description', nullable: true })
+  @Column({ nullable: true })
   description: string;
 
   @Column({ name: 'icon', nullable: true })
@@ -29,25 +29,25 @@ export class SourceRegistry {
   @Column({ name: 'downloadUrl' })
   downloadUrl: string;
 
-  @Column({ name: 'sha256', nullable: true })
+  @Column({ nullable: true })
   sha256: string;
 
-  @Column({ name: 'minAppVersion', nullable: true })
+  @Column({ nullable: true })
   minAppVersion: string;
 
-  @Column({ name: 'capabilities', type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true })
   capabilities: string;
 
   @Column({ name: 'downloadCount', default: 0 })
   downloadCount: number;
 
-  @Column({ name: 'rating', type: 'numeric', precision: 3, scale: 2, default: 0 })
+  @Column({ type: 'numeric', precision: 3, scale: 2, default: 0 })
   rating: number;
 
-  @Column({ name: 'metadata', type: 'json', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata: Record<string, any>;
 
-  @Column({ name: 'status', default: 'active' })
+  @Column({ default: 'active' })
   status: string;
 
   @CreateDateColumn({ name: 'createdAt' })

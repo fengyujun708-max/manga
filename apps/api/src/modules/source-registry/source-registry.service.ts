@@ -49,7 +49,7 @@ export class SourceRegistryService {
       return this.sourceRegistryRepository.save({
         ...existing,
         ...data,
-        uuid: existing.uuid, // 保持 uuid 不变
+        id: existing.id, // 保持 uuid 不变
       });
     }
 
@@ -111,7 +111,7 @@ export class SourceRegistryService {
     let skipped = 0;
 
     for (const vetted of vettedSources) {
-      const existing = await this.findOne(vetted.sourceId);
+      const existing = await this.findOne(vetted.sourceId!);
 
       if (existing) {
         // 检查版本是否需要更新
@@ -119,7 +119,7 @@ export class SourceRegistryService {
           await this.sourceRegistryRepository.save({
             ...existing,
             ...vetted,
-            uuid: existing.uuid,
+            id: existing.id,
           });
           updated++;
         } else {
@@ -156,25 +156,26 @@ export class SourceRegistryService {
       const sources: Partial<SourceRegistry>[] = [];
 
       for (const [sourceId, sourceData] of Object.entries(registry.sources || {})) {
+        const data = sourceData as any;
         sources.push({
           sourceId,
-          name: sourceData.name,
-          version: sourceData.version,
-          author: sourceData.author,
-          description: sourceData.description || '',
-          icon: sourceData.icon || '',
-          downloadUrl: sourceData.url || sourceData.downloadUrl || '',
-          sha256: sourceData.sha256,
-          minAppVersion: sourceData.minAppVersion || '1.0.0',
-          capabilities: JSON.stringify(sourceData.capabilities || []),
-          metadata: sourceData,
+          name: data.name,
+          version: data.version,
+          author: data.author,
+          description: data.description || '',
+          icon: data.icon || '',
+          downloadUrl: data.url || data.downloadUrl || '',
+          sha256: data.sha256,
+          minAppVersion: data.minAppVersion || '1.0.0',
+          capabilities: JSON.stringify(data.capabilities || []),
+          metadata: data,
           status: 'active',
         });
       }
 
       return sources;
     } catch (error) {
-      this.logger.error(`Error fetching Venera registry: ${error}`);
+      this.logger.error(`Error fetching Venera registry: ${(error as Error).message}`);
       return [];
     }
   }
@@ -227,7 +228,7 @@ export class SourceRegistryService {
       return {
         healthy: false,
         latency: 0,
-        error: error.message,
+        error: (error as Error).message,
         timestamp: new Date(),
       };
     }
@@ -262,7 +263,7 @@ export class SourceRegistryService {
 
     return {
       version: source.version,
-      minAppVersion: source.minAppVersion,
+      minAppVersion: source.minAppVersion || '1.0.0',
     };
   }
 
@@ -289,7 +290,7 @@ export class SourceRegistryService {
    */
   async remove(sourceId: string): Promise<boolean> {
     const result = await this.sourceRegistryRepository.delete({ sourceId });
-    return result.affected > 0;
+    return (result.affected ?? 0) > 0;
   }
 
   /**
