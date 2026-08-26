@@ -25,18 +25,27 @@ jobs:
       - name: 生成 Android 平台目录
         run: flutter create --platforms=android --org com.manjie --project-name manjie .
 
-      # ★ 用简单字符串替换注入网络配置（不覆盖整个 manifest，保留 v2 embedding）
+      # ★ 用 manifestPlaceholders（Android 官方机制）强制注入，merger 一定保留
       - name: 注入 HTTP 明文权限
         run: |
-          # 1. 在生成的 manifest 的 <application 标签里注入 2 个属性
+          # 1. 在 manifest 的 <application 标签注入 2 个属性（用 placeholder）
           python3 -c "
           content = open('android/app/src/main/AndroidManifest.xml', 'r', encoding='utf-8').read()
           if 'usesCleartextTraffic' not in content:
-              content = content.replace('<application', '<application\n        android:usesCleartextTraffic=\"true\"\n        android:networkSecurityConfig=\"@xml/network_security_config\"', 1)
+              content = content.replace('<application', '<application\n        android:usesCleartextTraffic=\"\${usesCleartextTraffic}\"\n        android:networkSecurityConfig=\"@xml/network_security_config\"', 1)
           open('android/app/src/main/AndroidManifest.xml', 'w', encoding='utf-8').write(content)
           print('manifest 注入完成')
           "
-          # 2. 写入 network_security_config.xml
+          # 2. 在 app/build.gradle 的 defaultConfig 里设置 manifestPlaceholders
+          python3 -c "
+          gradle = open('android/app/build.gradle', 'r', encoding='utf-8').read()
+          if 'manifestPlaceholders' not in gradle:
+              # 在 defaultConfig 块里加 manifestPlaceholders
+              gradle = gradle.replace('versionName = flutterVersionName', 'versionName = flutterVersionName\n        manifestPlaceholders = [usesCleartextTraffic: \"true\"]', 1)
+          open('android/app/build.gradle', 'w', encoding='utf-8').write(gradle)
+          print('build.gradle 注入完成')
+          "
+          # 3. 写入 network_security_config.xml
           mkdir -p android/app/src/main/res/xml
           cat > android/app/src/main/res/xml/network_security_config.xml << 'NSC'
           <?xml version="1.0" encoding="utf-8"?>
@@ -57,6 +66,9 @@ jobs:
         run: |
           echo "=== manifest 网络配置 ==="
           grep "usesCleartextTraffic\|networkSecurityConfig\|applicationName" android/app/src/main/AndroidManifest.xml
+          echo ""
+          echo "=== build.gradle placeholder ==="
+          grep "manifestPlaceholders\|usesCleartextTraffic" android/app/build.gradle
           echo ""
           echo "=== nsc 文件 ==="
           cat android/app/src/main/res/xml/network_security_config.xml
